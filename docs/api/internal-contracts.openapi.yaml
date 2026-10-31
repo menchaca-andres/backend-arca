@@ -1,0 +1,171 @@
+openapi: 3.0.3
+info:
+  title: Contratos internos – Sistema de Gestión Humana (borrador)
+  version: 0.1.0
+  description: |
+    Contratos entre servicios. Rutas /internal/* NO se exponen por el API Gateway.
+    Se protegen con la cabecera X-Internal-Key dentro de la red de Docker.
+    Errores siempre con el formato { code, message, details }.
+servers:
+  - url: http://ms-personal:3002
+    description: ms-personal
+  - url: http://ms-auth:3001
+    description: ms-auth
+security:
+  - InternalKey: []
+paths:
+  /internal/funcionarios/{id}:
+    get:
+      tags: [ms-personal]
+      summary: Obtiene un funcionario por id
+      description: Consumido por ms-vacaciones, ms-contratos, ms-boletas y ms-auth (validación al crear usuario).
+      servers: [{ url: "http://ms-personal:3002" }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: Funcionario encontrado
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Funcionario" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+  /internal/funcionarios:
+    get:
+      tags: [ms-personal]
+      summary: Lista funcionarios por estado y rango de actividad
+      description: |
+        Con activosDesde/activosHasta devuelve a quienes estuvieron activos en algún momento del rango:
+        fechaIngreso <= activosHasta Y (fechaBaja es nula O fechaBaja >= activosDesde).
+        Consumido principalmente por ms-boletas para armar la planilla de un periodo.
+      servers: [{ url: "http://ms-personal:3002" }]
+      parameters:
+        - name: estado
+          in: query
+          schema: { $ref: "#/components/schemas/EstadoFuncionario" }
+        - name: activosDesde
+          in: query
+          schema: { type: string, format: date }
+          example: "2026-11-01"
+        - name: activosHasta
+          in: query
+          schema: { type: string, format: date }
+          example: "2026-11-30"
+        - name: page
+          in: query
+          schema: { type: integer, minimum: 1, default: 1 }
+        - name: pageSize
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 200, default: 100 }
+      responses:
+        "200":
+          description: Lista paginada
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, page, pageSize, total]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: "#/components/schemas/Funcionario" }
+                  page: { type: integer }
+                  pageSize: { type: integer }
+                  total: { type: integer }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+  /internal/usuarios/{id}/estado:
+    patch:
+      tags: [ms-auth]
+      summary: Cambia el estado de un usuario
+      description: Lo invoca ms-personal al dar de baja (o reactivar) un funcionario. Idempotente.
+      servers: [{ url: "http://ms-auth:3001" }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [estado]
+              properties:
+                estado: { type: string, enum: [ACTIVO, INACTIVO] }
+                motivo: { type: string, maxLength: 200, example: "Baja del funcionario" }
+      responses:
+        "200":
+          description: Estado actualizado
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Usuario" }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "404": { $ref: "#/components/responses/NotFound" }
+components:
+  securitySchemes:
+    InternalKey:
+      type: apiKey
+      in: header
+      name: X-Internal-Key
+  schemas:
+    EstadoFuncionario:
+      type: string
+      enum: [EN_PRUEBA, RATIFICADO, BAJA]
+      description: RATIFICADO = superó el periodo de prueba (lo registra RRHH, HU-11). Ver supuesto S-04.
+    Funcionario:
+      type: object
+      required: [id, nombres, apellidos, documentoIdentidad, fechaIngreso, diasPrueba, area, cargo, remuneracion, estado]
+      properties:
+        id: { type: string, format: uuid }
+        usuarioId: { type: string, format: uuid, nullable: true }
+        nombres: { type: string }
+        apellidos: { type: string }
+        documentoIdentidad: { type: string }
+        fechaIngreso: { type: string, format: date }
+        diasPrueba: { type: integer, minimum: 1, maximum: 90, example: 90, description: "Periodo de prueba en días (HU-08). Lo usan HU-11 y HU-18." }
+        fechaRatificacion: { type: string, format: date, nullable: true }
+        fechaBaja: { type: string, format: date, nullable: true }
+        area: { type: string, example: "Operaciones" }
+        cargo: { type: string, example: "Analista" }
+        remuneracion:
+          type: object
+          required: [monto, moneda]
+          properties:
+            monto: { type: number, format: double, example: 4500.00 }
+            moneda: { type: string, example: BOB }
+        estado: { $ref: "#/components/schemas/EstadoFuncionario" }
+    Usuario:
+      type: object
+      required: [id, estado]
+      properties:
+        id: { type: string, format: uuid }
+        estado: { type: string, enum: [ACTIVO, INACTIVO] }
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code: { type: string, example: VALIDATION_ERROR }
+        message: { type: string }
+        details: { type: object, additionalProperties: true, nullable: true }
+  responses:
+    ValidationError:
+      description: Entrada inválida (code VALIDATION_ERROR)
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    Unauthorized:
+      description: Falta o es inválida X-Internal-Key (code UNAUTHORIZED)
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }
+    NotFound:
+      description: Recurso no encontrado (code NOT_FOUND)
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Error" }

@@ -1,0 +1,38 @@
+@startuml C4_Nivel3_ms_boletas
+!include <C4/C4_Component>
+LAYOUT_WITH_LEGEND()
+title Nivel 3 – Componentes: ms-boletas
+
+Container(gw, "API Gateway", "Express", "Enruta /api/boletas")
+Container(personal, "ms-personal", "Express", "GET /internal/funcionarios?estado=&activosDesde=&activosHasta=")
+Container(gotenberg, "Gotenberg", "Docker", "HTML → PDF")
+ContainerDb(db, "PostgreSQL", "schema boletas", "")
+
+Container_Boundary(ms, "ms-boletas") {
+  Component(route, "boleta.routes", "Express Router", "Rutas públicas. Validación Zod y control de rol")
+  Component(ctrl, "BoletaController", "Controller", "Traduce HTTP ↔ DTO. Sin lógica de negocio")
+  Component(svc, "BoletaService", "Service", "Orquesta: generar periodo, consultar, descargar PDF")
+  Component(calc, "PlanillaCalculator", "Dominio (puro)", "Reglas de cálculo de pago. Sin I/O, 100% testeable")
+  Component(render, "BoletaHtmlRenderer", "Template HTML", "Plantilla de la boleta con datos del cálculo")
+  Component(repo, "BoletaRepository", "TypeORM Repository", "Pagos y boletas (metadatos). Único acceso a BD")
+  Component(prepo, "BoletaPdfRepository", "TypeORM Repository", "PDF en bytea, tabla separada, con hash SHA-256")
+  Component(pclient, "PersonalClient", "HTTP client", "Consulta funcionarios activos del periodo")
+  Component(gclient, "PdfClient", "HTTP client", "Llama a Gotenberg (timeout y reintento)")
+  Component(zod, "Schemas Zod + ErrorHandler", "Middleware", "Formato { code, message, details }")
+}
+
+Rel(gw, route, "HTTP")
+Rel(route, zod, "Usa")
+Rel(route, ctrl, "Delega")
+Rel(ctrl, svc, "Invoca")
+Rel(svc, calc, "Calcula pagos")
+Rel(svc, render, "Arma HTML")
+Rel(svc, repo, "Persiste/consulta")
+Rel(svc, prepo, "Guarda/lee PDF")
+Rel(svc, pclient, "Obtiene funcionarios")
+Rel(svc, gclient, "Genera PDF")
+Rel(pclient, personal, "REST interno")
+Rel(gclient, gotenberg, "HTTP multipart")
+Rel(repo, db, "TypeORM")
+Rel(prepo, db, "TypeORM")
+@enduml

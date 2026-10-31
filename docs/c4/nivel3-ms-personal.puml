@@ -1,0 +1,40 @@
+@startuml C4_Nivel3_ms_personal
+!include <C4/C4_Component>
+LAYOUT_WITH_LEGEND()
+title Nivel 3 – Componentes: ms-personal
+
+Container(gw, "API Gateway", "Express", "Enruta /api/funcionarios")
+Container(consumers, "ms-vacaciones / ms-contratos / ms-boletas", "Express", "Consumidores internos")
+Container(auth, "ms-auth", "Express", "Usuarios y roles")
+ContainerDb(db, "PostgreSQL", "schema personal", "")
+
+Container_Boundary(ms, "ms-personal") {
+  Component(route, "funcionario.routes", "Express Router", "Rutas públicas. Aplica middleware de validación Zod y de rol")
+  Component(iroute, "internal.routes", "Express Router", "Rutas /internal/* protegidas con X-Internal-Key")
+  Component(ctrl, "FuncionarioController", "Controller", "Traduce HTTP ↔ DTO. Sin lógica de negocio")
+  Component(ictrl, "InternalFuncionarioController", "Controller", "Lectura para otros servicios")
+  Component(svc, "FuncionarioService", "Service", "Reglas: alta, modificación (área, cargo, remuneración), baja, estados")
+  Component(repo, "FuncionarioRepository", "TypeORM Repository", "CRUD de funcionarios. Único punto con acceso a BD")
+  Component(hrepo, "HistorialLaboralRepository", "TypeORM Repository", "Historial de cambios de área/cargo/remuneración")
+  Component(crepo, "CatalogoRepository", "TypeORM Repository", "Áreas y cargos (schema personal)")
+  Component(aclient, "AuthClient", "HTTP client", "PATCH /internal/usuarios/:id/estado con timeout y reintento")
+  Component(zod, "Schemas Zod + ErrorHandler", "Middleware", "Valida entrada y responde { code, message, details }")
+}
+
+Rel(gw, route, "HTTP")
+Rel(consumers, iroute, "GET /internal/funcionarios...")
+Rel(auth, iroute, "GET /internal/funcionarios/:id (validar al crear usuario)")
+Rel(route, zod, "Usa")
+Rel(route, ctrl, "Delega")
+Rel(iroute, ictrl, "Delega")
+Rel(ctrl, svc, "Invoca")
+Rel(ictrl, svc, "Invoca")
+Rel(svc, repo, "Persiste/consulta")
+Rel(svc, hrepo, "Registra historial")
+Rel(svc, crepo, "Valida área y cargo")
+Rel(svc, aclient, "En baja: desactivar usuario")
+Rel(aclient, auth, "REST interno")
+Rel(repo, db, "TypeORM")
+Rel(hrepo, db, "TypeORM")
+Rel(crepo, db, "TypeORM")
+@enduml

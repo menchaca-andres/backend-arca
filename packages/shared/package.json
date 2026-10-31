@@ -1,0 +1,15 @@
+{
+  "name": "@arca/shared",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Código común de los servicios de ARCA",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "prepare": "tsc"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
+}

@@ -1,0 +1,51 @@
+@startuml C4_Nivel2_Contenedores
+!include <C4/C4_Container>
+LAYOUT_WITH_LEGEND()
+title Nivel 2 – Contenedores: Sistema de Gestión Humana
+
+Person(rrhh, "RRHH")
+Person(direccion, "Dirección")
+Person(funcionario, "Funcionario")
+Person(admin, "Admin")
+System_Ext(core, "Sistema Core", "Sistema externo de ARCA")
+
+System_Boundary(gh, "Sistema de Gestión Humana") {
+  Container(spa, "Frontend", "SPA (React + Vite)", "Interfaz con impacto visual para el Directorio")
+  Container(gw, "API Gateway", "Node.js + Express", "Punto único de entrada: enruta /api/*, valida JWT, propaga identidad, registra auditoría y agrega el dashboard. No expone /internal/*")
+  Container(auth, "ms-auth", "Node.js + TypeScript + Express", "Usuarios, roles, login y emisión de JWT")
+  Container(personal, "ms-personal", "Node.js + TypeScript + Express", "Alta/modificación/baja de funcionarios, áreas y cargos")
+  Container(vac, "ms-vacaciones", "Node.js + TypeScript + Express", "Elegibilidad, solicitudes y saldo de vacaciones")
+  Container(contr, "ms-contratos", "Node.js + TypeScript + Express", "Contratos parametrizables y su PDF")
+  Container(bol, "ms-boletas", "Node.js + TypeScript + Express", "Cálculo y almacenamiento de pagos y boletas")
+  Container(gotenberg, "Gotenberg", "Docker (Chromium)", "Convierte HTML a PDF (contratos y boletas)")
+  ContainerDb(db, "PostgreSQL (nube)", "PostgreSQL", "Una instancia, 6 schemas: auth, personal, vacaciones, contratos, boletas, auditoria")
+}
+
+Rel(rrhh, spa, "Usa", "HTTPS")
+Rel(direccion, spa, "Usa", "HTTPS")
+Rel(funcionario, spa, "Usa", "HTTPS")
+Rel(admin, spa, "Usa", "HTTPS")
+Rel(spa, gw, "Llama a la API", "REST/JSON, JWT")
+
+Rel(gw, auth, "Enruta /api/auth, /api/usuarios", "REST")
+Rel(gw, personal, "Enruta /api/funcionarios", "REST")
+Rel(gw, vac, "Enruta /api/vacaciones", "REST")
+Rel(gw, contr, "Enruta /api/contratos", "REST")
+Rel(gw, bol, "Enruta /api/boletas", "REST")
+
+Rel(personal, auth, "Desactiva usuario al dar de baja", "PATCH /internal/usuarios/:id/estado")
+Rel(auth, personal, "Valida funcionario al crear usuario", "GET /internal/funcionarios/:id")
+Rel(vac, personal, "Consulta funcionario", "GET /internal/funcionarios/:id")
+Rel(contr, personal, "Consulta funcionario", "GET /internal/funcionarios/:id")
+Rel(bol, personal, "Consulta funcionarios activos del periodo", "GET /internal/funcionarios?...")
+Rel(contr, gotenberg, "Genera PDF del contrato", "HTTP multipart")
+Rel(bol, gotenberg, "Genera PDF de la boleta", "HTTP multipart")
+
+Rel(auth, db, "Lee/escribe schema auth", "TypeORM")
+Rel(personal, db, "Lee/escribe schema personal", "TypeORM")
+Rel(gw, db, "Inserta en schema auditoria", "TypeORM")
+Rel(vac, db, "Lee/escribe schema vacaciones", "TypeORM")
+Rel(contr, db, "Lee/escribe schema contratos (PDF bytea)", "TypeORM")
+Rel(bol, db, "Lee/escribe schema boletas (PDF bytea)", "TypeORM")
+Rel_R(personal, core, "Integración futura (fuera del MVP, S-01)", "REST")
+@enduml

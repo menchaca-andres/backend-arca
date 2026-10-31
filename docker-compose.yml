@@ -1,0 +1,54 @@
+# La base es Supabase (ADR-004): cada servicio toma DATABASE_URL de su propio .env
+services:
+  gateway:
+    build: { context: ., dockerfile: gateway/Dockerfile }
+    env_file: [{ path: gateway/.env, required: false }]
+    environment:
+      PORT: 8080
+      AUTH_SERVICE_URL: http://ms-auth:3001
+      PERSONAL_SERVICE_URL: http://ms-personal:3002
+      VACACIONES_SERVICE_URL: http://ms-vacaciones:3003
+      CONTRATOS_SERVICE_URL: http://ms-contratos:3004
+      BOLETAS_SERVICE_URL: http://ms-boletas:3005
+    ports: ["8080:8080"]
+    depends_on: [ms-auth, ms-personal, ms-vacaciones, ms-contratos, ms-boletas]
+
+  ms-auth:
+    build: { context: ., dockerfile: services/ms-auth/Dockerfile }
+    env_file: [{ path: services/ms-auth/.env, required: false }]
+    environment:
+      PORT: 3001
+      PERSONAL_SERVICE_URL: http://ms-personal:3002
+
+  ms-personal:
+    build: { context: ., dockerfile: services/ms-personal/Dockerfile }
+    env_file: [{ path: services/ms-personal/.env, required: false }]
+    environment:
+      PORT: 3002
+      AUTH_SERVICE_URL: http://ms-auth:3001
+
+  ms-vacaciones:
+    build: { context: ., dockerfile: services/ms-vacaciones/Dockerfile }
+    env_file: [{ path: services/ms-vacaciones/.env, required: false }]
+    environment:
+      PORT: 3003
+      PERSONAL_SERVICE_URL: http://ms-personal:3002
+
+  ms-contratos:
+    build: { context: ., dockerfile: services/ms-contratos/Dockerfile }
+    env_file: [{ path: services/ms-contratos/.env, required: false }]
+    environment:
+      PORT: 3004
+      PERSONAL_SERVICE_URL: http://ms-personal:3002
+      GOTENBERG_URL: http://gotenberg:3000
+
+  ms-boletas:
+    build: { context: ., dockerfile: services/ms-boletas/Dockerfile }
+    env_file: [{ path: services/ms-boletas/.env, required: false }]
+    environment:
+      PORT: 3005
+      PERSONAL_SERVICE_URL: http://ms-personal:3002
+      GOTENBERG_URL: http://gotenberg:3000
+
+  gotenberg:
+    image: gotenberg/gotenberg:8

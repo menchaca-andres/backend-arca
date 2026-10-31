@@ -1,0 +1,19 @@
+@startuml C4_Nivel1_Contexto
+!include <C4/C4_Context>
+LAYOUT_WITH_LEGEND()
+title Nivel 1 – Contexto: Sistema de Gestión Humana (ARCA Ltda.)
+
+Person(rrhh, "RRHH", "Altas, modificaciones y bajas de personal; vacaciones; contratos; boletas de pago")
+Person(direccion, "Dirección", "Revisa el sistema y la información consolidada de gestión humana")
+Person(funcionario, "Funcionario", "Consulta su ficha, sus vacaciones, su contrato y sus boletas")
+Person(admin, "Admin", "Administra usuarios, roles y parámetros del sistema")
+
+System(gh, "Sistema de Gestión Humana", "Gestiona personal, vacaciones, contratos y boletas de pago sobre microservicios")
+System_Ext(core, "Sistema Core", "Sistema de gama mundial que gestiona las áreas operativas de ARCA (microservicios). No incluye gestión humana")
+
+Rel(rrhh, gh, "Gestiona personal, vacaciones, contratos y boletas", "HTTPS")
+Rel(direccion, gh, "Consulta y revisa información", "HTTPS")
+Rel(funcionario, gh, "Consulta su información y documentos", "HTTPS")
+Rel(admin, gh, "Administra usuarios y roles", "HTTPS")
+Rel_R(gh, core, "Integración futura (fuera del alcance del MVP, ver supuesto S-01)", "REST")
+@enduml
