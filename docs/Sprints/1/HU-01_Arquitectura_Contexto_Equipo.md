@@ -10,12 +10,12 @@ Este documento resume lo definido en la HU-01 para que todo el equipo construya 
 
 | CA | Entregable | Archivo | Estado |
 |----|-----------|---------|--------|
-| CA-01 | C4 Nivel 1 – Contexto (RRHH, Dirección, Funcionario, Admin; Core como externo) | `docs/c4/nivel1-contexto.puml` | Hecho |
-| CA-02 | C4 Nivel 2 – Contenedores (frontend, gateway, 5 microservicios, Gotenberg, PostgreSQL con 6 schemas) | `docs/c4/nivel2-contenedores.puml` | Hecho |
-| CA-03 | C4 Nivel 3 – Componentes de `ms-personal` y `ms-boletas` (route → controller → service → repository) | `docs/c4/nivel3-ms-personal.puml`, `nivel3-ms-boletas.puml` | Hecho |
-| CA-04 | 7 ADRs | `docs/adr/ADR-001` … `ADR-007` | Hecho |
-| CA-05 | Contratos internos OpenAPI | `docs/api/internal-contracts.openapi.yaml` | Hecho (borrador) |
-| CA-06 | Tabla de supuestos enviada al ingeniero y respuestas registradas | `docs/supuestos-negocio.md` | Hecho por decisión del equipo: no se envía; se trabaja con las propuestas por defecto |
+| CA-01 | C4 Nivel 1 – Contexto (RRHH, Dirección, Funcionario, Admin; Core como externo) | `docs/Sprints/1/c4/nivel1-contexto.puml` | Hecho |
+| CA-02 | C4 Nivel 2 – Contenedores (frontend, gateway, 5 microservicios, Gotenberg, PostgreSQL con 6 schemas) | `docs/Sprints/1/c4/nivel2-contenedores.puml` | Hecho |
+| CA-03 | C4 Nivel 3 – Componentes de `ms-personal` y `ms-boletas` (route → controller → service → repository) | `docs/Sprints/1/c4/nivel3-ms-personal.puml`, `nivel3-ms-boletas.puml` | Hecho |
+| CA-04 | 7 ADRs | `docs/Sprints/1/adr/ADR-001` … `ADR-007` | Hecho |
+| CA-05 | Contratos internos OpenAPI | `docs/Sprints/1/api/internal-contracts.openapi.yaml` | Hecho (borrador) |
+| CA-06 | Tabla de supuestos enviada al ingeniero y respuestas registradas | `docs/Sprints/1/supuestos-negocio.md` | Hecho por decisión del equipo: no se envía; se trabaja con las propuestas por defecto |
 
 Para ver los diagramas: abrir los `.puml` con la extensión *PlantUML* de VS Code o pegarlos en plantuml.com. Usan la librería C4 incluida en PlantUML (`!include <C4/...>`).
 
@@ -114,7 +114,7 @@ ms-<nombre>/
 
 ## 6. Pendientes y puntos a confirmar
 
-1. **CA-06 (resuelto 30/10):** el equipo decidió trabajar con las propuestas por defecto de `docs/supuestos-negocio.md` sin esperar respuesta. Si el ingeniero corrige alguna, se ajusta la HU afectada.
+1. **CA-06 (resuelto 30/10):** el equipo decidió trabajar con las propuestas por defecto de `docs/Sprints/1/supuestos-negocio.md` sin esperar respuesta. Si el ingeniero corrige alguna, se ajusta la HU afectada.
 2. **ADR-004 (resuelto 30/10):** Supabase. Ojo: el proyecto gratuito se pausa por inactividad; confirmarlo activo antes de revisiones y de la demo.
 3. **Sexto schema (resuelto):** es `auditoria`, según el backlog (HU-02 CA-01, HU-24). Se descartó `catalogos`: áreas y cargos van en `personal` y los feriados en `vacaciones`, para que cada servicio sea dueño de lo que usa.
 4. **Frontend (resuelto):** React + Vite, como dice el stack del backlog.

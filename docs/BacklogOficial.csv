@@ -1,0 +1,1156 @@
+﻿Resumen,Clave de incidencia,ID de la incidencia,Tipo de Incidencia,Estado,Clave del proyecto,Nombre del proyecto,Tipo de proyecto,Responsable del proyecto,ID del responsable del proyecto,Descripción del proyecto,Prioridad,Resolución,Persona asignada,ID de la persona asignada,Informador,ID del informador,Creador,ID del creador,Creada,Actualizada,Vista por Última Vez,Resuelta,Fecha de vencimiento,Votos,Etiquetas,Etiquetas,Descripción,Entorno,Interesados,ID de los interesados,Estimación original,Trabajo restante estimado,Tiempo Trabajado,Relación de trabajo,Σ Estimación original,Σ Trabajo restante estimado,Σ Tiempo empleado,Nivel de Seguridad,Enlace a la incidencia interna (Blocks),Enlace a la incidencia interna (Blocks),Enlace a la incidencia interna (Blocks),Enlace a la incidencia interna (Blocks),Enlace a la incidencia interna (Blocks),Enlace a la incidencia interna (Blocks),Enlace a la incidencia interna (Blocks),Enlace de incidencia saliente (Blocks),Adjunto,Adjunto,Campo personalizado (Clasificación),Campo personalizado (Color de la incidencia),Campo personalizado (Fecha de inicio),Sprint,Campo personalizado (Story point estimate),Campo personalizado (Team),Campo personalizado (Vulnerabilidad),Campo personalizado (development),Categoría de estado,Categoría de estado cambiada,Principal,Clave principal,Parent summary
+HU-01 Definir arquitectura C4 y decisiones arquitectónicas,AR3-1,10340,Historia,Listo,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,Listo,ROY BRAYAN ALARCON CHAMBI,712020:dbd21d3d-4bd1-4bdd-a69a-3dc16aa345d7,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,29/oct/26 1:38 PM,28/oct/26 2:45 PM,29/oct/26 1:38 PM,,0,Sprint1,,"Como equipo de desarrollo, queremos definir la arquitectura de microservicios del sistema de Gestión Humana con el modelo C4 y registrar las decisiones clave, para que todos construyan sobre la misma estructura y podamos defenderla ante el Directorio.
+
+*Épica:* E1 Fundaciones de arquitectura | *Responsable:* I1 | *Depende de:* —
+
+----
+h3. Criterios de aceptación
+
+*CA-01:* Existe el C4 Nivel 1 (Contexto) con los actores RRHH, Dirección, Funcionario y Admin, y el Sistema Core como sistema externo.
+
+*CA-02:* Existe el C4 Nivel 2 (Contenedores) con el frontend, el API Gateway, los 5 microservicios, Gotenberg y PostgreSQL con sus 6 schemas.
+
+*CA-03:* Existe el C4 Nivel 3 (Componentes) de al menos {{ms-personal}} y {{ms-boletas}}, mostrando las capas route → controller → service → repository.
+
+*CA-04:* Hay un ADR por cada decisión: microservicios con un bounded context por módulo, schema por servicio, comunicación REST síncrona, proveedor de Postgres en la nube, TypeORM como ORM, PDF guardado en BD (bytea), Gotenberg.
+
+*CA-05:* Están definidos los contratos internos entre servicios (borrador OpenAPI): {{GET /internal/funcionarios/:id}} y {{GET /internal/funcionarios?estado=&activosDesde=&activosHasta=}} de {{ms-personal}}, y {{PATCH /internal/usuarios/:id/estado}} de {{ms-auth}}.
+
+*CA-06:* La tabla de supuestos de negocio está enviada al ingeniero y sus respuestas quedan registradas.
+
+----
+*Fuera de esta HU:* el MER (HU-02) y la documentación final de APIs (HU-26).
+
+----
+h3. Definition of Done
+
+☐ Cumple todos sus criterios de aceptación
+☐ Código en capas: route → controller → service → repository (sin saltarse capas); TypeORM solo dentro de los repositories y sin SQL crudo
+☐ Entrada validada con Zod y errores con el formato común { code, message, details }
+☐ Pruebas unitarias de las reglas de negocio + al menos una prueba Supertest por endpoint
+☐ Endpoints documentados con OpenAPI
+☐ Corre con docker compose up sin pasos manuales
+☐ PR revisado y aprobado por otro integrante
+☐ Demo de la HU mostrada al equipo",,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,AR3-2,AR3-3,AR3-4,AR3-5,,,,,29/oct/26 1:38 PM;ug:7b16f8fb-cb53-4004-bf4f-3fc09dc238e4;HU-01_Arquitectura_Contexto_Equipo.md;https://ucb-team-ypa04308.atlassian.net/rest/api/3/attachment/content/10000,29/oct/26 1:38 PM;ug:7b16f8fb-cb53-4004-bf4f-3fc09dc238e4;KATA ARQUITECTÓNICO_TercerDesafio_2_2026.pdf;https://ucb-team-ypa04308.atlassian.net/rest/api/3/attachment/content/10001,0|i0003p:,,,AR3 Sprint 1,5.0,,,{},Listo,29/oct/26 1:38 PM,,,
+T1_HU01 Diagramas C4,AR3-2,10341,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,28/oct/26 2:37 PM,,,0,I1,Sprint1,Diagramar los tres primeros niveles del modelo C4.,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-1,,,0|i00042:,,,,,,,{},Por hacer,28/oct/26 2:26 PM,,,
+T2_HU01 Redactar ADRs,AR3-3,10342,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I1,Sprint1,"Registrar cada decisión arquitectónica con contexto, alternativas y consecuencias.",,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-1,,,0|i00047:,,,,,,,{},Por hacer,28/oct/26 2:26 PM,,,
+T3_HU01 Definir contratos internos entre servicios,AR3-4,10343,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I1,Sprint1,Dejar acordados los endpoints internos para que el equipo trabaje en paralelo.,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-1,,,0|i0004j:,,,,,,,{},Por hacer,28/oct/26 2:26 PM,,,
+T4_HU01 Validar supuestos con el ingeniero,AR3-5,10344,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I1,Sprint1,Enviar la tabla de supuestos de negocio y actualizar el backlog con las respuestas.,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-1,,,0|i0004n:,,,,,,,{},Por hacer,28/oct/26 2:26 PM,,,
+HU-02 Diseñar modelo de datos y migraciones por servicio,AR3-6,10345,Historia,En curso,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,30/oct/26 7:43 PM,30/oct/26 7:46 PM,,,0,I2,Sprint1,"Como equipo de desarrollo, queremos diseñar el modelo entidad-relación de cada microservicio y crear sus migraciones, para que cada módulo tenga su propia base relacional sin compartir tablas con otro.
+
+*Épica:* E1 Fundaciones de arquitectura | *Responsable:* I2 | *Depende de:* HU-01, HU-03
+
+----
+
+h3. Criterios de aceptación
+
+*CA-01:* Hay un MER por schema: {{auth}}, {{personal}}, {{vacaciones}}, {{contratos}}, {{boletas}}, {{auditoria}}.
+
+*CA-02:* {{personal}} tiene {{area}}, {{cargo}} (con {{salario_min}} y {{salario_max}}), {{funcionario}} y {{asignacion_laboral}} (con {{vigente_desde}} y {{vigente_hasta}}).
+
+*CA-03:* Solo puede existir *una* asignación vigente por funcionario (índice único parcial donde {{vigente_hasta IS NULL}}).
+
+*CA-04:* {{funcionario.ci}} es único y {{estado}} solo acepta {{EN_PRUEBA}}, {{RATIFICADO}} o {{BAJA}}.
+
+*CA-05:* {{vacaciones}} tiene {{feriado}} y {{solicitud_vacacion}}. El saldo no se guarda: se calcula.
+
+*CA-06:* {{contratos}} tiene {{plantilla}}, {{plantilla_version}} y {{contrato}} (con snapshot de datos, PDF y hash).
+
+“El PDF va en una tabla aparte, contrato_pdf, con la columna bytea marcada select: false.”
+
+*CA-07:* {{boletas}} tiene {{concepto}}, {{periodo}}, {{novedad}}, {{boleta}} y {{boleta_detalle}}, con {{version}} e {{id_boleta_original}} para rectificaciones.
+
+“El PDF de cada boleta va en boleta_pdf, también con select: false.”
+
+*CA-08:* No hay llaves foráneas entre schemas. Las referencias a otro servicio (por ejemplo {{id_funcionario}} en {{boletas}}) son columnas simples con índice.
+
+*CA-09:* Cada servicio tiene su {{DataSource}} de TypeORM apuntando a su schema y su migración inicial en {{src/migrations/}}, aplicada en la BD de la nube con {{typeorm migration:run}}.
+
+*CA-10:* Cada tabla tiene su entity de TypeORM en {{src/entities/}}, con columnas, relaciones (solo dentro del mismo schema) y restricciones declaradas en la entity.
+
+----
+
+*Fuera de esta HU:* crear la BD en la nube y los usuarios por schema (HU-03); los datos semilla de demo (HU-27).
+
+----
+
+h3. Definition of Done
+
+☐ Cumple todos sus criterios de aceptación
+☐ Código en capas: route → controller → service → repository (sin saltarse capas); TypeORM solo dentro de los repositories y sin SQL crudo
+☐ Entrada validada con Zod y errores con el formato común { code, message, details }
+☐ Pruebas unitarias de las reglas de negocio + al menos una prueba Supertest por endpoint
+☐ Endpoints documentados con OpenAPI
+☐ Corre con docker compose up sin pasos manuales
+☐ PR revisado y aprobado por otro integrante
+☐ Demo de la HU mostrada al equipo",,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,AR3-7,AR3-8,AR3-9,AR3-10,,,,,,,0|i0004y:,,,AR3 Sprint 1,8.0,,,{},En curso,30/oct/26 7:41 PM,,,
+T1_HU02 Diseño del MER,AR3-7,10346,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I2,Sprint1,Modelar las entidades de cada bounded context.,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-6,,,0|i00051:,,,,,,,{},Por hacer,28/oct/26 2:26 PM,,,
+T2_HU02 Entities y migraciones con TypeORM,AR3-8,10347,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I2,Sprint1,Traducir el MER a entities de TypeORM y generar las migraciones.,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-6,,,0|i0005b:,,,,,,,{},Por hacer,28/oct/26 2:26 PM,,,
+T3_HU02 Repositories base,AR3-9,10348,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I2,Sprint1,Crear la capa de acceso a datos que usarán los services.,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-6,,,0|i0005d:,,,,,,,{},Por hacer,28/oct/26 2:26 PM,,,
+T4_HU02 Semilla mínima de desarrollo y diccionario de datos,AR3-10,10349,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I2,Sprint1,"3 áreas, 5 cargos y 5 funcionarios para que el Sprint 2 no se bloquee; diccionario en docs/data-model.md.",,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-6,,,0|i0005m:,,,,,,,{},Por hacer,28/oct/26 2:26 PM,,,
+HU-03 Configurar infraestructura y plantilla de microservicio,AR3-11,10350,Historia,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,diego.coaquira,712020:550ea436-301e-466a-979d-dd61a44653c0,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,30/oct/26 7:48 PM,30/oct/26 7:47 PM,,,0,I3,Sprint1,"Como equipo de desarrollo, queremos un monorepo con Docker Compose, la BD en la nube y una plantilla común de microservicio, para que cualquiera levante el sistema completo con un comando y todos los servicios tengan la misma estructura.
+
+*Épica:* E1 Fundaciones de arquitectura | *Responsable:* I3 | *Depende de:* HU-01
+
+----
+
+h3. Criterios de aceptación
+
+*CA-01:* El monorepo tiene {{apps/frontend}}, {{gateway/}}, {{services/ms-*}} y {{packages/shared}}.
+
+*CA-02:* {{docker compose up}} levanta el gateway, los 5 servicios, el frontend y Gotenberg.
+
+*CA-03:* La BD está creada en la nube con los 6 schemas y un usuario por servicio que solo tiene permisos sobre su schema.
+
+*CA-04:* Cada servicio sigue la plantilla src/{routes, controllers, services, repositories, entities, schemas, clients, middlewares, config, migrations}.
+
+*CA-05:* Cada servicio expone {{GET /health}} que verifica su conexión a la BD.
+
+*CA-06:* El gateway enruta {{/api/<servicio>/*}} al servicio correcto. Los servicios no exponen puertos fuera de la red de Docker.
+
+*CA-07:* {{packages/shared}} tiene el logger, el manejador de errores y el formato común de error.
+
+*CA-08:* Las credenciales van en {{.env}} (con {{.env.example}} en el repo) y nunca en el código.
+
+*CA-09:* _Las rutas /internal/_ no pasan por el gateway y rechazan con 401 toda petición sin la cabecera X-Internal-Key correcta.
+
+*CA-10:* packages/shared trae un cliente HTTP base para llamadas entre servicios con timeout de 3 s, un reintento y error 503 si el otro servicio no responde.
+
+----
+
+*Fuera de esta HU:* la validación de JWT en el gateway (HU-05) y la auditoría (HU-24).
+
+----
+
+h3. Definition of Done
+
+☐ Cumple todos sus criterios de aceptación
+☐ Código en capas: route → controller → service → repository (sin saltarse capas); TypeORM solo dentro de los repositories y sin SQL crudo
+☐ Entrada validada con Zod y errores con el formato común { code, message, details }
+☐ Pruebas unitarias de las reglas de negocio + al menos una prueba Supertest por endpoint
+☐ Endpoints documentados con OpenAPI
+☐ Corre con docker compose up sin pasos manuales
+☐ PR revisado y aprobado por otro integrante
+☐ Demo de la HU mostrada al equipo",,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,AR3-12,AR3-13,AR3-14,AR3-15,AR3-16,AR3-17,,,,,0|i0005n:,,,AR3 Sprint 1,8.0,,,{},Por hacer,28/oct/26 2:26 PM,,,
+T1_HU03 Monorepo,AR3-12,10351,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I3,Sprint1,Estructura base del repositorio.,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-11,,,0|i0005v:,,,,,,,{},Por hacer,28/oct/26 2:26 PM,,,
+T2_HU03 Base de datos en la nube,AR3-13,10352,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I3,Sprint1,"Crear la instancia, schemas y usuarios por servicio.",,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-11,,,0|i0006a:,,,,,,,{},Por hacer,28/oct/26 2:26 PM,,,
+T3_HU03 Plantilla de microservicio,AR3-14,10353,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I3,Sprint1,Esqueleto común que replican los 5 servicios.,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-11,,,0|i0006h:,,,,,,,{},Por hacer,28/oct/26 2:26 PM,,,
+T4_HU03 API Gateway,AR3-15,10354,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I3,Sprint1,Punto único de entrada al sistema.,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-11,,,0|i0006v:,,,,,,,{},Por hacer,28/oct/26 2:26 PM,,,
+T5_HU03 Docker,AR3-16,10355,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I3,Sprint1,Contenedores y orquestación local.,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-11,,,0|i00071:,,,,,,,{},Por hacer,28/oct/26 2:26 PM,,,
+T6_HU03 Pipeline de CI,AR3-17,10356,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I3,Sprint1,Lint + tests en cada PR.,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-11,,,0|i0007e:,,,,,,,{},Por hacer,28/oct/26 2:26 PM,,,
+HU-04 Construir la base del frontend,AR3-18,10357,Historia,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,fernando.catari,712020:d7ceaf02-5505-43d3-84ad-65b05b7d1fb2,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:40 PM,,,,0,I4,Sprint1,"Como usuario del sistema, quiero una interfaz moderna y consistente con navegación por módulos, para usar el sistema de forma clara y que el Directorio vea un producto profesional.
+
+*Épica:* E1 Fundaciones de arquitectura | *Responsable:* I4 | *Depende de:* HU-03
+
+----
+h3. Criterios de aceptación
+
+*CA-01:* Existe el layout principal: barra lateral con Personal, Vacaciones, Contratos, Boletas y Dashboard, más una barra superior con el usuario y su rol.
+
+*CA-02:* Hay un design system mínimo: colores de ARCA, tipografía y componentes de tabla, formulario, modal, toast, badge de estado y estado vacío.
+
+*CA-03:* Existe un cliente HTTP único que apunta al gateway, adjunta el token y maneja los errores con el formato común.
+
+*CA-04:* Las rutas protegidas redirigen al login si no hay sesión (la pantalla de login la hace HU-05).
+
+*CA-05:* El menú muestra u oculta módulos según el rol que llega en la sesión.
+
+*CA-06:* Es responsive desde 375 px de ancho.
+
+*CA-07:* Moneda en Bs y fechas en formato dd/mm/aaaa en toda la app.
+
+----
+*Fuera de esta HU:* la pantalla de login (HU-05) y las pantallas de cada módulo (cada HU hace la suya).
+
+----
+h3. Definition of Done
+
+☐ Cumple todos sus criterios de aceptación
+☐ Código en capas: route → controller → service → repository (sin saltarse capas); TypeORM solo dentro de los repositories y sin SQL crudo
+☐ Entrada validada con Zod y errores con el formato común { code, message, details }
+☐ Pruebas unitarias de las reglas de negocio + al menos una prueba Supertest por endpoint
+☐ Endpoints documentados con OpenAPI
+☐ Corre con docker compose up sin pasos manuales
+☐ PR revisado y aprobado por otro integrante
+☐ Demo de la HU mostrada al equipo",,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,AR3-19,AR3-20,AR3-21,AR3-22,AR3-23,,,,,,0|i0007j:,,,AR3 Sprint 1,8.0,,,{},Por hacer,28/oct/26 2:26 PM,,,
+T1_HU04 Proyecto React + Vite con Tailwind y shadcn/ui,AR3-19,10358,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I4,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-18,,,0|i0007v:,,,,,,,{},Por hacer,28/oct/26 2:26 PM,,,
+T2_HU04 Design system,AR3-20,10359,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I4,Sprint1,Tokens y componentes reutilizables.,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-18,,,0|i0007z:,,,,,,,{},Por hacer,28/oct/26 2:26 PM,,,
+T3_HU04 Layout y navegación,AR3-21,10360,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I4,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-18,,,0|i0008a:,,,,,,,{},Por hacer,28/oct/26 2:26 PM,,,
+T4_HU04 Cliente HTTP,AR3-22,10361,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I4,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-18,,,0|i0008d:,,,,,,,{},Por hacer,28/oct/26 2:26 PM,,,
+T5_HU04 Dockerfile del front e integración al compose,AR3-23,10362,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I4,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-18,,,0|i0008n:,,,,,,,{},Por hacer,28/oct/26 2:26 PM,,,
+HU-05 Iniciar sesión con roles,AR3-24,10363,Historia,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,LUIS ANDRES MENCHACA RIVERO,712020:e6bf34aa-6443-4e8c-afca-9823b7cb67bd,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:44 PM,28/oct/26 2:41 PM,,,0,Sprint1,,"Como usuario de ARCA, quiero iniciar sesión con mi correo y contraseña, para acceder solo a las funciones que corresponden a mi rol.
+
+*Épica:* E2 Identidad y acceso (ms-auth) | *Responsable:* I5 | *Depende de:* HU-02, HU-03
+
+----
+h3. Criterios de aceptación
+
+*CA-01:* {{POST /api/auth/login}} devuelve un JWT (8 h de vigencia) con {{sub}}, {{rol}} e {{id_funcionario}} cuando las credenciales son correctas.
+
+*CA-02:* Con credenciales incorrectas responde 401 con el mismo mensaje genérico, exista o no el correo.
+
+*CA-03:* Las contraseñas se guardan con bcrypt y nunca viajan en una respuesta.
+
+*CA-04:* Un usuario desactivado no puede iniciar sesión.
+
+*CA-05:* Tras 5 intentos fallidos seguidos, la cuenta se bloquea 15 minutos.
+
+*CA-06:* El gateway valida el JWT en todas las rutas salvo {{/api/auth/login}} y reenvía {{x-user-id}}, {{x-user-rol}} y {{x-funcionario-id}} al servicio.
+
+*CA-07:* {{packages/shared}} expone el middleware {{requireRole(...roles)}} que usan todos los servicios.
+
+*CA-08:* Existe una semilla con un usuario de cada rol: {{ADMIN}}, {{RRHH}}, {{DIRECCION}}, {{FUNCIONARIO}}.
+
+*CA-09:* La pantalla de login muestra errores claros y, al entrar, lleva al inicio según el rol.
+
+*CA-10:* Cerrar sesión borra el token del cliente.
+
+----
+*Fuera de esta HU:* crear o desactivar usuarios desde la app (HU-06).
+
+----
+h3. Definition of Done
+
+☐ Cumple todos sus criterios de aceptación
+☐ Código en capas: route → controller → service → repository (sin saltarse capas); TypeORM solo dentro de los repositories y sin SQL crudo
+☐ Entrada validada con Zod y errores con el formato común { code, message, details }
+☐ Pruebas unitarias de las reglas de negocio + al menos una prueba Supertest por endpoint
+☐ Endpoints documentados con OpenAPI
+☐ Corre con docker compose up sin pasos manuales
+☐ PR revisado y aprobado por otro integrante
+☐ Demo de la HU mostrada al equipo",,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,AR3-25,AR3-26,AR3-27,AR3-28,AR3-29,,,,,,0|i0008p:,,,AR3 Sprint 1,8.0,,,{},Por hacer,28/oct/26 2:26 PM,,,
+T1_HU05 Backend de login,AR3-25,10364,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I5,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-24,,,0|i0008y:,,,,,,,{},Por hacer,28/oct/26 2:26 PM,,,
+T2_HU05 Autorización,AR3-26,10365,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I5,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-24,,,0|i0008z:,,,,,,,{},Por hacer,28/oct/26 2:26 PM,,,
+T3_HU05 Semilla de roles y usuarios base,AR3-27,10366,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I5,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-24,,,0|i00097:,,,,,,,{},Por hacer,28/oct/26 2:26 PM,,,
+T4_HU05 Pantalla de login y manejo de sesión en el front,AR3-28,10367,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I5,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-24,,,0|i0009m:,,,,,,,{},Por hacer,28/oct/26 2:26 PM,,,
+T5_HU05 Pruebas de autenticación,AR3-29,10368,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I5,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-24,,,0|i0009t:,,,,,,,{},Por hacer,28/oct/26 2:26 PM,,,
+HU-06 Gestionar usuarios del sistema,AR3-30,10369,Historia,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,28/oct/26 2:44 PM,,,0,I5,Sprint2,"Como administrador, quiero crear cuentas de usuario y vincularlas a un funcionario, para que cada persona entre al sistema con su rol y vea solo su información.
+
+*Épica:* E2 Identidad y acceso (ms-auth) | *Responsable:* I5 | *Depende de:* HU-05, HU-08
+
+----
+h3. Criterios de aceptación
+
+*CA-01:* Solo {{ADMIN}} puede crear, listar, cambiar el rol y activar o desactivar usuarios.
+
+*CA-02:* Al crear un usuario se indica correo, rol y, si es {{FUNCIONARIO}}, el funcionario al que se vincula.
+
+*CA-03:* El funcionario vinculado debe existir y no estar de baja (se consulta a {{ms-personal}} por el contrato interno de HU-01).
+
+*CA-04:* Un funcionario no puede tener más de una cuenta y el correo es único.
+
+*CA-05:* Se genera una contraseña temporal que se muestra una sola vez al administrador.
+
+*CA-06:* Existe {{PATCH /internal/usuarios/:id/estado}} para que otros servicios desactiven una cuenta (lo usa HU-12).
+
+*CA-07:* Un {{ADMIN}} no puede desactivarse a sí mismo.
+
+----
+*Fuera de esta HU:* cambio de contraseña por el propio usuario (fuera de alcance).
+
+----
+h3. Definition of Done
+
+☐ Cumple todos sus criterios de aceptación
+☐ Código en capas: route → controller → service → repository (sin saltarse capas); TypeORM solo dentro de los repositories y sin SQL crudo
+☐ Entrada validada con Zod y errores con el formato común { code, message, details }
+☐ Pruebas unitarias de las reglas de negocio + al menos una prueba Supertest por endpoint
+☐ Endpoints documentados con OpenAPI
+☐ Corre con docker compose up sin pasos manuales
+☐ PR revisado y aprobado por otro integrante
+☐ Demo de la HU mostrada al equipo",,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,AR3-31,AR3-32,AR3-33,,,,,,,,0|i000a7:,,,,5.0,,,{},Por hacer,28/oct/26 2:26 PM,,,
+T1_HU06 Backend de gestión de usuarios,AR3-31,10370,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I5,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-30,,,0|i000ad:,,,,,,,{},Por hacer,28/oct/26 2:26 PM,,,
+T2_HU06 Pantalla de usuarios,AR3-32,10371,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I5,Sprint2,"Tabla, filtro por rol, formulario de alta y botón de activar/desactivar.",,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-30,,,0|i000aq:,,,,,,,{},Por hacer,28/oct/26 2:26 PM,,,
+"T3_HU06 Pruebas de reglas CA-03, CA-04 y CA-07",AR3-33,10372,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I5,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-30,,,0|i000av:,,,,,,,{},Por hacer,28/oct/26 2:26 PM,,,
+HU-07 Gestionar catálogos de áreas y cargos,AR3-34,10373,Historia,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:41 PM,28/oct/26 2:40 PM,,,0,Sprint1,,"Como personal de RRHH, quiero registrar las áreas y los cargos de la empresa con su banda salarial, para asignarlos a los funcionarios y validar sus remuneraciones.
+
+*Épica:* E3 Personal (ms-personal) | *Responsable:* I1 | *Depende de:* HU-02, HU-03
+
+----
+h3. Criterios de aceptación
+
+*CA-01:* RRHH puede crear, editar, listar y desactivar áreas (código y nombre únicos).
+
+*CA-02:* RRHH puede crear, editar, listar y desactivar cargos; cada cargo pertenece a un área.
+
+*CA-03:* Cada cargo tiene {{salario_min}} y {{salario_max}} en Bs, con {{salario_min}} ≤ {{salario_max}}.
+
+*CA-04:* No se puede desactivar un área o cargo que tenga funcionarios con asignación vigente.
+
+*CA-05:* Los elementos desactivados no aparecen en los selectores de otras pantallas.
+
+----
+h3. Definition of Done
+
+☐ Cumple todos sus criterios de aceptación
+☐ Código en capas: route → controller → service → repository (sin saltarse capas); TypeORM solo dentro de los repositories y sin SQL crudo
+☐ Entrada validada con Zod y errores con el formato común { code, message, details }
+☐ Pruebas unitarias de las reglas de negocio + al menos una prueba Supertest por endpoint
+☐ Endpoints documentados con OpenAPI
+☐ Corre con docker compose up sin pasos manuales
+☐ PR revisado y aprobado por otro integrante
+☐ Demo de la HU mostrada al equipo",,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,AR3-35,AR3-36,AR3-37,AR3-38,AR3-39,,,,,,0|i000b7:,,,AR3 Sprint 1,3.0,,,{},Por hacer,28/oct/26 2:26 PM,,,
+T1_HU07 Repositories y services de Area y Cargo,AR3-35,10374,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I1,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-34,,,0|i000bb:,,,,,,,{},Por hacer,28/oct/26 2:26 PM,,,
+T2_HU07 Endpoints REST /areas y /cargos con DTOs Zod,AR3-36,10375,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I1,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-34,,,0|i000bm:,,,,,,,{},Por hacer,28/oct/26 2:26 PM,,,
+T3_HU07 Regla de CA-04 (consulta de asignaciones vigentes),AR3-37,10376,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I1,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-34,,,0|i000bp:,,,,,,,{},Por hacer,28/oct/26 2:26 PM,,,
+T4_HU07 Pantallas de catálogo (tabla + modal de edición),AR3-38,10377,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I1,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-34,,,0|i000bz:,,,,,,,{},Por hacer,28/oct/26 2:26 PM,,,
+T5_HU07 Pruebas de CA-03 y CA-04,AR3-39,10378,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I1,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-34,,,0|i000c1:,,,,,,,{},Por hacer,28/oct/26 2:26 PM,,,
+HU-08 Registrar funcionario,AR3-40,10379,Historia,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I2,Sprint2,"Como personal de RRHH, quiero dar de alta a un nuevo funcionario con sus datos personales y laborales, para incorporarlo al padrón de la empresa.
+
+*Épica:* E3 Personal (ms-personal) | *Responsable:* I2 | *Depende de:* HU-07
+
+----
+h3. Criterios de aceptación
+
+*CA-01:* El formulario pide datos personales (CI, expedido, nombres, apellidos, fecha de nacimiento, sexo), contacto (correo, teléfono, dirección) y datos laborales (área, cargo, remuneración, fecha de ingreso, días de prueba).
+
+*CA-02:* El CI es único. Si ya existe, se rechaza con el mensaje ""Ya existe un funcionario con este CI"".
+
+*CA-03:* El funcionario debe tener al menos 18 años a la fecha de ingreso.
+
+*CA-04:* La remuneración debe estar dentro de la banda del cargo elegido (HU-07).
+
+*CA-05:* Los días de prueba valen 90 por defecto y no pueden pasar de 90.
+
+*CA-06:* El funcionario se crea en estado {{EN_PRUEBA}} y, en la misma transacción, se crea su primera {{asignacion_laboral}} vigente desde la fecha de ingreso.
+
+*CA-07:* Si algo falla, no queda ni el funcionario ni la asignación (todo o nada).
+
+*CA-08:* Al guardar se muestra la ficha del nuevo funcionario.
+
+----
+*Fuera de esta HU:* crear su cuenta de usuario (HU-06) y generar su contrato (HU-18).
+
+----
+h3. Definition of Done
+
+☐ Cumple todos sus criterios de aceptación
+☐ Código en capas: route → controller → service → repository (sin saltarse capas); TypeORM solo dentro de los repositories y sin SQL crudo
+☐ Entrada validada con Zod y errores con el formato común { code, message, details }
+☐ Pruebas unitarias de las reglas de negocio + al menos una prueba Supertest por endpoint
+☐ Endpoints documentados con OpenAPI
+☐ Corre con docker compose up sin pasos manuales
+☐ PR revisado y aprobado por otro integrante
+☐ Demo de la HU mostrada al equipo",,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,AR3-41,AR3-42,AR3-43,AR3-44,AR3-45,,,,,,0|i000ca:,,,,8.0,,,{},Por hacer,28/oct/26 2:26 PM,,,
+T1_HU08 Persistencia,AR3-41,10380,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I2,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-40,,,0|i000cb:,,,,,,,{},Por hacer,28/oct/26 2:26 PM,,,
+T2_HU08 Lógica de negocio en FuncionarioService.registrar(),AR3-42,10381,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I2,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-40,,,0|i000cj:,,,,,,,{},Por hacer,28/oct/26 2:26 PM,,,
+T3_HU08 Endpoint POST /funcionarios con DTO Zod,AR3-43,10382,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I2,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-40,,,0|i000cy:,,,,,,,{},Por hacer,28/oct/26 2:26 PM,,,
+T4_HU08 Formulario de alta por pasos,AR3-44,10383,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I2,Sprint2,"Personales → contacto → laborales, con selectores de área y cargo encadenados.",,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-40,,,0|i000d5:,,,,,,,{},Por hacer,28/oct/26 2:26 PM,,,
+T5_HU08 Pruebas de alta,AR3-45,10384,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I2,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-40,,,0|i000dj:,,,,,,,{},Por hacer,28/oct/26 2:26 PM,,,
+HU-09 Consultar padrón y ficha del funcionario,AR3-46,10385,Historia,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I4,Sprint2,"Como personal de RRHH o de Dirección, quiero buscar y filtrar a los funcionarios y ver su ficha completa, para tener la información del personal a mano.
+
+*Épica:* E3 Personal (ms-personal) | *Responsable:* I4 | *Depende de:* HU-08
+
+----
+h3. Criterios de aceptación
+
+*CA-01:* El padrón lista a los funcionarios con paginación de 20 en 20.
+
+*CA-02:* Se puede buscar por CI o nombre y filtrar por área, cargo y estado.
+
+*CA-03:* La ficha muestra datos personales, asignación vigente, estado con badge de color y el historial de asignaciones como línea de tiempo.
+
+*CA-04:* {{FUNCIONARIO}} solo puede ver su propia ficha; si pide otra, recibe 403.
+
+*CA-05:* Se implementan los endpoints internos de HU-01: {{GET /internal/funcionarios/:id}} y {{GET /internal/funcionarios?estado=&activosDesde=&activosHasta=}}, que devuelven la asignación vigente.
+
+*CA-06:* La búsqueda responde en menos de 2 s con 500 funcionarios.
+
+----
+*Fuera de esta HU:* editar datos (HU-10), ratificar (HU-11) y dar de baja (HU-12).
+
+----
+h3. Definition of Done
+
+☐ Cumple todos sus criterios de aceptación
+☐ Código en capas: route → controller → service → repository (sin saltarse capas); TypeORM solo dentro de los repositories y sin SQL crudo
+☐ Entrada validada con Zod y errores con el formato común { code, message, details }
+☐ Pruebas unitarias de las reglas de negocio + al menos una prueba Supertest por endpoint
+☐ Endpoints documentados con OpenAPI
+☐ Corre con docker compose up sin pasos manuales
+☐ PR revisado y aprobado por otro integrante
+☐ Demo de la HU mostrada al equipo",,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,AR3-47,AR3-48,AR3-49,AR3-50,,,,,,,0|i000dp:,,,,5.0,,,{},Por hacer,28/oct/26 2:26 PM,,,
+T1_HU09 Backend de consulta,AR3-47,10386,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I4,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-46,,,0|i000e2:,,,,,,,{},Por hacer,28/oct/26 2:26 PM,,,
+T2_HU09 Pantalla del padrón con buscador y filtros,AR3-48,10387,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I4,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-46,,,0|i000e7:,,,,,,,{},Por hacer,28/oct/26 2:26 PM,,,
+T3_HU09 Ficha del funcionario,AR3-49,10388,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I4,Sprint2,"Línea de tiempo de asignaciones y botones de acción (abren las pantallas de HU-10, HU-11 y HU-12).",,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-46,,,0|i000ej:,,,,,,,{},Por hacer,28/oct/26 2:26 PM,,,
+"T4_HU09 Pruebas de filtros, paginación y CA-04",AR3-50,10389,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I4,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-46,,,0|i000en:,,,,,,,{},Por hacer,28/oct/26 2:26 PM,,,
+"HU-10 Modificar área, cargo y remuneración con historial",AR3-51,10390,Historia,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,30/oct/26 7:44 PM,30/oct/26 7:48 PM,,,0,I1,Sprint2,"Como personal de RRHH, quiero cambiar el área, el cargo o la remuneración de un funcionario guardando el historial, para reflejar ascensos, traslados e incrementos sin perder lo anterior.
+
+*Épica:* E3 Personal (ms-personal) | *Responsable:* I1 | *Depende de:* HU-08
+
+----
+
+h3. Criterios de aceptación
+
+*CA-01:* El cambio pide nueva área y/o cargo y/o remuneración, la fecha desde la que rige y el motivo (ascenso, traslado, incremento, corrección).
+
+*CA-02:* El cambio *no edita* la asignación actual: la cierra con {{vigente_hasta}} = día anterior y crea una nueva vigente.
+
+*CA-03:* la nueva vigencia tiene que ser _posterior_ a la actual, no “no anterior”. Si fuera el mismo día, la asignación cerrada terminaría antes de empezar.
+
+*CA-04:* La nueva remuneración debe estar en la banda del cargo.
+
+*CA-05:* No se puede modificar a un funcionario de baja.
+
+*CA-06:* Siempre queda exactamente una asignación vigente (lo garantiza el índice de HU-02).
+
+*CA-07:* También se pueden actualizar los datos de contacto (correo, teléfono, dirección), sin historial. El CI no se puede editar.
+
+*CA-08:* Se muestra una vista previa ""antes → después"" antes de confirmar.
+
+----
+
+h3. Definition of Done
+
+☐ Cumple todos sus criterios de aceptación
+☐ Código en capas: route → controller → service → repository (sin saltarse capas); TypeORM solo dentro de los repositories y sin SQL crudo
+☐ Entrada validada con Zod y errores con el formato común { code, message, details }
+☐ Pruebas unitarias de las reglas de negocio + al menos una prueba Supertest por endpoint
+☐ Endpoints documentados con OpenAPI
+☐ Corre con docker compose up sin pasos manuales
+☐ PR revisado y aprobado por otro integrante
+☐ Demo de la HU mostrada al equipo",,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,AR3-52,AR3-53,AR3-54,AR3-55,AR3-56,,,,,,0|i000ey:,,,,8.0,,,{},Por hacer,28/oct/26 2:26 PM,,,
+T1_HU10 AsignacionService.cambiar() con transacción (cerrar + crear),AR3-52,10391,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I1,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-51,,,0|i000f1:,,,,,,,{},Por hacer,28/oct/26 2:26 PM,,,
+"T2_HU10 Validaciones CA-03, CA-04 y CA-05",AR3-53,10392,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I1,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-51,,,0|i000fb:,,,,,,,{},Por hacer,28/oct/26 2:26 PM,,,
+T3_HU10 Endpoints de cambio y contacto,AR3-54,10393,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I1,Sprint2,POST /funcionarios/:id/asignaciones y PATCH /funcionarios/:id/contacto.,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-51,,,0|i000fd:,,,,,,,{},Por hacer,28/oct/26 2:26 PM,,,
+T4_HU10 Modal de cambio con vista previa antes → después,AR3-55,10394,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I1,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-51,,,0|i000fm:,,,,,,,{},Por hacer,28/oct/26 2:26 PM,,,
+T5_HU10 Pruebas de modificación,AR3-56,10395,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I1,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-51,,,0|i000fn:,,,,,,,{},Por hacer,28/oct/26 2:26 PM,,,
+HU-11 Ratificar funcionario,AR3-57,10396,Historia,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I1,Sprint2,"Como personal de RRHH, quiero ratificar a un funcionario que superó su periodo de prueba, para que quede como personal permanente y pueda acceder a beneficios como las vacaciones.
+
+*Épica:* E3 Personal (ms-personal) | *Responsable:* I1 | *Depende de:* HU-08
+
+----
+h3. Criterios de aceptación
+
+*CA-01:* Solo se puede ratificar a un funcionario en estado {{EN_PRUEBA}}.
+
+*CA-02:* Solo se puede ratificar cuando ya pasaron sus días de prueba desde la fecha de ingreso.
+
+*CA-03:* Al ratificar, el estado pasa a {{RATIFICADO}} y se guarda {{fecha_ratificacion}}.
+
+*CA-04:* El padrón muestra un aviso con los funcionarios cuyo periodo de prueba termina en los próximos 7 días.
+
+----
+*Fuera de esta HU:* no ratificar a alguien se resuelve dándolo de baja (HU-12).
+
+----
+h3. Definition of Done
+
+☐ Cumple todos sus criterios de aceptación
+☐ Código en capas: route → controller → service → repository (sin saltarse capas); TypeORM solo dentro de los repositories y sin SQL crudo
+☐ Entrada validada con Zod y errores con el formato común { code, message, details }
+☐ Pruebas unitarias de las reglas de negocio + al menos una prueba Supertest por endpoint
+☐ Endpoints documentados con OpenAPI
+☐ Corre con docker compose up sin pasos manuales
+☐ PR revisado y aprobado por otro integrante
+☐ Demo de la HU mostrada al equipo",,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,AR3-58,AR3-59,AR3-60,AR3-61,,,,,,,0|i000fv:,,,,3.0,,,{},Por hacer,28/oct/26 2:26 PM,,,
+T1_HU11 FuncionarioService.ratificar() con validaciones CA-01 y CA-02,AR3-58,10397,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I1,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-57,,,0|i000ga:,,,,,,,{},Por hacer,28/oct/26 2:26 PM,,,
+T2_HU11 Endpoint POST /funcionarios/:id/ratificacion,AR3-59,10398,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I1,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-57,,,0|i000gh:,,,,,,,{},Por hacer,28/oct/26 2:26 PM,,,
+T3_HU11 Endpoint y aviso de prueba por vencer,AR3-60,10399,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I1,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-57,,,0|i000gv:,,,,,,,{},Por hacer,28/oct/26 2:26 PM,,,
+T4_HU11 Pruebas de CA-01 a CA-03,AR3-61,10400,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I1,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-57,,,0|i000h1:,,,,,,,{},Por hacer,28/oct/26 2:26 PM,,,
+HU-12 Dar de baja a un funcionario,AR3-62,10401,Historia,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I4,Sprint2,"Como personal de RRHH, quiero dar de baja a un funcionario que deja la empresa indicando el motivo, para sacarlo del personal activo sin perder su historial.
+
+*Épica:* E3 Personal (ms-personal) | *Responsable:* I4 | *Depende de:* HU-08, HU-06
+
+----
+h3. Criterios de aceptación
+
+*CA-01:* La baja pide fecha y motivo (renuncia, despido, fin de contrato, no ratificado, otro con detalle).
+
+*CA-02:* Es una baja lógica: el estado pasa a {{BAJA}} y no se borra nada.
+
+*CA-03:* La asignación vigente se cierra con {{vigente_hasta}} = fecha de baja.
+
+*CA-04:* La fecha de baja no puede ser anterior a la fecha de ingreso.
+
+*CA-05:* Si el funcionario tiene cuenta de usuario, se desactiva con el endpoint interno de HU-06.
+
+*CA-06:* Antes de confirmar se pide una confirmación escribiendo el CI del funcionario.
+
+*CA-07:* Un funcionario de baja sigue apareciendo en el padrón con el filtro de estado {{BAJA}}.
+
+----
+*Fuera de esta HU:* liquidación o finiquito (fuera de alcance).
+
+----
+h3. Definition of Done
+
+☐ Cumple todos sus criterios de aceptación
+☐ Código en capas: route → controller → service → repository (sin saltarse capas); TypeORM solo dentro de los repositories y sin SQL crudo
+☐ Entrada validada con Zod y errores con el formato común { code, message, details }
+☐ Pruebas unitarias de las reglas de negocio + al menos una prueba Supertest por endpoint
+☐ Endpoints documentados con OpenAPI
+☐ Corre con docker compose up sin pasos manuales
+☐ PR revisado y aprobado por otro integrante
+☐ Demo de la HU mostrada al equipo",,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,AR3-63,AR3-64,AR3-65,AR3-66,AR3-67,,,,,,0|i000he:,,,,5.0,,,{},Por hacer,28/oct/26 2:26 PM,,,
+T1_HU12 FuncionarioService.darDeBaja() con transacción,AR3-63,10402,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I4,Sprint2,Cambio de estado + cierre de asignación.,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-62,,,0|i000hj:,,,,,,,{},Por hacer,28/oct/26 2:26 PM,,,
+T2_HU12 Desactivar la cuenta en ms-auth,AR3-64,10403,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I4,Sprint2,Llamada con reintento y registro si falla.,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-62,,,0|i000hv:,,,,,,,{},Por hacer,28/oct/26 2:26 PM,,,
+T3_HU12 Endpoint POST /funcionarios/:id/baja,AR3-65,10404,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:26 PM,28/oct/26 2:29 PM,,,,0,I4,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-62,,,0|i000hz:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T4_HU12 Modal de baja con confirmación por CI,AR3-66,10405,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I4,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-62,,,0|i000ia:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T5_HU12 Pruebas de baja,AR3-67,10406,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I4,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-62,,,0|i000id:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+HU-13 Calcular elegibilidad y saldo de vacaciones,AR3-68,10407,Historia,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I3,Sprint2,"Como funcionario o personal de RRHH, quiero ver si un funcionario puede tomar vacaciones y cuántos días le quedan, para planificar su descanso con datos correctos.
+
+*Épica:* E4 Vacaciones (ms-vacaciones) | *Responsable:* I3 | *Depende de:* HU-01 (contrato con Personal)
+
+*Regla de cálculo:* Saldo disponible = 15 × gestiones cumplidas − días aprobados − días pendientes.
+
+----
+h3. Criterios de aceptación
+
+*CA-01:* Un funcionario es elegible solo si está {{RATIFICADO}} y tiene al menos 1 año desde su fecha de ingreso.
+
+*CA-02:* Cada aniversario de la fecha de ingreso suma 15 días hábiles. Ejemplo: ingreso 10/03/2023, al 05/11/2026 lleva 3 gestiones = 45 días.
+
+*CA-03:* El saldo se calcula con la fórmula de la HU; los días pendientes quedan reservados.
+
+*CA-04:* {{GET /vacaciones/saldo/:idFuncionario}} devuelve elegibilidad, motivo si no es elegible, gestiones, días ganados, usados, reservados, disponibles y la fecha de la próxima gestión.
+
+*CA-05:* Existe el catálogo de feriados con los feriados nacionales de Bolivia de 2026 y 2027, y una función {{contarDiasHabiles(desde, hasta)}} que excluye sábados, domingos y feriados.
+
+*CA-06:* Un funcionario de baja no es elegible.
+
+*CA-07:* La pantalla muestra el saldo en tarjetas y una barra de progreso hacia la próxima gestión.
+
+----
+*Fuera de esta HU:* crear solicitudes (HU-14).
+
+----
+h3. Definition of Done
+
+☐ Cumple todos sus criterios de aceptación
+☐ Código en capas: route → controller → service → repository (sin saltarse capas); TypeORM solo dentro de los repositories y sin SQL crudo
+☐ Entrada validada con Zod y errores con el formato común { code, message, details }
+☐ Pruebas unitarias de las reglas de negocio + al menos una prueba Supertest por endpoint
+☐ Endpoints documentados con OpenAPI
+☐ Corre con docker compose up sin pasos manuales
+☐ PR revisado y aprobado por otro integrante
+☐ Demo de la HU mostrada al equipo",,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,AR3-69,AR3-70,AR3-71,AR3-72,AR3-73,AR3-74,,,,,0|i000in:,,,,8.0,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T1_HU13 Cliente HTTP hacia ms-personal,AR3-69,10408,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I3,Sprint2,"Usa el contrato interno de HU-01; mientras no esté HU-09, trabajar con un mock.",,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-68,,,0|i000ip:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T2_HU13 Dominio de vacaciones,AR3-70,10409,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I3,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-68,,,0|i000iy:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T3_HU13 Feriados,AR3-71,10410,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I3,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-68,,,0|i000iz:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T4_HU13 Endpoint de saldo,AR3-72,10411,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I3,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-68,,,0|i000j7:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T5_HU13 Componente visual del saldo,AR3-73,10412,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I3,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-68,,,0|i000jm:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T6_HU13 Pruebas unitarias con fechas fijas,AR3-74,10413,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I3,Sprint2,No depender del reloj del sistema.,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-68,,,0|i000jt:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+HU-14 Solicitar vacaciones,AR3-75,10414,Historia,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I3,Sprint2,"Como funcionario, quiero solicitar vacaciones indicando un rango de fechas, para que RRHH las revise y apruebe.
+
+*Épica:* E4 Vacaciones (ms-vacaciones) | *Responsable:* I3 | *Depende de:* HU-13
+
+----
+h3. Criterios de aceptación
+
+*CA-01:* El funcionario elige fecha de inicio y fin; el sistema muestra los días hábiles que descuenta antes de enviar.
+
+*CA-02:* Se rechaza si el funcionario no es elegible (HU-13), con el motivo.
+
+*CA-03:* Se rechaza si los días hábiles superan el saldo disponible.
+
+*CA-04:* Se rechaza si el rango se cruza con otra solicitud {{PENDIENTE}} o {{APROBADA}} del mismo funcionario.
+
+*CA-05:* La fecha de inicio debe ser futura y la de fin igual o posterior; el rango debe tener al menos 1 día hábil.
+
+*CA-06:* La solicitud queda {{PENDIENTE}} y reserva los días en el saldo.
+
+*CA-07:* RRHH también puede registrar una solicitud a nombre de un funcionario; queda guardado quién la registró.
+
+*CA-08:* Un {{FUNCIONARIO}} solo puede solicitar para sí mismo.
+
+----
+*Fuera de esta HU:* aprobar o rechazar (HU-15). Cancelar una solicitud queda fuera de alcance.
+
+----
+h3. Definition of Done
+
+☐ Cumple todos sus criterios de aceptación
+☐ Código en capas: route → controller → service → repository (sin saltarse capas); TypeORM solo dentro de los repositories y sin SQL crudo
+☐ Entrada validada con Zod y errores con el formato común { code, message, details }
+☐ Pruebas unitarias de las reglas de negocio + al menos una prueba Supertest por endpoint
+☐ Endpoints documentados con OpenAPI
+☐ Corre con docker compose up sin pasos manuales
+☐ PR revisado y aprobado por otro integrante
+☐ Demo de la HU mostrada al equipo",,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,AR3-76,AR3-77,AR3-78,AR3-79,AR3-80,,,,,,0|i000k7:,,,,5.0,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T1_HU14 SolicitudService.crear() con validaciones CA-02 a CA-05,AR3-76,10415,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I3,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-75,,,0|i000kd:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T2_HU14 Consulta de solapamiento en el repository,AR3-77,10416,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I3,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-75,,,0|i000kq:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T3_HU14 Endpoint POST /vacaciones/solicitudes,AR3-78,10417,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I3,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-75,,,0|i000kv:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T4_HU14 Formulario con calendario de rango,AR3-79,10418,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I3,Sprint2,Conteo de días hábiles en vivo.,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-75,,,0|i000l7:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T5_HU14 Pruebas de solicitud,AR3-80,10419,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I3,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-75,,,0|i000lb:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+HU-15 Aprobar o rechazar una solicitud de vacaciones,AR3-81,10420,Historia,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I3,Sprint3,"Como personal de RRHH, quiero aprobar o rechazar las solicitudes de vacaciones pendientes, para controlar las ausencias del personal.
+
+*Épica:* E4 Vacaciones (ms-vacaciones) | *Responsable:* I3 | *Depende de:* HU-14
+
+----
+h3. Criterios de aceptación
+
+*CA-01:* RRHH ve una bandeja con las solicitudes {{PENDIENTE}}, ordenadas de la más antigua a la más nueva, con el saldo actual de cada funcionario.
+
+*CA-02:* Aprobar cambia el estado a {{APROBADA}} y los días pasan de reservados a usados.
+
+*CA-03:* Rechazar exige un motivo, cambia el estado a {{RECHAZADA}} y libera los días reservados.
+
+*CA-04:* Solo se resuelven solicitudes {{PENDIENTE}}; una resuelta no cambia más.
+
+*CA-05:* Nadie puede aprobar su propia solicitud.
+
+*CA-06:* Antes de aprobar se vuelve a validar el saldo y la elegibilidad (pudo haber cambiado, por ejemplo por una baja).
+
+*CA-07:* Se guarda quién resolvió y cuándo.
+
+----
+h3. Definition of Done
+
+☐ Cumple todos sus criterios de aceptación
+☐ Código en capas: route → controller → service → repository (sin saltarse capas); TypeORM solo dentro de los repositories y sin SQL crudo
+☐ Entrada validada con Zod y errores con el formato común { code, message, details }
+☐ Pruebas unitarias de las reglas de negocio + al menos una prueba Supertest por endpoint
+☐ Endpoints documentados con OpenAPI
+☐ Corre con docker compose up sin pasos manuales
+☐ PR revisado y aprobado por otro integrante
+☐ Demo de la HU mostrada al equipo",,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,AR3-82,AR3-83,AR3-84,AR3-85,AR3-86,,,,,,0|i000lm:,,,,5.0,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T1_HU15 Máquina de estados PENDIENTE → APROBADA | RECHAZADA,AR3-82,10421,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I3,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-81,,,0|i000lp:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T2_HU15 SolicitudService.aprobar() y rechazar() con revalidación,AR3-83,10422,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I3,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-81,,,0|i000lz:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T3_HU15 Endpoints de aprobación y rechazo,AR3-84,10423,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I3,Sprint3,POST /vacaciones/solicitudes/:id/aprobacion y /rechazo.,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-81,,,0|i000m1:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T4_HU15 Bandeja de aprobación,AR3-85,10424,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I3,Sprint3,Acciones rápidas y modal de motivo.,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-81,,,0|i000ma:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T5_HU15 Pruebas de transiciones válidas e inválidas y de CA-05,AR3-86,10425,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I3,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-81,,,0|i000mb:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+HU-16 Consultar historial de vacaciones,AR3-87,10426,Historia,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I3,Sprint3,"Como funcionario o personal de RRHH, quiero ver el historial de solicitudes y gestiones de vacaciones, para saber qué días se tomaron y cuándo.
+
+*Épica:* E4 Vacaciones (ms-vacaciones) | *Responsable:* I3 | *Depende de:* HU-15
+
+----
+h3. Criterios de aceptación
+
+*CA-01:* El historial (kardex) lista por gestión: días ganados, solicitudes con fechas, días, estado y quién resolvió.
+
+*CA-02:* Se puede filtrar por estado y por año.
+
+*CA-03:* Un {{FUNCIONARIO}} solo ve su propio historial.
+
+*CA-04:* RRHH ve un calendario mensual con las vacaciones aprobadas de todo el personal.
+
+----
+h3. Definition of Done
+
+☐ Cumple todos sus criterios de aceptación
+☐ Código en capas: route → controller → service → repository (sin saltarse capas); TypeORM solo dentro de los repositories y sin SQL crudo
+☐ Entrada validada con Zod y errores con el formato común { code, message, details }
+☐ Pruebas unitarias de las reglas de negocio + al menos una prueba Supertest por endpoint
+☐ Endpoints documentados con OpenAPI
+☐ Corre con docker compose up sin pasos manuales
+☐ PR revisado y aprobado por otro integrante
+☐ Demo de la HU mostrada al equipo",,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,AR3-88,AR3-89,AR3-90,AR3-91,,,,,,,0|i000mj:,,,,3.0,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T1_HU16 Endpoint GET /vacaciones/historial/:idFuncionario,AR3-88,10427,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I3,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-87,,,0|i000my:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T2_HU16 Endpoint de calendario GET /vacaciones/calendario?mes=,AR3-89,10428,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I3,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-87,,,0|i000n5:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T3_HU16 Pantalla de kardex y vista de calendario,AR3-90,10429,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I3,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-87,,,0|i000nj:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T4_HU16 Pruebas de CA-03,AR3-91,10430,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I3,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-87,,,0|i000np:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+HU-17 Gestionar plantillas de contrato parametrizables,AR3-92,10431,Historia,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I5,Sprint2,"Como personal de RRHH, quiero crear y editar plantillas de contrato con cláusulas y variables, para adaptar los contratos sin depender del equipo de desarrollo.
+
+*Épica:* E5 Contratos (ms-contratos) | *Responsable:* I5 | *Depende de:* HU-02, HU-04
+
+----
+h3. Criterios de aceptación
+
+*CA-01:* RRHH puede crear plantillas con código, nombre y tipo (plazo indefinido, plazo fijo).
+
+*CA-02:* El contenido se escribe en un editor con variables \{\{funcionario.nombre_completo\}\}, \{\{funcionario.ci\}\}, \{\{asignacion.cargo\}\}, \{\{asignacion.area\}\}, \{\{asignacion.remuneracion\}\}, \{\{asignacion.remuneracion_literal\}\}, \{\{funcionario.fecha_ingreso\}\}, \{\{funcionario.dias_prueba\}\}, \{\{empresa.razon_social\}\}, \{\{fecha_emision\}\}.
+
+*CA-03:* El editor tiene un panel para insertar variables con un clic.
+
+*CA-04:* Al guardar se valida que no haya variables desconocidas y que estén las 3 obligatorias del kata: fecha de ingreso, remuneración y días de prueba.
+
+*CA-05:* Editar una plantilla crea una *nueva versión*; las versiones anteriores no se modifican.
+
+*CA-06:* Solo una versión por plantilla está activa a la vez.
+
+*CA-07:* Hay vista previa con datos de ejemplo antes de guardar.
+
+*CA-08:* Existe una plantilla semilla ""Contrato de trabajo a plazo indefinido"" lista para usar.
+
+----
+*Fuera de esta HU:* generar el contrato de un funcionario real (HU-18).
+
+----
+h3. Definition of Done
+
+☐ Cumple todos sus criterios de aceptación
+☐ Código en capas: route → controller → service → repository (sin saltarse capas); TypeORM solo dentro de los repositories y sin SQL crudo
+☐ Entrada validada con Zod y errores con el formato común { code, message, details }
+☐ Pruebas unitarias de las reglas de negocio + al menos una prueba Supertest por endpoint
+☐ Endpoints documentados con OpenAPI
+☐ Corre con docker compose up sin pasos manuales
+☐ PR revisado y aprobado por otro integrante
+☐ Demo de la HU mostrada al equipo",,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,AR3-93,AR3-94,AR3-95,AR3-96,AR3-97,AR3-98,,,,,0|i000o2:,,,,8.0,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T1_HU17 Dominio de plantillas,AR3-93,10432,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I5,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-92,,,0|i000o7:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T2_HU17 Motor de render con Handlebars,AR3-94,10433,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I5,Sprint2,"Helpers: fecha larga, monto en Bs, monto en literal.",,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-92,,,0|i000oj:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T3_HU17 Endpoints /plantillas,AR3-95,10434,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I5,Sprint2,CRUD + versiones + vista previa.,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-92,,,0|i000on:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T4_HU17 Pantalla de plantillas,AR3-96,10435,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I5,Sprint2,"Editor, panel de variables y vista previa lado a lado.",,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-92,,,0|i000oy:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T5_HU17 Plantilla semilla,AR3-97,10436,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I5,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-92,,,0|i000p1:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+"T6_HU17 Pruebas del validador, del versionado y del render",AR3-98,10437,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I5,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-92,,,0|i000pb:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+HU-18 Generar contrato de un funcionario,AR3-99,10438,Historia,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I5,Sprint3,"Como personal de RRHH, quiero generar el contrato de un funcionario a partir de una plantilla, para formalizar su relación laboral con los datos correctos.
+
+*Épica:* E5 Contratos (ms-contratos) | *Responsable:* I5 | *Depende de:* HU-17, HU-08
+
+----
+h3. Criterios de aceptación
+
+*CA-01:* RRHH elige el funcionario y la plantilla activa; los datos salen de {{ms-personal}} (asignación vigente), no se escriben a mano.
+
+*CA-02:* Antes de generar se ve la vista previa con los datos reales.
+
+*CA-03:* No se puede generar contrato para un funcionario de baja.
+
+*CA-04:* Al confirmar se guarda: versión de plantilla usada, snapshot JSON de los datos, contenido renderizado, PDF y hash SHA-256 del PDF.
+
+*CA-05:* El PDF se genera con Gotenberg, con encabezado de ARCA, numeración de páginas y espacio para firmas.
+
+*CA-06:* Si el funcionario ya tenía contrato, el nuevo es la versión siguiente y el anterior queda {{REEMPLAZADO}}.
+
+*CA-07:* Cada contrato tiene un número correlativo {{CT-AAAA-NNNN}}.
+
+*CA-08:* Un contrato generado no se puede editar.
+
+*CA-09:* El PDF se genera en menos de 5 s.
+
+----
+*Fuera de esta HU:* listar y descargar contratos (HU-19).
+
+----
+h3. Definition of Done
+
+☐ Cumple todos sus criterios de aceptación
+☐ Código en capas: route → controller → service → repository (sin saltarse capas); TypeORM solo dentro de los repositories y sin SQL crudo
+☐ Entrada validada con Zod y errores con el formato común { code, message, details }
+☐ Pruebas unitarias de las reglas de negocio + al menos una prueba Supertest por endpoint
+☐ Endpoints documentados con OpenAPI
+☐ Corre con docker compose up sin pasos manuales
+☐ PR revisado y aprobado por otro integrante
+☐ Demo de la HU mostrada al equipo",,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,AR3-100,AR3-101,AR3-102,AR3-103,AR3-104,AR3-105,AR3-106,,,,0|i000pd:,,,,8.0,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T1_HU18 Cliente hacia ms-personal y armado del contexto de variables,AR3-100,10439,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I5,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-99,,,0|i000pm:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T2_HU18 ContratoService.generar() con transacción,AR3-101,10440,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I5,Sprint3,Nuevo contrato + reemplazar el anterior.,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-99,,,0|i000pn:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T3_HU18 Cliente de Gotenberg y estilos de impresión del contrato,AR3-102,10441,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I5,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-99,,,0|i000pv:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T4_HU18 Correlativo y hash,AR3-103,10442,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I5,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-99,,,0|i000qa:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T5_HU18 Endpoint POST /contratos,AR3-104,10443,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I5,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-99,,,0|i000qh:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T6_HU18 Asistente de generación en el front,AR3-105,10444,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I5,Sprint3,Funcionario → plantilla → vista previa → generar.,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-99,,,0|i000qv:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T7_HU18 Pruebas de generación,AR3-106,10445,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I5,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-99,,,0|i000r1:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+HU-19 Consultar y descargar contratos,AR3-107,10446,Historia,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I5,Sprint3,"Como personal de RRHH o funcionario, quiero consultar y descargar los contratos generados, para tener acceso al documento cuando lo necesite.
+
+*Épica:* E5 Contratos (ms-contratos) | *Responsable:* I5 | *Depende de:* HU-18
+
+----
+h3. Criterios de aceptación
+
+*CA-01:* RRHH lista los contratos con filtros por funcionario, plantilla, estado y fecha.
+
+*CA-02:* Un {{FUNCIONARIO}} solo ve y descarga sus propios contratos.
+
+*CA-03:* La descarga entrega el PDF guardado, sin volver a generarlo, y verifica que su hash coincida.
+
+*CA-04:* La ficha del contrato muestra su historial de versiones.
+
+----
+h3. Definition of Done
+
+☐ Cumple todos sus criterios de aceptación
+☐ Código en capas: route → controller → service → repository (sin saltarse capas); TypeORM solo dentro de los repositories y sin SQL crudo
+☐ Entrada validada con Zod y errores con el formato común { code, message, details }
+☐ Pruebas unitarias de las reglas de negocio + al menos una prueba Supertest por endpoint
+☐ Endpoints documentados con OpenAPI
+☐ Corre con docker compose up sin pasos manuales
+☐ PR revisado y aprobado por otro integrante
+☐ Demo de la HU mostrada al equipo",,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,AR3-108,AR3-109,AR3-110,AR3-111,,,,,,,0|i000re:,,,,3.0,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T1_HU19 Endpoints de consulta y descarga,AR3-108,10447,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I5,Sprint3,"GET /contratos, GET /contratos/:id y GET /contratos/:id/pdf.",,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-107,,,0|i000rj:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T2_HU19 Verificación de hash en la descarga,AR3-109,10448,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I5,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-107,,,0|i000rv:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T3_HU19 Pantalla de listado y visor de PDF,AR3-110,10449,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I5,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-107,,,0|i000rz:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T4_HU19 Pruebas de CA-02 y CA-03,AR3-111,10450,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I5,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-107,,,0|i000sa:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+HU-20 Configurar conceptos de haberes y descuentos,AR3-112,10451,Historia,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,30/oct/26 7:49 PM,,,0,I2,Sprint2,"Como personal de RRHH, quiero configurar los conceptos de haberes y descuentos de la planilla, para que el cálculo de las boletas se adapte a las políticas de la empresa sin cambiar el código.
+
+*Épica:* E6 Boletas de pago (ms-boletas) | *Responsable:* I2 | *Depende de:* HU-02
+
+----
+h3. Criterios de aceptación
+
+*CA-01:* Cada concepto tiene código, nombre, tipo ({{HABER}} o {{DESCUENTO}}), forma de cálculo ({{MONTO_FIJO}} o {{PORCENTAJE}}), valor, base ({{HABER_BASICO}} o {{TOTAL_GANADO}}), si es automático para todos y orden en la boleta.
+
+*CA-02:* Un porcentaje está entre 0 y 100; un monto fijo es mayor a 0.
+
+*CA-03:* Hay semilla con: Haber básico (sistema, no editable) y Aporte laboral 12,71% sobre total ganado.
+
+*CA-04:* Un concepto usado en una boleta emitida no se puede borrar, solo desactivar; cambiar su valor solo afecta a los cálculos futuros.
+
+*CA-05:* RRHH puede registrar *novedades* del período para un funcionario: un concepto no automático con su monto (ej. bono de producción, anticipo).
+
+----
+*Fuera de esta HU:* el cálculo de la planilla (HU-21).
+
+----
+h3. Definition of Done
+
+☐ Cumple todos sus criterios de aceptación
+☐ Código en capas: route → controller → service → repository (sin saltarse capas); TypeORM solo dentro de los repositories y sin SQL crudo
+☐ Entrada validada con Zod y errores con el formato común { code, message, details }
+☐ Pruebas unitarias de las reglas de negocio + al menos una prueba Supertest por endpoint
+☐ Endpoints documentados con OpenAPI
+☐ Corre con docker compose up sin pasos manuales
+☐ PR revisado y aprobado por otro integrante
+☐ Demo de la HU mostrada al equipo",,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,AR3-113,AR3-114,AR3-115,AR3-116,AR3-117,,,,,,0|i000sd:,,,,5.0,,,{},Por hacer,28/oct/26 2:27 PM,,,
+"T1_HU20 CRUD de conceptos con validaciones CA-01, CA-02 y CA-04",AR3-113,10452,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I2,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-112,,,0|i000sn:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T2_HU20 Registro de novedades por período y funcionario,AR3-114,10453,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I2,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-112,,,0|i000sp:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T3_HU20 Semilla de conceptos,AR3-115,10454,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I2,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-112,,,0|i000sy:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T4_HU20 Pantallas de conceptos y de novedades,AR3-116,10455,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I2,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-112,,,0|i000sz:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T5_HU20 Pruebas de validaciones,AR3-117,10456,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I2,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-112,,,0|i000t7:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+HU-21 Calcular la planilla del período,AR3-118,10457,Historia,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I2,Sprint3,"Como personal de RRHH, quiero calcular la planilla de un mes para todos los funcionarios, para revisar los montos antes de emitir las boletas.
+
+*Épica:* E6 Boletas de pago (ms-boletas) | *Responsable:* I2 | *Depende de:* HU-20, HU-10
+
+*Regla de cálculo:* Haber básico = remuneración × días trabajados / 30. Líquido pagable = (haber básico + otros haberes) − descuentos.
+
+----
+h3. Criterios de aceptación
+
+*CA-01:* RRHH abre un período (mes y año); no puede haber dos períodos iguales.
+
+*CA-02:* El cálculo incluye a todo funcionario que estuvo activo al menos un día del mes (datos del endpoint interno de {{ms-personal}}).
+
+*CA-03:* Los días trabajados se prorratean si el funcionario ingresó o fue dado de baja dentro del mes (base 30 días).
+
+*CA-04:* Se aplican los conceptos automáticos y las novedades del período, en el orden configurado.
+
+*CA-05:* Cada boleta guarda su detalle línea por línea: concepto, base, porcentaje o monto y resultado, redondeado a 2 decimales.
+
+*CA-06:* El líquido pagable nunca es negativo; si lo fuera, la boleta se marca con alerta y no se puede emitir.
+
+*CA-07:* Mientras el período esté en {{BORRADOR}} se puede recalcular cuantas veces se quiera.
+
+*CA-08:* La pantalla muestra la planilla con totales (ganado, descuentos, líquido) y las alertas resaltadas.
+
+----
+*Fuera de esta HU:* emitir y bloquear las boletas (HU-22).
+
+----
+h3. Definition of Done
+
+☐ Cumple todos sus criterios de aceptación
+☐ Código en capas: route → controller → service → repository (sin saltarse capas); TypeORM solo dentro de los repositories y sin SQL crudo
+☐ Entrada validada con Zod y errores con el formato común { code, message, details }
+☐ Pruebas unitarias de las reglas de negocio + al menos una prueba Supertest por endpoint
+☐ Endpoints documentados con OpenAPI
+☐ Corre con docker compose up sin pasos manuales
+☐ PR revisado y aprobado por otro integrante
+☐ Demo de la HU mostrada al equipo",,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,AR3-119,AR3-120,AR3-121,AR3-122,AR3-123,AR3-124,,,,,0|i000tm:,,,,8.0,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T1_HU21 Cliente hacia ms-personal,AR3-119,10458,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I2,Sprint3,Trae funcionarios y remuneraciones del período.,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-118,,,0|i000tt:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T2_HU21 Motor de cálculo,AR3-120,10459,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I2,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-118,,,0|i000u7:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T3_HU21 PeriodoService.abrir() y calcular(),AR3-121,10460,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I2,Sprint3,Calcular borra y rehace el borrador.,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-118,,,0|i000ud:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T4_HU21 Endpoints POST /periodos y POST /periodos/:id/calculo,AR3-122,10461,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I2,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-118,,,0|i000uq:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T5_HU21 Pantalla de planilla con totales y alertas,AR3-123,10462,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I2,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-118,,,0|i000uv:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T6_HU21 Pruebas con casos fijos,AR3-124,10463,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I2,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-118,,,0|i000v7:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+HU-22 Emitir boletas inmutables y rectificarlas,AR3-125,10464,Historia,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I1,Sprint3,"Como personal de RRHH, quiero emitir las boletas del período y que ya no se puedan modificar, para tener un registro de pagos confiable y corregir errores solo con una rectificación trazable.
+
+*Épica:* E6 Boletas de pago (ms-boletas) | *Responsable:* I1 | *Depende de:* HU-21
+
+----
+h3. Criterios de aceptación
+
+*CA-01:* Emitir pasa el período a {{EMITIDO}} y todas sus boletas a {{EMITIDA}}, en una sola transacción.
+
+*CA-02:* No se puede emitir si alguna boleta tiene alerta (HU-21, CA-06).
+
+*CA-03:* Cada boleta emitida recibe número correlativo {{BP-AAAAMM-NNNN}}, snapshot de los datos del funcionario, PDF generado con Gotenberg y hash SHA-256.
+
+*CA-04:* Una boleta {{EMITIDA}} no se puede modificar ni borrar: un trigger en la BD rechaza {{UPDATE}} y {{DELETE}} sobre ella (salvo el cambio de estado a {{RECTIFICADA}}).
+
+*CA-05:* Rectificar exige un motivo y crea una nueva boleta versión 2 (o siguiente) que apunta a la original; la original pasa a {{RECTIFICADA}}.
+
+*CA-06:* La rectificación recalcula con los conceptos y novedades corregidos y genera su propio PDF y hash.
+
+*CA-07:* La generación de PDF de un período de 50 funcionarios termina en menos de 1 minuto.
+
+----
+*Fuera de esta HU:* listar y descargar boletas (HU-23).
+
+----
+h3. Definition of Done
+
+☐ Cumple todos sus criterios de aceptación
+☐ Código en capas: route → controller → service → repository (sin saltarse capas); TypeORM solo dentro de los repositories y sin SQL crudo
+☐ Entrada validada con Zod y errores con el formato común { code, message, details }
+☐ Pruebas unitarias de las reglas de negocio + al menos una prueba Supertest por endpoint
+☐ Endpoints documentados con OpenAPI
+☐ Corre con docker compose up sin pasos manuales
+☐ PR revisado y aprobado por otro integrante
+☐ Demo de la HU mostrada al equipo",,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,AR3-126,AR3-127,AR3-128,AR3-129,AR3-130,AR3-131,AR3-132,,,,0|i000vb:,,,,8.0,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T1_HU22 PeriodoService.emitir() con transacción y validación de alertas,AR3-126,10465,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I1,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-125,,,0|i000vm:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T2_HU22 Plantilla HTML de la boleta y generación de PDF en lote,AR3-127,10466,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I1,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-125,,,0|i000vp:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T3_HU22 Trigger de inmutabilidad en PostgreSQL,AR3-128,10467,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I1,Sprint3,En una migración de TypeORM (queryRunner.query); es la única excepción de SQL en el proyecto.,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-125,,,0|i000vz:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T4_HU22 BoletaService.rectificar(),AR3-129,10468,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I1,Sprint3,Reutiliza el motor de cálculo de HU-21.,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-125,,,0|i000w1:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T5_HU22 Endpoints de emisión y rectificación,AR3-130,10469,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I1,Sprint3,POST /periodos/:id/emision y POST /boletas/:id/rectificacion.,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-125,,,0|i000wa:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T6_HU22 Botón de emitir con confirmación y modal de rectificación,AR3-131,10470,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I1,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-125,,,0|i000wb:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T7_HU22 Pruebas de emisión,AR3-132,10471,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I1,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-125,,,0|i000wj:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+HU-23 Consultar y descargar boletas en PDF,AR3-133,10472,Historia,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I4,Sprint3,"Como funcionario o personal de RRHH, quiero consultar y descargar las boletas de pago, para tener el comprobante de cada pago.
+
+*Épica:* E6 Boletas de pago (ms-boletas) | *Responsable:* I4 | *Depende de:* HU-22
+
+----
+h3. Criterios de aceptación
+
+*CA-01:* RRHH lista las boletas por período y por funcionario, con totales del período.
+
+*CA-02:* Un {{FUNCIONARIO}} ve solo sus boletas emitidas, ordenadas de la más reciente a la más antigua.
+
+*CA-03:* El detalle muestra haberes y descuentos línea por línea y, si fue rectificada, enlaza a su versión vigente.
+
+*CA-04:* La descarga entrega el PDF guardado y verifica su hash.
+
+*CA-05:* Las boletas en borrador no son visibles para el {{FUNCIONARIO}}.
+
+----
+h3. Definition of Done
+
+☐ Cumple todos sus criterios de aceptación
+☐ Código en capas: route → controller → service → repository (sin saltarse capas); TypeORM solo dentro de los repositories y sin SQL crudo
+☐ Entrada validada con Zod y errores con el formato común { code, message, details }
+☐ Pruebas unitarias de las reglas de negocio + al menos una prueba Supertest por endpoint
+☐ Endpoints documentados con OpenAPI
+☐ Corre con docker compose up sin pasos manuales
+☐ PR revisado y aprobado por otro integrante
+☐ Demo de la HU mostrada al equipo",,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,AR3-134,AR3-135,AR3-136,AR3-137,,,,,,,0|i000wy:,,,,5.0,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T1_HU23 Endpoints de consulta y descarga,AR3-134,10473,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I4,Sprint3,"GET /boletas, GET /boletas/:id y GET /boletas/:id/pdf.",,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-133,,,0|i000x5:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T2_HU23 Reglas de visibilidad CA-02 y CA-05,AR3-135,10474,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I4,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-133,,,0|i000xj:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T3_HU23 Pantallas de boletas,AR3-136,10475,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I4,Sprint3,"""Mis boletas"" para el funcionario y listado por período para RRHH.",,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-133,,,0|i000xp:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T4_HU23 Pruebas de visibilidad y hash,AR3-137,10476,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I4,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-133,,,0|i000y2:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+HU-24 Registrar auditoría de operaciones,AR3-138,10477,Historia,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I3,Sprint3,"Como administrador, quiero que quede registrado quién hizo cada operación sobre datos de personal y pagos, para rastrear cambios y detectar accesos indebidos.
+
+*Épica:* E7 Transversales y entrega | *Responsable:* I3 | *Depende de:* HU-03, HU-05
+
+----
+h3. Criterios de aceptación
+
+*CA-01:* El gateway registra toda petición {{POST}}, {{PUT}}, {{PATCH}} y {{DELETE}}, más las descargas de PDF de contratos y boletas.
+
+*CA-02:* Cada evento guarda fecha y hora, usuario, rol, método, ruta, servicio, id del recurso, código de respuesta, IP y {{request-id}}.
+
+*CA-03:* Nunca se guardan contraseñas, tokens ni el cuerpo completo de la petición.
+
+*CA-04:* La tabla {{auditoria.evento}} es de solo inserción: el usuario de BD del gateway no tiene permiso de {{UPDATE}} ni {{DELETE}}.
+
+*CA-05:* Si falla el registro de auditoría, la operación del usuario no se cae; el error queda en el log.
+
+*CA-06:* {{ADMIN}} consulta la auditoría con filtros por usuario, servicio, fecha y resultado.
+
+----
+h3. Definition of Done
+
+☐ Cumple todos sus criterios de aceptación
+☐ Código en capas: route → controller → service → repository (sin saltarse capas); TypeORM solo dentro de los repositories y sin SQL crudo
+☐ Entrada validada con Zod y errores con el formato común { code, message, details }
+☐ Pruebas unitarias de las reglas de negocio + al menos una prueba Supertest por endpoint
+☐ Endpoints documentados con OpenAPI
+☐ Corre con docker compose up sin pasos manuales
+☐ PR revisado y aprobado por otro integrante
+☐ Demo de la HU mostrada al equipo",,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,AR3-139,AR3-140,AR3-141,AR3-142,AR3-143,,,,,,0|i000y7:,,,,5.0,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T1_HU24 Middleware de auditoría en el gateway,AR3-139,10478,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I3,Sprint3,"Asíncrono, después de la respuesta.",,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-138,,,0|i000yj:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T2_HU24 Permisos de solo inserción en la BD,AR3-140,10479,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I3,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-138,,,0|i000yn:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T3_HU24 Endpoint GET /api/auditoria con filtros y paginación,AR3-141,10480,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I3,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-138,,,0|i000yy:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T4_HU24 Pantalla de auditoría,AR3-142,10481,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I3,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-138,,,0|i000z1:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T5_HU24 Pruebas de auditoría,AR3-143,10482,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I3,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-138,,,0|i000zb:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+HU-25 Dashboard ejecutivo para el Directorio,AR3-144,10483,Historia,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I4,Sprint3,"Como miembro de la Dirección, quiero un tablero con los indicadores clave de gestión humana, para entender el estado del personal de un vistazo y tomar decisiones.
+
+*Épica:* E7 Transversales y entrega | *Responsable:* I4 | *Depende de:* HU-09, HU-13, HU-22
+
+----
+h3. Criterios de aceptación
+
+*CA-01:* Muestra tarjetas con: funcionarios activos, en prueba, bajas del mes y masa salarial del último período emitido.
+
+*CA-02:* Gráfico de funcionarios por área y gráfico de masa salarial de los últimos 6 períodos emitidos.
+
+*CA-03:* Lista de alertas: solicitudes de vacaciones pendientes, periodos de prueba por vencer y funcionarios que cumplen gestión este mes.
+
+*CA-04:* Los datos llegan por un endpoint agregador del gateway ({{GET /api/dashboard}}) que llama a los servicios en paralelo; si uno no responde, esa tarjeta muestra ""sin datos"" y el resto carga igual.
+
+*CA-05:* Cada servicio expone un endpoint de solo lectura {{GET /internal/stats}} que solo esta HU crea.
+
+*CA-06:* Solo {{DIRECCION}}, {{RRHH}} y {{ADMIN}} ven el dashboard; carga en menos de 3 s.
+
+----
+h3. Definition of Done
+
+☐ Cumple todos sus criterios de aceptación
+☐ Código en capas: route → controller → service → repository (sin saltarse capas); TypeORM solo dentro de los repositories y sin SQL crudo
+☐ Entrada validada con Zod y errores con el formato común { code, message, details }
+☐ Pruebas unitarias de las reglas de negocio + al menos una prueba Supertest por endpoint
+☐ Endpoints documentados con OpenAPI
+☐ Corre con docker compose up sin pasos manuales
+☐ PR revisado y aprobado por otro integrante
+☐ Demo de la HU mostrada al equipo",,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,AR3-145,AR3-146,AR3-147,AR3-148,,,,,,,0|i000zd:,,,,8.0,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T1_HU25 Endpoints /internal/stats,AR3-145,10484,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I4,Sprint3,"En ms-personal, ms-vacaciones y ms-boletas.",,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-144,,,0|i000zm:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T2_HU25 Agregador en el gateway con tolerancia a fallas,AR3-146,10485,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I4,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-144,,,0|i000zn:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T3_HU25 Pantalla del dashboard,AR3-147,10486,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I4,Sprint3,"Tarjetas, gráficos (Recharts) y alertas.",,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-144,,,0|i000zv:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T4_HU25 Pruebas del agregador con un servicio caído,AR3-148,10487,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I4,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-144,,,0|i0010a:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+HU-26 Documentar APIs y arquitectura final,AR3-149,10488,Historia,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I1,Sprint3,"Como equipo de desarrollo, queremos consolidar la documentación de APIs y de arquitectura, para entregar el proyecto como piden los desafíos anteriores y dejarlo listo para integrarse con el Core.
+
+*Épica:* E7 Transversales y entrega | *Responsable:* I1 | *Depende de:* Todas
+
+----
+h3. Criterios de aceptación
+
+*CA-01:* El gateway publica Swagger UI en {{/api/docs}} con la especificación OpenAPI de los 5 servicios.
+
+*CA-02:* Los diagramas C4 y el MER están actualizados a lo que realmente se construyó.
+
+*CA-03:* El documento de arquitectura sigue el formato de los desafíos anteriores e incluye ADRs, supuestos validados y decisiones pendientes (integración con el Core).
+
+*CA-04:* El README explica cómo levantar el proyecto en menos de 10 minutos.
+
+----
+h3. Definition of Done
+
+☐ Cumple todos sus criterios de aceptación
+☐ Código en capas: route → controller → service → repository (sin saltarse capas); TypeORM solo dentro de los repositories y sin SQL crudo
+☐ Entrada validada con Zod y errores con el formato común { code, message, details }
+☐ Pruebas unitarias de las reglas de negocio + al menos una prueba Supertest por endpoint
+☐ Endpoints documentados con OpenAPI
+☐ Corre con docker compose up sin pasos manuales
+☐ PR revisado y aprobado por otro integrante
+☐ Demo de la HU mostrada al equipo",,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,AR3-150,AR3-151,AR3-152,,,,,,,,0|i0010h:,,,,3.0,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T1_HU26 Consolidar los OpenAPI de cada servicio y publicar Swagger UI,AR3-150,10489,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I1,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-149,,,0|i0010v:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T2_HU26 Actualizar C4 y MER,AR3-151,10490,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I1,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-149,,,0|i00111:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T3_HU26 Redactar el documento final y el README,AR3-152,10491,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I1,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-149,,,0|i0011e:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+HU-27 Preparar el entorno de demo con datos semilla,AR3-153,10492,Historia,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I2,Sprint3,"Como equipo de desarrollo, queremos un entorno de demo con datos realistas y un guion de presentación, para mostrar al Directorio un sistema que se ve vivo y no vacío.
+
+*Épica:* E7 Transversales y entrega | *Responsable:* I2 | *Depende de:* Todas
+
+----
+h3. Criterios de aceptación
+
+*CA-01:* Un script carga datos semilla: 6 áreas, 15 cargos, 40 funcionarios (activos, en prueba y de baja), historial de asignaciones, solicitudes de vacaciones en varios estados, 2 contratos y 3 períodos de boletas emitidos.
+
+*CA-02:* Los datos semilla respetan todas las reglas de negocio (se cargan por los services, no con SQL directo).
+
+*CA-03:* Un comando reinicia la demo a su estado inicial.
+
+*CA-04:* Hay un guion de demo de 10 minutos que recorre los 4 módulos con un usuario de cada rol.
+
+*CA-05:* Se hace un ensayo completo de la demo con todo el equipo antes del 17/11.
+
+----
+h3. Definition of Done
+
+☐ Cumple todos sus criterios de aceptación
+☐ Código en capas: route → controller → service → repository (sin saltarse capas); TypeORM solo dentro de los repositories y sin SQL crudo
+☐ Entrada validada con Zod y errores con el formato común { code, message, details }
+☐ Pruebas unitarias de las reglas de negocio + al menos una prueba Supertest por endpoint
+☐ Endpoints documentados con OpenAPI
+☐ Corre con docker compose up sin pasos manuales
+☐ PR revisado y aprobado por otro integrante
+☐ Demo de la HU mostrada al equipo",,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,AR3-154,AR3-155,AR3-156,AR3-157,,,,,,,0|i0011j:,,,,5.0,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T1_HU27 Script de semilla por servicio,AR3-154,10493,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I2,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-153,,,0|i0011v:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T2_HU27 Comando de reinicio de la demo,AR3-155,10494,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I2,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-153,,,0|i0011z:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T3_HU27 Guion de demo y usuarios de prueba,AR3-156,10495,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I2,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-153,,,0|i0012a:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+T4_HU27 Ensayo general y lista de errores encontrados,AR3-157,10496,Tarea,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:29 PM,,,,0,I2,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,AR3-153,,,0|i0012d:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,,,
+ST1.1 Nivel 1: contexto y actores,AR3-158,10497,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:27 PM,,,,0,I1,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i0012n:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,10341,AR3-2,T1_HU01 Diagramas C4
+ST1.2 Nivel 2: contenedores y protocolos,AR3-159,10498,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:27 PM,,,,0,I1,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i0012p:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,10341,AR3-2,T1_HU01 Diagramas C4
+ST1.3 Nivel 3: componentes de ms-personal y ms-boletas,AR3-160,10499,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:27 PM,,,,0,I1,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i0012y:,,,,,,,{},Por hacer,28/oct/26 2:27 PM,10341,AR3-2,T1_HU01 Diagramas C4
+"ST2.1 Plantilla de ADR (contexto, decisión, alternativas, consecuencias)",AR3-161,10500,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:27 PM,28/oct/26 2:28 PM,,,,0,I1,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i0012z:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10342,AR3-3,T2_HU01 Redactar ADRs
+ST2.2 Redactar los ADRs de CA-04,AR3-162,10501,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I1,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i00137:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10342,AR3-3,T2_HU01 Redactar ADRs
+ST3.1 Definir request/response de los 3 endpoints internos,AR3-163,10502,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I1,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i0013m:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10343,AR3-4,T3_HU01 Definir contratos internos entre servicios
+ST3.2 Publicarlos en docs/contracts/ del repo,AR3-164,10503,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I1,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i0013t:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10343,AR3-4,T3_HU01 Definir contratos internos entre servicios
+ST1.1 Identificar entidades por bounded context,AR3-165,10504,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I2,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i00147:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10346,AR3-7,T1_HU02 Diseño del MER
+"ST1.2 Definir atributos, tipos, PK, FK, UNIQUE y CHECK",AR3-166,10505,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I2,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i0014d:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10346,AR3-7,T1_HU02 Diseño del MER
+ST1.3 Diagramar los 6 MER,AR3-167,10506,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I2,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i0014q:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10346,AR3-7,T1_HU02 Diseño del MER
+ST1.4 Revisar el MER con I1 (que no rompa el C4),AR3-168,10507,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I2,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i0014v:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10346,AR3-7,T1_HU02 Diseño del MER
+"ST2.1 Escribir las entities de cada servicio (columnas, tipos, PK, relaciones)",AR3-169,10508,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I2,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i00157:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10347,AR3-8,T2_HU02 Entities y migraciones con TypeORM
+ST2.2 Generar la migración inicial con migration:generate y aplicarla con migration:run,AR3-170,10509,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I2,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i0015b:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10347,AR3-8,T2_HU02 Entities y migraciones con TypeORM
+ST2.3 Declarar el índice parcial de CA-03 (@Index con where) y los CHECK (@Check) en las entities,AR3-171,10510,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I2,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i0015m:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10347,AR3-8,T2_HU02 Entities y migraciones con TypeORM
+"ST3.1 Crear un repository por entity que envuelve al Repository de TypeORM (findById, findAll, save)",AR3-172,10511,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I2,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i0015p:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10348,AR3-9,T3_HU02 Repositories base
+ST3.2 Probar cada repository contra la BD de la nube,AR3-173,10512,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I2,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i0015z:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10348,AR3-9,T3_HU02 Repositories base
+ST1.1 Crear la estructura de carpetas y el workspace npm,AR3-174,10513,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I3,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i00161:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10351,AR3-12,T1_HU03 Monorepo
+"ST1.2 Configurar ESLint, Prettier y las convenciones de commits",AR3-175,10514,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I3,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i0016a:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10351,AR3-12,T1_HU03 Monorepo
+ST2.1 Crear la instancia en el proveedor elegido en HU-01,AR3-176,10515,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I3,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i0016b:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10352,AR3-13,T2_HU03 Base de datos en la nube
+ST2.2 Crear los 6 schemas y los usuarios por servicio con GRANT limitados,AR3-177,10516,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I3,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i0016j:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10352,AR3-13,T2_HU03 Base de datos en la nube
+ST2.3 Probar que un usuario no puede leer el schema de otro,AR3-178,10517,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I3,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i0016y:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10352,AR3-13,T2_HU03 Base de datos en la nube
+ST3.1 Crear el esqueleto con capas y /health,AR3-179,10518,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I3,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i00175:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10353,AR3-14,T3_HU03 Plantilla de microservicio
+"ST3.2 Configurar el DataSource de TypeORM (schema del servicio, conexión a la BD en la nube, carpeta de migraciones) y el uso de dataSource.transaction()",AR3-180,10519,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I3,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i0017j:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10353,AR3-14,T3_HU03 Plantilla de microservicio
+ST3.3 Configurar Jest + Supertest,AR3-181,10520,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I3,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i0017p:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10353,AR3-14,T3_HU03 Plantilla de microservicio
+ST3.4 Replicar la plantilla en los 5 servicios,AR3-182,10521,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I3,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i00182:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10353,AR3-14,T3_HU03 Plantilla de microservicio
+ST4.1 Crear el proxy por prefijo de ruta,AR3-183,10522,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I3,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i00187:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10354,AR3-15,T4_HU03 API Gateway
+ST4.2 Agregar CORS y el request-id por petición,AR3-184,10523,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I3,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i0018j:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10354,AR3-15,T4_HU03 API Gateway
+"ST5.1 Dockerfile por servicio, gateway y front",AR3-185,10524,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I3,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i0018n:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10355,AR3-16,T5_HU03 Docker
+"ST5.2 docker-compose.yml con red interna, Gotenberg y healthchecks",AR3-186,10525,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I3,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i0018y:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10355,AR3-16,T5_HU03 Docker
+ST2.1 Tokens de color y tipografía,AR3-187,10526,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I4,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i00191:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10359,AR3-20,T2_HU04 Design system
+"ST2.2 Componentes base (tabla con paginación, formulario, modal, toast, badge)",AR3-188,10527,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I4,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i0019b:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10359,AR3-20,T2_HU04 Design system
+ST2.3 Formateadores de moneda y fecha,AR3-189,10528,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I4,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i0019d:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10359,AR3-20,T2_HU04 Design system
+ST3.1 Sidebar y topbar,AR3-190,10529,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I4,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i0019m:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10360,AR3-21,T3_HU04 Layout y navegación
+ST3.2 Rutas por módulo con páginas vacías,AR3-191,10530,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I4,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i0019n:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10360,AR3-21,T3_HU04 Layout y navegación
+ST3.3 Guard de rutas y menú por rol,AR3-192,10531,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I4,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i0019v:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10360,AR3-21,T3_HU04 Layout y navegación
+ST4.1 Instancia con base URL del gateway e interceptor de token,AR3-193,10532,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I4,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001aa:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10361,AR3-22,T4_HU04 Cliente HTTP
+"ST4.2 Manejo global de errores 401, 403 y 500",AR3-194,10533,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I4,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001ah:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10361,AR3-22,T4_HU04 Cliente HTTP
+ST1.1 UsuarioRepository.findByEmail(),AR3-195,10534,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I5,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001av:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10364,AR3-25,T1_HU05 Backend de login
+ST1.2 AuthService.login() con bcrypt y firma del JWT,AR3-196,10535,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I5,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001b1:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10364,AR3-25,T1_HU05 Backend de login
+ST1.3 Bloqueo por intentos fallidos,AR3-197,10536,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I5,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001be:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10364,AR3-25,T1_HU05 Backend de login
+ST1.4 Endpoint POST /login con DTO Zod,AR3-198,10537,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I5,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001bj:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10364,AR3-25,T1_HU05 Backend de login
+ST2.1 Middleware JWT en el gateway,AR3-199,10538,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I5,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001bv:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10365,AR3-26,T2_HU05 Autorización
+ST2.2 Reenvío de headers de identidad,AR3-200,10539,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I5,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001bz:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10365,AR3-26,T2_HU05 Autorización
+ST2.3 requireRole() en packages/shared,AR3-201,10540,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I5,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001ca:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10365,AR3-26,T2_HU05 Autorización
+ST5.1 Login válido,AR3-202,10541,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I5,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001cd:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10368,AR3-29,T5_HU05 Pruebas de autenticación
+ST5.2 Login inválido,AR3-203,10542,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I5,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001cn:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10368,AR3-29,T5_HU05 Pruebas de autenticación
+ST5.3 Cuenta bloqueada,AR3-204,10543,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I5,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001cp:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10368,AR3-29,T5_HU05 Pruebas de autenticación
+ST5.4 Usuario desactivado,AR3-205,10544,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I5,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001cy:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10368,AR3-29,T5_HU05 Pruebas de autenticación
+ST5.5 Token vencido,AR3-206,10545,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I5,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001cz:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10368,AR3-29,T5_HU05 Pruebas de autenticación
+ST5.6 Rol sin permiso (403),AR3-207,10546,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I5,Sprint1,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001d7:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10368,AR3-29,T5_HU05 Pruebas de autenticación
+ST1.1 UsuarioService.crear() con validación del funcionario en ms-personal,AR3-208,10547,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I5,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001dm:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10370,AR3-31,T1_HU06 Backend de gestión de usuarios
+ST1.2 Cambio de rol y activar/desactivar,AR3-209,10548,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I5,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001dt:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10370,AR3-31,T1_HU06 Backend de gestión de usuarios
+ST1.3 Endpoint interno de estado,AR3-210,10549,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I5,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001e7:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10370,AR3-31,T1_HU06 Backend de gestión de usuarios
+ST1.1 FuncionarioRepository.create() y AsignacionRepository.create(),AR3-211,10550,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I2,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001ed:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10380,AR3-41,T1_HU08 Persistencia
+ST1.2 Transacción con dataSource.transaction() para CA-06 y CA-07,AR3-212,10551,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I2,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001eq:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10380,AR3-41,T1_HU08 Persistencia
+ST2.1 Validar CI único,AR3-213,10552,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I2,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001ev:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10381,AR3-42,T2_HU08 Lógica de negocio en FuncionarioService.registrar()
+ST2.2 Validar edad mínima,AR3-214,10553,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I2,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001f7:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10381,AR3-42,T2_HU08 Lógica de negocio en FuncionarioService.registrar()
+ST2.3 Validar banda salarial del cargo,AR3-215,10554,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I2,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001fb:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10381,AR3-42,T2_HU08 Lógica de negocio en FuncionarioService.registrar()
+ST2.4 Validar días de prueba,AR3-216,10555,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I2,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001fm:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10381,AR3-42,T2_HU08 Lógica de negocio en FuncionarioService.registrar()
+ST5.1 Alta válida,AR3-217,10556,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I2,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001fp:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10384,AR3-45,T5_HU08 Pruebas de alta
+ST5.2 CI duplicado,AR3-218,10557,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I2,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001fz:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10384,AR3-45,T5_HU08 Pruebas de alta
+ST5.3 Menor de edad,AR3-219,10558,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I2,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001g1:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10384,AR3-45,T5_HU08 Pruebas de alta
+ST5.4 Salario fuera de banda,AR3-220,10559,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I2,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001ga:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10384,AR3-45,T5_HU08 Pruebas de alta
+ST5.5 Rollback de la transacción,AR3-221,10560,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I2,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001gb:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10384,AR3-45,T5_HU08 Pruebas de alta
+ST1.1 Consulta paginada con filtros en el repository,AR3-222,10561,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I4,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001gj:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10386,AR3-47,T1_HU09 Backend de consulta
+ST1.2 Endpoint de detalle con historial,AR3-223,10562,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I4,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001gy:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10386,AR3-47,T1_HU09 Backend de consulta
+ST1.3 Endpoints internos de CA-05,AR3-224,10563,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I4,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001h5:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10386,AR3-47,T1_HU09 Backend de consulta
+ST1.4 Regla de propietario para FUNCIONARIO,AR3-225,10564,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I4,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001hj:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10386,AR3-47,T1_HU09 Backend de consulta
+ST5.1 Cambio válido,AR3-226,10565,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I1,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001hp:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10395,AR3-56,T5_HU10 Pruebas de modificación
+ST5.2 Fecha retroactiva,AR3-227,10566,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I1,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001i2:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10395,AR3-56,T5_HU10 Pruebas de modificación
+ST5.3 Fuera de banda,AR3-228,10567,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:28 PM,,,,0,I1,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001i7:,,,,,,,{},Por hacer,28/oct/26 2:28 PM,10395,AR3-56,T5_HU10 Pruebas de modificación
+ST5.4 Funcionario de baja,AR3-229,10568,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:28 PM,28/oct/26 2:29 PM,,,,0,I1,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001ij:,,,,,,,{},Por hacer,28/oct/26 2:29 PM,10395,AR3-56,T5_HU10 Pruebas de modificación
+ST5.5 Unicidad de la asignación vigente,AR3-230,10569,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:29 PM,28/oct/26 2:29 PM,,,,0,I1,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001in:,,,,,,,{},Por hacer,28/oct/26 2:29 PM,10395,AR3-56,T5_HU10 Pruebas de modificación
+ST5.1 Baja válida,AR3-231,10570,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:29 PM,28/oct/26 2:29 PM,,,,0,I4,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001iy:,,,,,,,{},Por hacer,28/oct/26 2:29 PM,10406,AR3-67,T5_HU12 Pruebas de baja
+ST5.2 Fecha inválida,AR3-232,10571,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:29 PM,28/oct/26 2:29 PM,,,,0,I4,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001j1:,,,,,,,{},Por hacer,28/oct/26 2:29 PM,10406,AR3-67,T5_HU12 Pruebas de baja
+ST5.3 Doble baja,AR3-233,10572,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:29 PM,28/oct/26 2:29 PM,,,,0,I4,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001jb:,,,,,,,{},Por hacer,28/oct/26 2:29 PM,10406,AR3-67,T5_HU12 Pruebas de baja
+ST5.4 Cuenta desactivada,AR3-234,10573,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:29 PM,28/oct/26 2:29 PM,,,,0,I4,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001jd:,,,,,,,{},Por hacer,28/oct/26 2:29 PM,10406,AR3-67,T5_HU12 Pruebas de baja
+"ST2.1 ElegibilidadService (CA-01, CA-06)",AR3-235,10574,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:29 PM,28/oct/26 2:29 PM,,,,0,I3,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001jm:,,,,,,,{},Por hacer,28/oct/26 2:29 PM,10409,AR3-70,T2_HU13 Dominio de vacaciones
+ST2.2 Cálculo de gestiones y días ganados (CA-02),AR3-236,10575,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:29 PM,28/oct/26 2:29 PM,,,,0,I3,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001jn:,,,,,,,{},Por hacer,28/oct/26 2:29 PM,10409,AR3-70,T2_HU13 Dominio de vacaciones
+ST2.3 Cálculo del saldo (CA-03),AR3-237,10576,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:29 PM,28/oct/26 2:29 PM,,,,0,I3,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001jv:,,,,,,,{},Por hacer,28/oct/26 2:29 PM,10409,AR3-70,T2_HU13 Dominio de vacaciones
+ST3.1 Semilla de feriados 2026–2027,AR3-238,10577,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:29 PM,28/oct/26 2:29 PM,,,,0,I3,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001ka:,,,,,,,{},Por hacer,28/oct/26 2:29 PM,10410,AR3-71,T3_HU13 Feriados
+"ST3.2 contarDiasHabiles() con pruebas de bordes (fin de semana, feriado, mismo día)",AR3-239,10578,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:29 PM,28/oct/26 2:29 PM,,,,0,I3,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001kh:,,,,,,,{},Por hacer,28/oct/26 2:29 PM,10410,AR3-71,T3_HU13 Feriados
+ST5.1 Sin saldo,AR3-240,10579,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:29 PM,28/oct/26 2:29 PM,,,,0,I3,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001kv:,,,,,,,{},Por hacer,28/oct/26 2:29 PM,10419,AR3-80,T5_HU14 Pruebas de solicitud
+ST5.2 No elegible,AR3-241,10580,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:29 PM,28/oct/26 2:29 PM,,,,0,I3,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001l1:,,,,,,,{},Por hacer,28/oct/26 2:29 PM,10419,AR3-80,T5_HU14 Pruebas de solicitud
+ST5.3 Solapada,AR3-242,10581,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:29 PM,28/oct/26 2:29 PM,,,,0,I3,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001le:,,,,,,,{},Por hacer,28/oct/26 2:29 PM,10419,AR3-80,T5_HU14 Pruebas de solicitud
+ST5.4 Fechas inválidas,AR3-243,10582,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:29 PM,28/oct/26 2:29 PM,,,,0,I3,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001lj:,,,,,,,{},Por hacer,28/oct/26 2:29 PM,10419,AR3-80,T5_HU14 Pruebas de solicitud
+ST5.5 A nombre de otro,AR3-244,10583,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:29 PM,28/oct/26 2:29 PM,,,,0,I3,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001lv:,,,,,,,{},Por hacer,28/oct/26 2:29 PM,10419,AR3-80,T5_HU14 Pruebas de solicitud
+ST1.1 Catálogo de variables permitidas,AR3-245,10584,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:29 PM,28/oct/26 2:29 PM,,,,0,I5,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001lz:,,,,,,,{},Por hacer,28/oct/26 2:29 PM,10432,AR3-93,T1_HU17 Dominio de plantillas
+ST1.2 Validador de plantilla (variables desconocidas y obligatorias),AR3-246,10585,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:29 PM,28/oct/26 2:29 PM,,,,0,I5,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001ma:,,,,,,,{},Por hacer,28/oct/26 2:29 PM,10432,AR3-93,T1_HU17 Dominio de plantillas
+ST1.3 Versionado al editar,AR3-247,10586,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:29 PM,28/oct/26 2:29 PM,,,,0,I5,Sprint2,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001md:,,,,,,,{},Por hacer,28/oct/26 2:29 PM,10432,AR3-93,T1_HU17 Dominio de plantillas
+ST7.1 Generación válida,AR3-248,10587,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:29 PM,28/oct/26 2:29 PM,,,,0,I5,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001mn:,,,,,,,{},Por hacer,28/oct/26 2:29 PM,10445,AR3-106,T7_HU18 Pruebas de generación
+ST7.2 Funcionario de baja,AR3-249,10588,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:29 PM,28/oct/26 2:29 PM,,,,0,I5,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001mp:,,,,,,,{},Por hacer,28/oct/26 2:29 PM,10445,AR3-106,T7_HU18 Pruebas de generación
+ST7.3 Reemplazo de contrato anterior,AR3-250,10589,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:29 PM,28/oct/26 2:29 PM,,,,0,I5,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001my:,,,,,,,{},Por hacer,28/oct/26 2:29 PM,10445,AR3-106,T7_HU18 Pruebas de generación
+ST7.4 Hash,AR3-251,10590,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:29 PM,28/oct/26 2:29 PM,,,,0,I5,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001mz:,,,,,,,{},Por hacer,28/oct/26 2:29 PM,10445,AR3-106,T7_HU18 Pruebas de generación
+ST2.1 Días trabajados y prorrateo,AR3-252,10591,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:33 PM,28/oct/26 2:33 PM,,,,0,I2,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001n7:,,,,,,,{},Por hacer,28/oct/26 2:33 PM,10459,AR3-120,T2_HU21 Motor de cálculo
+"ST2.2 Aplicación de conceptos (fijo, porcentaje, base)",AR3-253,10592,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:33 PM,28/oct/26 2:33 PM,,,,0,I2,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001nm:,,,,,,,{},Por hacer,28/oct/26 2:33 PM,10459,AR3-120,T2_HU21 Motor de cálculo
+ST2.3 Novedades,AR3-254,10593,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:33 PM,28/oct/26 2:33 PM,,,,0,I2,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001nt:,,,,,,,{},Por hacer,28/oct/26 2:33 PM,10459,AR3-120,T2_HU21 Motor de cálculo
+ST2.4 Redondeo y totales,AR3-255,10594,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:33 PM,28/oct/26 2:33 PM,,,,0,I2,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001o7:,,,,,,,{},Por hacer,28/oct/26 2:33 PM,10459,AR3-120,T2_HU21 Motor de cálculo
+ST6.1 Mes completo,AR3-256,10595,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:33 PM,28/oct/26 2:33 PM,,,,0,I2,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001od:,,,,,,,{},Por hacer,28/oct/26 2:33 PM,10463,AR3-124,T6_HU21 Pruebas con casos fijos
+ST6.2 Ingreso a mitad de mes,AR3-257,10596,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:33 PM,28/oct/26 2:33 PM,,,,0,I2,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001oq:,,,,,,,{},Por hacer,28/oct/26 2:33 PM,10463,AR3-124,T6_HU21 Pruebas con casos fijos
+ST6.3 Baja a mitad de mes,AR3-258,10597,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:33 PM,28/oct/26 2:33 PM,,,,0,I2,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001ov:,,,,,,,{},Por hacer,28/oct/26 2:33 PM,10463,AR3-124,T6_HU21 Pruebas con casos fijos
+ST6.4 Con novedades,AR3-259,10598,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:33 PM,28/oct/26 2:33 PM,,,,0,I2,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001p7:,,,,,,,{},Por hacer,28/oct/26 2:33 PM,10463,AR3-124,T6_HU21 Pruebas con casos fijos
+ST6.5 Líquido negativo,AR3-260,10599,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:33 PM,28/oct/26 2:33 PM,,,,0,I2,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001pb:,,,,,,,{},Por hacer,28/oct/26 2:33 PM,10463,AR3-124,T6_HU21 Pruebas con casos fijos
+ST7.1 Emisión válida,AR3-261,10600,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:33 PM,28/oct/26 2:33 PM,,,,0,I1,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001pm:,,,,,,,{},Por hacer,28/oct/26 2:33 PM,10471,AR3-132,T7_HU22 Pruebas de emisión
+ST7.2 Emisión bloqueada por alerta,AR3-262,10601,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:33 PM,28/oct/26 2:33 PM,,,,0,I1,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001pp:,,,,,,,{},Por hacer,28/oct/26 2:33 PM,10471,AR3-132,T7_HU22 Pruebas de emisión
+ST7.3 Intento de UPDATE directo en BD,AR3-263,10602,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:33 PM,28/oct/26 2:33 PM,,,,0,I1,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001pz:,,,,,,,{},Por hacer,28/oct/26 2:33 PM,10471,AR3-132,T7_HU22 Pruebas de emisión
+ST7.4 Rectificación en cadena,AR3-264,10603,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:33 PM,28/oct/26 2:33 PM,,,,0,I1,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001q1:,,,,,,,{},Por hacer,28/oct/26 2:33 PM,10471,AR3-132,T7_HU22 Pruebas de emisión
+ST5.1 Evento registrado,AR3-265,10604,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:33 PM,28/oct/26 2:33 PM,,,,0,I3,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001qa:,,,,,,,{},Por hacer,28/oct/26 2:33 PM,10482,AR3-143,T5_HU24 Pruebas de auditoría
+ST5.2 Campos sensibles omitidos,AR3-266,10605,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:33 PM,28/oct/26 2:34 PM,,,,0,I3,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001qb:,,,,,,,{},Por hacer,28/oct/26 2:34 PM,10482,AR3-143,T5_HU24 Pruebas de auditoría
+ST5.3 Falla de auditoría sin romper la operación,AR3-267,10606,Subtask,Por hacer,AR3,3erProyecto Arquitectura de Software,software,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,Medium,,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,28/oct/26 2:34 PM,28/oct/26 2:34 PM,,,,0,I3,Sprint3,,,alan.maldonado,712020:1386da19-3142-4309-8e92-8c8351624118,,,,,,,,,,,,,,,,,,,0|i001qj:,,,,,,,{},Por hacer,28/oct/26 2:34 PM,10482,AR3-143,T5_HU24 Pruebas de auditoría
