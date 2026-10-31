@@ -16,8 +16,8 @@ Este archivo explica dónde quedó la HU-02 y qué falta para terminarla. Léelo
 | `docs/Sprints/1/adr/ADR-002-schema-por-servicio.md` | Un schema por servicio, sin FK entre schemas. |
 | `docs/Sprints/1/adr/ADR-005-typeorm.md` | TypeORM solo en repositories, `synchronize: false`, migraciones. |
 | `docs/Sprints/1/adr/ADR-006-pdf-en-bd-bytea.md` | PDF en tabla aparte, `select: false`. |
-| `docs/Sprints/1/api/internal-contracts.openapi.yaml` | Contratos entre servicios. Los enums deben coincidir con este archivo. |
-| `docs/Sprints/1/HU-01_Arquitectura_Contexto_Equipo.md` | Convenciones del equipo: capas, estructura de carpetas, errores, puertos. |
+| `docs/api/internal-contracts.openapi.yaml` | Contratos entre servicios. Los enums deben coincidir con este archivo. |
+| `docs/HU-01_Arquitectura_Contexto_Equipo.md` | Convenciones del equipo: capas, estructura de carpetas, errores, puertos. |
 
 Si algo de este handoff contradice `docs/Sprints/1/HU2/data-model.md`, **manda `data-model.md`**. Si `data-model.md` contradice otra HU, no lo resuelvas solo: déjalo anotado y pregúntame.
 

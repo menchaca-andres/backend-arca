@@ -7,7 +7,7 @@
 Los servicios necesitan datos de `ms-personal`; `ms-personal` debe desactivar usuarios en `ms-auth` al dar de baja (HU-12), y `ms-auth` debe validar que el funcionario exista al crear un usuario (HU-06). El tiempo es de 2–3 sprints y el equipo ya conoce REST.
 
 ## Decisión
-Comunicación síncrona HTTP/JSON por rutas `/internal/*`, no expuestas por el Gateway y protegidas con la cabecera `X-Internal-Key` dentro de la red de Docker. Cada cliente HTTP define timeout (3 s) y un reintento. Contratos en `docs/Sprints/1/api/internal-contracts.openapi.yaml`.
+Comunicación síncrona HTTP/JSON por rutas `/internal/*`, no expuestas por el Gateway y protegidas con la cabecera `X-Internal-Key` dentro de la red de Docker. Cada cliente HTTP define timeout (3 s) y un reintento. Contratos en `docs/api/internal-contracts.openapi.yaml`.
 
 ## Alternativas consideradas
 - **Mensajería (RabbitMQ/Kafka):** desacopla mejor, pero añade infraestructura y complejidad innecesarias para el MVP.

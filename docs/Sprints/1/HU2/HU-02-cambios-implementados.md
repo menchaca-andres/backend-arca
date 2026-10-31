@@ -225,9 +225,9 @@ Pendientes:
 |---|---|
 | [data-model.md](data-model.md) | Todas las tablas y columnas, y las dudas abiertas |
 | [HU-02_HANDOFF_CLAUDE_CODE.md](HU-02_HANDOFF_CLAUDE_CODE.md) | Alcance y reglas con que se hizo esta HU |
-| [HU-01_Arquitectura_Contexto_Equipo.md](../HU-01_Arquitectura_Contexto_Equipo.md) | Arquitectura y convenciones del equipo |
+| [HU-01_Arquitectura_Contexto_Equipo.md](../../../HU-01_Arquitectura_Contexto_Equipo.md) | Arquitectura y convenciones del equipo |
 | [adr/](../adr/) | Decisiones de arquitectura |
-| [api/internal-contracts.openapi.yaml](../api/internal-contracts.openapi.yaml) | Contratos entre servicios |
-| [c4/](../c4/) | Diagramas C4 |
-| [supuestos-negocio.md](../supuestos-negocio.md) | Supuestos de negocio |
-| [BacklogOficial.csv](../BacklogOficial.csv) | Backlog del proyecto, con las HU y sus tareas |
+| [api/internal-contracts.openapi.yaml](../../../api/internal-contracts.openapi.yaml) | Contratos entre servicios |
+| [c4/](../../../c4/) | Diagramas C4 |
+| [supuestos-negocio.md](../../../supuestos-negocio.md) | Supuestos de negocio |
+| [BacklogOficial.csv](../../../BacklogOficial.csv) | Backlog del proyecto, con las HU y sus tareas |
