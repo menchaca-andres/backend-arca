@@ -1,54 +1,91 @@
-# La base es Supabase (ADR-004): cada servicio toma DATABASE_URL de su propio .env
+# Desarrollo local: base en Docker con los 6 schemas. La HU-03 cambia DATABASE_URL a Supabase (ADR-004).
+x-database-url: &database-url postgres://postgres:dev@db:5432/arca
+
 services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_PASSWORD: dev
+      POSTGRES_DB: arca
+    ports: ["5433:5432"]
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./docker/init-schemas.sql:/docker-entrypoint-initdb.d/init-schemas.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h localhost -U postgres -d arca"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
   gateway:
     build: { context: ., dockerfile: gateway/Dockerfile }
     env_file: [{ path: gateway/.env, required: false }]
     environment:
       PORT: 8080
+      DATABASE_URL: *database-url
+      DB_SCHEMA: auditoria
       AUTH_SERVICE_URL: http://ms-auth:3001
       PERSONAL_SERVICE_URL: http://ms-personal:3002
       VACACIONES_SERVICE_URL: http://ms-vacaciones:3003
       CONTRATOS_SERVICE_URL: http://ms-contratos:3004
       BOLETAS_SERVICE_URL: http://ms-boletas:3005
     ports: ["8080:8080"]
-    depends_on: [ms-auth, ms-personal, ms-vacaciones, ms-contratos, ms-boletas]
+    depends_on: [db, ms-auth, ms-personal, ms-vacaciones, ms-contratos, ms-boletas]
 
   ms-auth:
     build: { context: ., dockerfile: services/ms-auth/Dockerfile }
     env_file: [{ path: services/ms-auth/.env, required: false }]
     environment:
       PORT: 3001
+      DATABASE_URL: *database-url
+      DB_SCHEMA: autenticacion
       PERSONAL_SERVICE_URL: http://ms-personal:3002
+    depends_on: [db]
 
   ms-personal:
     build: { context: ., dockerfile: services/ms-personal/Dockerfile }
     env_file: [{ path: services/ms-personal/.env, required: false }]
     environment:
       PORT: 3002
+      DATABASE_URL: *database-url
+      DB_SCHEMA: personal
       AUTH_SERVICE_URL: http://ms-auth:3001
+    depends_on: [db]
 
   ms-vacaciones:
     build: { context: ., dockerfile: services/ms-vacaciones/Dockerfile }
     env_file: [{ path: services/ms-vacaciones/.env, required: false }]
     environment:
       PORT: 3003
+      DATABASE_URL: *database-url
+      DB_SCHEMA: vacaciones
       PERSONAL_SERVICE_URL: http://ms-personal:3002
+    depends_on: [db]
 
   ms-contratos:
     build: { context: ., dockerfile: services/ms-contratos/Dockerfile }
     env_file: [{ path: services/ms-contratos/.env, required: false }]
     environment:
       PORT: 3004
+      DATABASE_URL: *database-url
+      DB_SCHEMA: contratos
       PERSONAL_SERVICE_URL: http://ms-personal:3002
       GOTENBERG_URL: http://gotenberg:3000
+    depends_on: [db]
 
   ms-boletas:
     build: { context: ., dockerfile: services/ms-boletas/Dockerfile }
     env_file: [{ path: services/ms-boletas/.env, required: false }]
     environment:
       PORT: 3005
+      DATABASE_URL: *database-url
+      DB_SCHEMA: boletas
       PERSONAL_SERVICE_URL: http://ms-personal:3002
       GOTENBERG_URL: http://gotenberg:3000
+    depends_on: [db]
 
   gotenberg:
     image: gotenberg/gotenberg:8
+
+volumes:
+  db-data:

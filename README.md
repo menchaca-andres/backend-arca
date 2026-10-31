@@ -9,7 +9,7 @@ docs/                 C4, ADRs, contratos internos y modelo de datos
 packages/shared/      código común (@arca/shared)
 gateway/              API Gateway, schema auditoria (puerto 8080)
 services/
-  ms-auth/            schema auth (3001)
+  ms-auth/            schema autenticacion (3001)
   ms-personal/        schema personal (3002)
   ms-vacaciones/      schema vacaciones (3003)
   ms-contratos/       schema contratos (3004)
@@ -28,15 +28,27 @@ Dockerfile
 .env.example
 ```
 
+## Empezar a trabajar
+
+Solo necesitas Node 20 o superior y Docker Desktop abierto.
+
+```bash
+npm install       # instala todo y compila @arca/shared
+npm run setup     # crea los .env y levanta la base local con los 6 schemas
+npm run db:migrate
+npm run dev --workspace=ms-personal    # el servicio de tu HU
+```
+
+No hay que editar ningún `.env`: los valores de desarrollo ya vienen listos. La base local usa el puerto 5433 para no chocar con un Postgres instalado en la máquina.
+
 ## Comandos
 
 ```bash
-npm install                                  # instala todo y compila @arca/shared
-cp services/ms-auth/.env.example services/ms-auth/.env   # uno por servicio
-npm run dev --workspace=ms-auth              # un servicio en desarrollo
-npm run build                                # compila todos
-npm test                                     # pruebas de todos
-npm run docker:up                            # levanta todo con Docker Compose
+npm run build         # compila todos
+npm test              # pruebas de todos
+npm run db:up         # levanta la base si está apagada
+npm run db:reset      # borra la base local y la crea de nuevo
+npm run docker:up     # levanta todo con Docker Compose
 ```
 
 Cada servicio responde `GET /health`.

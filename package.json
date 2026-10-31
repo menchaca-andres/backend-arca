@@ -12,6 +12,10 @@
     "build": "npm run build --workspaces",
     "test": "npm run test --workspaces --if-present",
     "docker:up": "docker compose up --build",
-    "docker:down": "docker compose down"
+    "docker:down": "docker compose down",
+    "setup": "node scripts/setup.js",
+    "db:up": "docker compose up -d --wait db",
+    "db:reset": "docker compose down -v db && docker compose up -d --wait db",
+    "db:migrate": "npm run migration:run --workspaces --if-present"
   }
 }

@@ -24,7 +24,7 @@ Para ver los diagramas: abrir los `.puml` con la extensión *PlantUML* de VS Cod
 ## 2. Arquitectura en una mirada
 
 - **Frontend (SPA)** → **API Gateway** → 5 microservicios: `ms-auth`, `ms-personal`, `ms-vacaciones`, `ms-contratos`, `ms-boletas`.
-- **PostgreSQL** (una instancia en la nube, 6 schemas): `auth`, `personal`, `vacaciones`, `contratos`, `boletas`, `auditoria`. Áreas y cargos viven en `personal`; feriados en `vacaciones`; `auditoria` lo escribe el Gateway (HU-24).
+- **PostgreSQL** (una instancia en la nube, 6 schemas): `autenticacion`, `personal`, `vacaciones`, `contratos`, `boletas`, `auditoria`. Áreas y cargos viven en `personal`; feriados en `vacaciones`; `auditoria` lo escribe el Gateway (HU-24).
 - **Gotenberg** convierte HTML a PDF para contratos y boletas.
 - Los PDFs se guardan en la BD (`bytea`), en tablas separadas de los metadatos.
 
