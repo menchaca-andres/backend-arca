@@ -647,3 +647,15 @@ new DataSource({
 | `bytea` del PDF | `@Column('bytea', { select: false }) contenido!: Buffer;` |
 
 Los enums (`EstadoFuncionario`, `RolUsuario`, etc.) se definen una vez en `packages/shared/src/enums.ts`, porque varios aparecen en más de un servicio (por ejemplo, el estado del funcionario viaja en el contrato interno).
+
+---
+
+## 10. Dudas
+
+| # | Tabla / columna | HU afectada | Duda |
+|---|---|---|---|
+| 1 | Schema `auth` completo | HU-03, HU-05, HU-06 | Supabase ya usa un schema `auth` para su propio servicio de autenticación y lo administra él. Las migraciones de `ms-auth` se probaron en Postgres local, donde el schema está libre, pero en Supabase podrían no poder crear tablas ahí, y mezclarían las nuestras con las suyas. Hay que probarlo al crear la base; si falla, el schema necesita otro nombre (por ejemplo `autenticacion`), y eso cambia este documento, ADR-002 y `DB_SCHEMA`. |
+| 2 | `funcionario.ci`, `funcionario` sin `usuario_id` | HU-06, HU-08 | `internal-contracts.openapi.yaml` expone `documentoIdentidad` y `usuarioId`. Aquí la columna es `ci`, y el vínculo está en `usuario.funcionario_id`. El endpoint debe traducir `ci`, pero `usuarioId` no se puede sacar de `personal` sin llamar a `ms-auth`. Falta decidir si `usuarioId` sale del contrato. |
+| 3 | `boleta_detalle`, `evento` | HU-21, HU-24 | El handoff dice que estas tablas llevan `created_at`, pero este documento no se lo pone: `boleta_detalle` no tiene fecha y `evento` usa `fecha`. Se siguió este documento. |
+| 4 | `boleta_detalle.tipo`, `concepto.tipo` | HU-20, HU-21 | TypeORM genera dos veces `CREATE TYPE tipo_concepto` porque dos tablas comparten `enumName`, y la migración no corre. Se quitó a mano el `CREATE` y el `DROP` duplicados de la migración de `ms-boletas`, aunque la regla es no editarlas. `migration:generate --check` confirma que no hay diferencias con las entities. |
+| 5 | Todas las PK `uuid` | HU-03 | Los `DataSource` usan `uuidExtension: 'pgcrypto'` y `installExtensions: false`, para que el default sea `gen_random_uuid()` (incluida en Postgres) y no `uuid_generate_v4()`. Esta última depende de la extensión `uuid-ossp`, que queda instalada en un solo schema y no la verían los roles de los demás servicios. |
