@@ -5,7 +5,7 @@
 
 | Schema | Dueño | Tablas |
 |---|---|---|
-| `auth` | ms-auth | `usuario` |
+| `autenticacion` | ms-auth | `usuario` |
 | `personal` | ms-personal | `area`, `cargo`, `funcionario`, `asignacion_laboral` |
 | `vacaciones` | ms-vacaciones | `feriado`, `solicitud_vacacion` |
 | `contratos` | ms-contratos | `plantilla`, `plantilla_version`, `contrato`, `contrato_pdf`, `correlativo` |
@@ -23,14 +23,14 @@
 5. **Fechas de negocio** (ingreso, vigencias, vacaciones, baja): tipo `date`, y en TypeScript se manejan como `string` `'YYYY-MM-DD'`. No se convierten a `Date` de JavaScript: Bolivia es UTC-4 y un `Date` a medianoche se corre al día anterior.
 6. **Instantes** (creación, emisión, resolución, login): `timestamptz`.
 7. **Auditoría de fila:** toda tabla editable tiene `created_at` y `updated_at` (`@CreateDateColumn`, `@UpdateDateColumn`). Las tablas inmutables solo tienen `created_at`.
-8. **Quién hizo la acción:** columnas `*_por` (`registrado_por`, `resuelto_por`, `generado_por`, etc.) guardan el `uuid` del usuario que llega en `X-User-Id`. No llevan FK porque el usuario vive en `auth`.
+8. **Quién hizo la acción:** columnas `*_por` (`registrado_por`, `resuelto_por`, `generado_por`, etc.) guardan el `uuid` del usuario que llega en `X-User-Id`. No llevan FK porque el usuario vive en `autenticacion`.
 9. **Enums:** se declaran como `enum` de Postgres desde TypeORM (`type: 'enum'`). Los valores van en MAYÚSCULAS y son los mismos que en el OpenAPI.
 10. **Snapshots:** cuando un documento debe quedar como fue emitido (contrato, boleta) o cuando una lista se muestra sin llamar a otro servicio (bandeja de vacaciones), se copia el dato en ese momento. El snapshot no se actualiza si cambia el original.
 11. **Migraciones:** cada `DataSource` usa `schema: '<su schema>'` y `migrationsTableName: 'migrations'`, así la tabla de control de migraciones queda dentro del schema del servicio y nadie pisa las migraciones de otro.
 
 ---
 
-## 2. Schema `auth` (ms-auth)
+## 2. Schema `autenticacion` (ms-auth)
 
 ```mermaid
 erDiagram
@@ -611,11 +611,11 @@ El rol de BD del gateway solo tiene `INSERT` y `SELECT` sobre esta tabla (HU-24 
 
 | Columna | Está en | Apunta a | Se valida con |
 |---|---|---|---|
-| `usuario.funcionario_id` | auth | personal.funcionario | `GET /internal/funcionarios/:id` al crear el usuario (HU-06) |
+| `usuario.funcionario_id` | autenticacion | personal.funcionario | `GET /internal/funcionarios/:id` al crear el usuario (HU-06) |
 | `solicitud_vacacion.funcionario_id` | vacaciones | personal.funcionario | `GET /internal/funcionarios/:id` al solicitar (HU-14) |
 | `contrato.funcionario_id` | contratos | personal.funcionario | `GET /internal/funcionarios/:id` al generar (HU-18) |
 | `novedad.funcionario_id`, `boleta.funcionario_id` | boletas | personal.funcionario | `GET /internal/funcionarios?...` al calcular (HU-21) |
-| `*_por`, `evento.usuario_id` | todos | auth.usuario | viene en `X-User-Id`, ya validado por el gateway |
+| `*_por`, `evento.usuario_id` | todos | autenticacion.usuario | viene en `X-User-Id`, ya validado por el gateway |
 
 ---
 

@@ -18,7 +18,7 @@ System_Boundary(gh, "Sistema de Gestión Humana") {
   Container(contr, "ms-contratos", "Node.js + TypeScript + Express", "Contratos parametrizables y su PDF")
   Container(bol, "ms-boletas", "Node.js + TypeScript + Express", "Cálculo y almacenamiento de pagos y boletas")
   Container(gotenberg, "Gotenberg", "Docker (Chromium)", "Convierte HTML a PDF (contratos y boletas)")
-  ContainerDb(db, "PostgreSQL (nube)", "PostgreSQL", "Una instancia, 6 schemas: auth, personal, vacaciones, contratos, boletas, auditoria")
+  ContainerDb(db, "PostgreSQL (nube)", "PostgreSQL", "Una instancia, 6 schemas: autenticacion, personal, vacaciones, contratos, boletas, auditoria")
 }
 
 Rel(rrhh, spa, "Usa", "HTTPS")
@@ -41,7 +41,7 @@ Rel(bol, personal, "Consulta funcionarios activos del periodo", "GET /internal/f
 Rel(contr, gotenberg, "Genera PDF del contrato", "HTTP multipart")
 Rel(bol, gotenberg, "Genera PDF de la boleta", "HTTP multipart")
 
-Rel(auth, db, "Lee/escribe schema auth", "TypeORM")
+Rel(auth, db, "Lee/escribe schema autenticacion", "TypeORM")
 Rel(personal, db, "Lee/escribe schema personal", "TypeORM")
 Rel(gw, db, "Inserta en schema auditoria", "TypeORM")
 Rel(vac, db, "Lee/escribe schema vacaciones", "TypeORM")
