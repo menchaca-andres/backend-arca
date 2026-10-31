@@ -52,14 +52,3 @@ npm run docker:up     # levanta todo con Docker Compose
 ```
 
 Cada servicio responde `GET /health`.
-
-## Migraciones (Postgres local)
-
-Se usa el puerto 5433, como en los `.env.example`, para no chocar con un Postgres instalado en la máquina.
-
-```bash
-docker run -d --name arca-pg -p 5433:5432 -e POSTGRES_PASSWORD=dev -e POSTGRES_DB=arca postgres:16
-docker exec arca-pg psql -U postgres -d arca -c "CREATE SCHEMA auth; CREATE SCHEMA personal; CREATE SCHEMA vacaciones; CREATE SCHEMA contratos; CREATE SCHEMA boletas; CREATE SCHEMA auditoria;"
-npm run migration:run --workspace=ms-personal    # lee services/ms-personal/.env; repetir por servicio
-npm run migration:revert --workspace=ms-personal
-```
