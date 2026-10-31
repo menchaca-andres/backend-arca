@@ -192,7 +192,8 @@ Si dos tablas de un schema comparten enum, TypeORM genera dos veces el `CREATE T
 
 | HU | Servicio | Qué ya tienes | Qué te toca |
 |---|---|---|---|
-| HU-03 | Todos | Estructura, Dockerfile, `docker-compose.yml` y `.env.example` | Base en Supabase, roles y `GRANT` por schema, y correr ahí las migraciones y la semilla |
+| HU-03 | Todos | Workspace npm, plantilla con capas y `/health`, `DataSource`, Jest y Supertest, un Dockerfile por servicio y `docker-compose.yml` | Revisar lo ya hecho contra sus subtareas. Falta la base en Supabase con roles y `GRANT` por schema, el proxy del gateway con CORS y request-id, ESLint y el pipeline de CI |
+| HU-04 | `frontend-arca` | Estructura de `features/` por módulo y `services/api.ts` | La base del frontend |
 | HU-05, HU-06 | `ms-auth` | `UsuarioRepository` con `findByEmailWithPassword` | Login, JWT, bloqueo por intentos y usuarios iniciales |
 | HU-07 | `ms-personal` | `AreaRepository`, `CargoRepository` | CRUD de áreas y cargos |
 | HU-08 a HU-12 | `ms-personal` | `FuncionarioRepository`, `AsignacionLaboralRepository` y la semilla | Alta, historial, ratificación y baja |
@@ -200,7 +201,8 @@ Si dos tablas de un schema comparten enum, TypeORM genera dos veces el `CREATE T
 | HU-17 a HU-19 | `ms-contratos` | Repositories de plantilla, contrato, PDF y correlativo | Plantillas, generación y descarga |
 | HU-20 a HU-23 | `ms-boletas` | Repositories de concepto, período, novedad, boleta, PDF y correlativo | Semilla de conceptos, cálculo, emisión y el trigger de inmutabilidad |
 | HU-24 | `gateway` | `EventoRepository` | Registrar la auditoría en cada petición |
-| HU-27 | `ms-personal` | La semilla como ejemplo | Semilla grande de demo |
+| HU-25 | `gateway` | Puerto y URLs de los servicios en `.env.example` | Dashboard: endpoints `/internal/stats` y agregador |
+| HU-27 | Todos | La semilla de `ms-personal` como ejemplo | Semilla de demo por servicio y comando de reinicio |
 
 ## 7. Decisiones y pendientes
 
@@ -228,3 +230,4 @@ Pendientes:
 | [api/internal-contracts.openapi.yaml](../api/internal-contracts.openapi.yaml) | Contratos entre servicios |
 | [c4/](../c4/) | Diagramas C4 |
 | [supuestos-negocio.md](../supuestos-negocio.md) | Supuestos de negocio |
+| [BacklogOficial.csv](../BacklogOficial.csv) | Backlog del proyecto, con las HU y sus tareas |
