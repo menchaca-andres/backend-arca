@@ -7,13 +7,21 @@
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
-    "test": "jest"
+    "test": "jest --runInBand",
+    "migration:generate": "typeorm-ts-node-commonjs migration:generate src/migrations/InitialSchema -d src/data-source.ts",
+    "migration:run": "typeorm-ts-node-commonjs migration:run -d src/data-source.ts",
+    "migration:revert": "typeorm-ts-node-commonjs migration:revert -d src/data-source.ts",
+    "seed:dev": "ts-node src/seeds/dev.seed.ts"
   },
   "dependencies": {
     "@arca/shared": "*",
     "cors": "^2.8.6",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
+    "pg": "^8.23.1",
+    "reflect-metadata": "^0.2.2",
+    "typeorm": "^0.3.31",
+    "typeorm-naming-strategies": "^4.1.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
@@ -25,12 +33,19 @@
     "jest": "^29.7.0",
     "supertest": "^7.0.0",
     "ts-jest": "^29.1.2",
+    "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.4.5"
   },
   "jest": {
     "preset": "ts-jest",
     "testEnvironment": "node",
-    "roots": ["<rootDir>/tests"]
+    "roots": [
+      "<rootDir>/tests"
+    ],
+    "testTimeout": 60000,
+    "testMatch": [
+      "**/*.test.ts"
+    ]
   }
 }

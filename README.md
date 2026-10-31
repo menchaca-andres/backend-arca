@@ -1,11 +1,11 @@
 # backend-arca
 
-Microservicios del Sistema de Gestión Humana de ARCA Ltda. Node.js + TypeScript + Express, TypeORM y PostgreSQL. La arquitectura y las convenciones están en [docs/HU-01_Arquitectura_Contexto_Equipo.md](docs/HU-01_Arquitectura_Contexto_Equipo.md) y el modelo de datos en [docs/data-model.md](docs/data-model.md).
+Microservicios del Sistema de Gestión Humana de ARCA Ltda. Node.js + TypeScript + Express, TypeORM y PostgreSQL. La arquitectura y las convenciones están en [docs/Sprints/1/HU-01_Arquitectura_Contexto_Equipo.md](docs/Sprints/1/HU-01_Arquitectura_Contexto_Equipo.md) y el modelo de datos en [docs/Sprints/1/Alan/data-model.md](docs/Sprints/1/Alan/data-model.md).
 
 ## Estructura
 
 ```
-docs/                 C4, ADRs, contratos internos y modelo de datos
+docs/Sprints/         documentación por sprint: C4, ADRs, contratos y modelo de datos
 packages/shared/      código común (@arca/shared)
 gateway/              API Gateway, schema auditoria (puerto 8080)
 services/
@@ -36,6 +36,7 @@ Solo necesitas Node 20 o superior y Docker Desktop abierto.
 npm install       # instala todo y compila @arca/shared
 npm run setup     # crea los .env y levanta la base local con los 6 schemas
 npm run db:migrate
+npm run db:seed
 npm run dev --workspace=ms-personal    # el servicio de tu HU
 ```
 
@@ -52,3 +53,12 @@ npm run docker:up     # levanta todo con Docker Compose
 ```
 
 Cada servicio responde `GET /health`.
+
+## Semilla y pruebas
+
+```bash
+npm run db:seed   # 3 áreas, 5 cargos y 5 funcionarios; se puede correr varias veces
+npm test          # necesita la base levantada y migrada
+```
+
+Las pruebas de repositories usan la base local y borran lo que crean.
