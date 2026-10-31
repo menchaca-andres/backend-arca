@@ -1,6 +1,6 @@
 # backend-arca
 
-Microservicios del Sistema de Gestión Humana de ARCA Ltda. Node.js + TypeScript + Express, TypeORM y PostgreSQL. La arquitectura y las convenciones están en [docs/Sprints/1/HU-01_Arquitectura_Contexto_Equipo.md](docs/Sprints/1/HU-01_Arquitectura_Contexto_Equipo.md) y el modelo de datos en [docs/Sprints/1/Alan/data-model.md](docs/Sprints/1/Alan/data-model.md).
+Microservicios del Sistema de Gestión Humana de ARCA Ltda. Node.js + TypeScript + Express, TypeORM y PostgreSQL. La arquitectura y las convenciones están en [docs/Sprints/1/HU-01_Arquitectura_Contexto_Equipo.md](docs/Sprints/1/HU-01_Arquitectura_Contexto_Equipo.md) y el modelo de datos en [docs/Sprints/1/HU2/data-model.md](docs/Sprints/1/HU2/data-model.md).
 
 ## Estructura
 

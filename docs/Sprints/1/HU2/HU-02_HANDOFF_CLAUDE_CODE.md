@@ -12,14 +12,14 @@ Este archivo explica dónde quedó la HU-02 y qué falta para terminarla. Léelo
 
 | Archivo | Qué contiene |
 |---|---|
-| `docs/Sprints/1/Alan/data-model.md` | **El modelo completo.** 6 schemas, 20 tablas, cada columna con tipo, nulabilidad, CHECK, índices y la HU que la usa. Las entities deben salir de aquí, columna por columna. |
+| `docs/Sprints/1/HU2/data-model.md` | **El modelo completo.** 6 schemas, 20 tablas, cada columna con tipo, nulabilidad, CHECK, índices y la HU que la usa. Las entities deben salir de aquí, columna por columna. |
 | `docs/Sprints/1/adr/ADR-002-schema-por-servicio.md` | Un schema por servicio, sin FK entre schemas. |
 | `docs/Sprints/1/adr/ADR-005-typeorm.md` | TypeORM solo en repositories, `synchronize: false`, migraciones. |
 | `docs/Sprints/1/adr/ADR-006-pdf-en-bd-bytea.md` | PDF en tabla aparte, `select: false`. |
 | `docs/Sprints/1/api/internal-contracts.openapi.yaml` | Contratos entre servicios. Los enums deben coincidir con este archivo. |
 | `docs/Sprints/1/HU-01_Arquitectura_Contexto_Equipo.md` | Convenciones del equipo: capas, estructura de carpetas, errores, puertos. |
 
-Si algo de este handoff contradice `docs/Sprints/1/Alan/data-model.md`, **manda `data-model.md`**. Si `data-model.md` contradice otra HU, no lo resuelvas solo: déjalo anotado y pregúntame.
+Si algo de este handoff contradice `docs/Sprints/1/HU2/data-model.md`, **manda `data-model.md`**. Si `data-model.md` contradice otra HU, no lo resuelvas solo: déjalo anotado y pregúntame.
 
 ---
 
@@ -36,8 +36,8 @@ Si algo de este handoff contradice `docs/Sprints/1/Alan/data-model.md`, **manda 
 
 **Hecho:**
 - [x] HU-01: C4, ADRs, contratos internos (en `docs/`).
-- [x] HU-02 T1 – Diseño del MER: `docs/Sprints/1/Alan/data-model.md`, con un diagrama Mermaid por schema.
-- [x] HU-02 T4 (parte 1) – Diccionario de datos: es el mismo `docs/Sprints/1/Alan/data-model.md`.
+- [x] HU-02 T1 – Diseño del MER: `docs/Sprints/1/HU2/data-model.md`, con un diagrama Mermaid por schema.
+- [x] HU-02 T4 (parte 1) – Diccionario de datos: es el mismo `docs/Sprints/1/HU2/data-model.md`.
 
 **Falta (esto es lo que vas a hacer):**
 - [ ] T2 – Entities de TypeORM de los 6 schemas + migración inicial por servicio.
@@ -172,7 +172,7 @@ Sirve para que en el Sprint 2 las HU-09 a HU-14 no se traben esperando el alta d
 
 ## 8. Cuándo está terminada esta etapa
 
-- [ ] Las 20 entities existen y coinciden con `docs/Sprints/1/Alan/data-model.md`, columna por columna.
+- [ ] Las 20 entities existen y coinciden con `docs/Sprints/1/HU2/data-model.md`, columna por columna.
 - [ ] `packages/shared` tiene los enums y el `numericTransformer`.
 - [ ] Cada servicio tiene su migración inicial, y `migration:run` + `migration:revert` corren limpios en el Postgres local.
 - [ ] Los CHECK y los 4 índices parciales aparecen en las migraciones.
@@ -187,4 +187,4 @@ Sirve para que en el Sprint 2 las HU-09 a HU-14 no se traben esperando el alta d
 
 ## 9. Si encuentras algo que no cuadra
 
-No inventes una solución que cambie el modelo. Anótalo en una sección **"Dudas"** al final de `docs/Sprints/1/Alan/data-model.md`, con la tabla, la columna y qué HU afecta, y sigue con lo demás.
+No inventes una solución que cambie el modelo. Anótalo en una sección **"Dudas"** al final de `docs/Sprints/1/HU2/data-model.md`, con la tabla, la columna y qué HU afecta, y sigue con lo demás.
