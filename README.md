@@ -36,6 +36,7 @@ Solo necesitas Node 20 o superior y Docker Desktop abierto.
 npm install       # instala todo y compila @arca/shared
 npm run setup     # crea los .env y levanta la base local con los 6 schemas
 npm run db:migrate
+npm run db:seed
 npm run dev --workspace=ms-personal    # el servicio de tu HU
 ```
 
@@ -52,3 +53,12 @@ npm run docker:up     # levanta todo con Docker Compose
 ```
 
 Cada servicio responde `GET /health`.
+
+## Semilla y pruebas
+
+```bash
+npm run db:seed   # 3 áreas, 5 cargos y 5 funcionarios; se puede correr varias veces
+npm test          # necesita la base levantada y migrada
+```
+
+Las pruebas de repositories usan la base local y borran lo que crean.

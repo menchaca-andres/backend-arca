@@ -7,7 +7,7 @@
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
-    "test": "jest",
+    "test": "jest --runInBand",
     "migration:generate": "typeorm-ts-node-commonjs migration:generate src/migrations/InitialSchema -d src/data-source.ts",
     "migration:run": "typeorm-ts-node-commonjs migration:run -d src/data-source.ts",
     "migration:revert": "typeorm-ts-node-commonjs migration:revert -d src/data-source.ts"
@@ -41,6 +41,10 @@
     "testEnvironment": "node",
     "roots": [
       "<rootDir>/tests"
+    ],
+    "testTimeout": 60000,
+    "testMatch": [
+      "**/*.test.ts"
     ]
   }
 }
