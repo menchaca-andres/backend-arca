@@ -1,91 +1,219 @@
-# Desarrollo local: base en Docker con los 6 schemas. La HU-03 cambia DATABASE_URL a Supabase (ADR-004).
-x-database-url: &database-url postgres://postgres:dev@db:5432/arca
+# Desarrollo local: credenciales publicas de docker/init-schemas.sql.
+# INTERNAL_API_KEY se obtiene del .env de la raiz.
+# Contexto raiz para el backend: sus Dockerfiles necesitan packages/shared.
+
+x-http-healthcheck: &http-healthcheck
+  interval: 10s
+  timeout: 5s
+  retries: 6
+  start_period: 20s
+
+x-backend-runtime: &backend-runtime
+  init: true
+  restart: unless-stopped
+  networks:
+    - backend
+
+x-common-environment: &common-environment
+  INTERNAL_API_KEY: ${INTERNAL_API_KEY:?Configura INTERNAL_API_KEY en el .env de la raiz}
 
 services:
   db:
     image: postgres:16
+    restart: unless-stopped
     environment:
-      POSTGRES_PASSWORD: dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
       POSTGRES_DB: arca
-    ports: ["5433:5432"]
+    ports:
+      - "5433:5432"
     volumes:
       - db-data:/var/lib/postgresql/data
       - ./docker/init-schemas.sql:/docker-entrypoint-initdb.d/init-schemas.sql:ro
+    networks:
+      - backend
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -h localhost -U postgres -d arca"]
+      test: ["CMD", "pg_isready", "-h", "127.0.0.1", "-U", "postgres", "-d", "arca"]
       interval: 3s
       timeout: 3s
       retries: 20
+      start_period: 10s
+
+  gotenberg:
+    <<: *backend-runtime
+    image: gotenberg/gotenberg:8
+    expose:
+      - "3000"
+    healthcheck:
+      <<: *http-healthcheck
+      start_period: 30s
+      test: ["CMD", "curl", "-fsS", "--max-time", "4", "http://localhost:3000/health"]
+
+  ms-auth:
+    <<: *backend-runtime
+    build:
+      context: .
+      dockerfile: services/ms-auth/Dockerfile
+    environment:
+      <<: *common-environment
+      PORT: "3001"
+      DATABASE_URL: "postgres://user_auth:arca_local_auth_2026@db:5432/arca"
+      DB_SCHEMA: autenticacion
+      PERSONAL_SERVICE_URL: http://ms-personal:3002
+    expose:
+      - "3001"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      <<: *http-healthcheck
+      test: ["CMD", "curl", "-fsS", "--max-time", "4", "http://localhost:3001/health"]
+
+  ms-personal:
+    <<: *backend-runtime
+    build:
+      context: .
+      dockerfile: services/ms-personal/Dockerfile
+    environment:
+      <<: *common-environment
+      PORT: "3002"
+      DATABASE_URL: "postgres://user_personal:arca_local_personal_2026@db:5432/arca"
+      DB_SCHEMA: personal
+      AUTH_SERVICE_URL: http://ms-auth:3001
+    expose:
+      - "3002"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      <<: *http-healthcheck
+      test: ["CMD", "curl", "-fsS", "--max-time", "4", "http://localhost:3002/health"]
+
+  ms-vacaciones:
+    <<: *backend-runtime
+    build:
+      context: .
+      dockerfile: services/ms-vacaciones/Dockerfile
+    environment:
+      <<: *common-environment
+      PORT: "3003"
+      DATABASE_URL: "postgres://user_vacaciones:arca_local_vacaciones_2026@db:5432/arca"
+      DB_SCHEMA: vacaciones
+      PERSONAL_SERVICE_URL: http://ms-personal:3002
+    expose:
+      - "3003"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      <<: *http-healthcheck
+      test: ["CMD", "curl", "-fsS", "--max-time", "4", "http://localhost:3003/health"]
+
+  ms-contratos:
+    <<: *backend-runtime
+    build:
+      context: .
+      dockerfile: services/ms-contratos/Dockerfile
+    environment:
+      <<: *common-environment
+      PORT: "3004"
+      DATABASE_URL: "postgres://user_contratos:arca_local_contratos_2026@db:5432/arca"
+      DB_SCHEMA: contratos
+      PERSONAL_SERVICE_URL: http://ms-personal:3002
+      GOTENBERG_URL: http://gotenberg:3000
+    expose:
+      - "3004"
+    depends_on:
+      db:
+        condition: service_healthy
+      gotenberg:
+        condition: service_healthy
+    healthcheck:
+      <<: *http-healthcheck
+      test: ["CMD", "curl", "-fsS", "--max-time", "4", "http://localhost:3004/health"]
+
+  ms-boletas:
+    <<: *backend-runtime
+    build:
+      context: .
+      dockerfile: services/ms-boletas/Dockerfile
+    environment:
+      <<: *common-environment
+      PORT: "3005"
+      DATABASE_URL: "postgres://user_boletas:arca_local_boletas_2026@db:5432/arca"
+      DB_SCHEMA: boletas
+      PERSONAL_SERVICE_URL: http://ms-personal:3002
+      GOTENBERG_URL: http://gotenberg:3000
+    expose:
+      - "3005"
+    depends_on:
+      db:
+        condition: service_healthy
+      gotenberg:
+        condition: service_healthy
+    healthcheck:
+      <<: *http-healthcheck
+      test: ["CMD", "curl", "-fsS", "--max-time", "4", "http://localhost:3005/health"]
 
   gateway:
-    build: { context: ., dockerfile: gateway/Dockerfile }
-    env_file: [{ path: gateway/.env, required: false }]
+    <<: *backend-runtime
+    build:
+      context: .
+      dockerfile: gateway/Dockerfile
     environment:
-      PORT: 8080
-      DATABASE_URL: *database-url
+      <<: *common-environment
+      PORT: "8080"
+      DATABASE_URL: "postgres://user_gateway:arca_local_gateway_2026@db:5432/arca"
       DB_SCHEMA: auditoria
       AUTH_SERVICE_URL: http://ms-auth:3001
       PERSONAL_SERVICE_URL: http://ms-personal:3002
       VACACIONES_SERVICE_URL: http://ms-vacaciones:3003
       CONTRATOS_SERVICE_URL: http://ms-contratos:3004
       BOLETAS_SERVICE_URL: http://ms-boletas:3005
-    ports: ["8080:8080"]
-    depends_on: [db, ms-auth, ms-personal, ms-vacaciones, ms-contratos, ms-boletas]
+    ports:
+      - "8080:8080"
+    networks:
+      - backend
+      - web
+    depends_on:
+      db:
+        condition: service_healthy
+      ms-auth:
+        condition: service_healthy
+      ms-personal:
+        condition: service_healthy
+      ms-vacaciones:
+        condition: service_healthy
+      ms-contratos:
+        condition: service_healthy
+      ms-boletas:
+        condition: service_healthy
+    healthcheck:
+      <<: *http-healthcheck
+      test: ["CMD", "curl", "-fsS", "--max-time", "4", "http://localhost:8080/health"]
 
-  ms-auth:
-    build: { context: ., dockerfile: services/ms-auth/Dockerfile }
-    env_file: [{ path: services/ms-auth/.env, required: false }]
-    environment:
-      PORT: 3001
-      DATABASE_URL: *database-url
-      DB_SCHEMA: autenticacion
-      PERSONAL_SERVICE_URL: http://ms-personal:3002
-    depends_on: [db]
-
-  ms-personal:
-    build: { context: ., dockerfile: services/ms-personal/Dockerfile }
-    env_file: [{ path: services/ms-personal/.env, required: false }]
-    environment:
-      PORT: 3002
-      DATABASE_URL: *database-url
-      DB_SCHEMA: personal
-      AUTH_SERVICE_URL: http://ms-auth:3001
-    depends_on: [db]
-
-  ms-vacaciones:
-    build: { context: ., dockerfile: services/ms-vacaciones/Dockerfile }
-    env_file: [{ path: services/ms-vacaciones/.env, required: false }]
-    environment:
-      PORT: 3003
-      DATABASE_URL: *database-url
-      DB_SCHEMA: vacaciones
-      PERSONAL_SERVICE_URL: http://ms-personal:3002
-    depends_on: [db]
-
-  ms-contratos:
-    build: { context: ., dockerfile: services/ms-contratos/Dockerfile }
-    env_file: [{ path: services/ms-contratos/.env, required: false }]
-    environment:
-      PORT: 3004
-      DATABASE_URL: *database-url
-      DB_SCHEMA: contratos
-      PERSONAL_SERVICE_URL: http://ms-personal:3002
-      GOTENBERG_URL: http://gotenberg:3000
-    depends_on: [db]
-
-  ms-boletas:
-    build: { context: ., dockerfile: services/ms-boletas/Dockerfile }
-    env_file: [{ path: services/ms-boletas/.env, required: false }]
-    environment:
-      PORT: 3005
-      DATABASE_URL: *database-url
-      DB_SCHEMA: boletas
-      PERSONAL_SERVICE_URL: http://ms-personal:3002
-      GOTENBERG_URL: http://gotenberg:3000
-    depends_on: [db]
-
-  gotenberg:
-    image: gotenberg/gotenberg:8
+  frontend:
+    build:
+      context: ../frontend-arca
+      dockerfile: Dockerfile
+    init: true
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    networks:
+      - web
+    depends_on:
+      gateway:
+        condition: service_healthy
+    healthcheck:
+      <<: *http-healthcheck
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/"]
 
 volumes:
   db-data:
+
+networks:
+  backend:
+    driver: bridge
+  web:
+    driver: bridge

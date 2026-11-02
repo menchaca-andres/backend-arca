@@ -6,6 +6,7 @@ RUN npm ci --workspace=@arca/shared --workspace=ms-personal --include-workspace-
 RUN npm run build --workspace=@arca/shared --workspace=ms-personal
 
 FROM node:20-alpine AS runner
+RUN apk add --no-cache curl
 WORKDIR /app
 ENV NODE_ENV=production
 COPY . .

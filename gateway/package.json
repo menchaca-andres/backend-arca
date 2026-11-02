@@ -17,6 +17,7 @@
     "cors": "^2.8.6",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
+    "http-proxy-middleware": "^3.0.10",
     "pg": "^8.23.1",
     "reflect-metadata": "^0.2.2",
     "typeorm": "^0.3.31",
@@ -38,6 +39,7 @@
   },
   "jest": {
     "preset": "ts-jest",
+    "setupFiles": ["<rootDir>/tests/setup-env.ts"],
     "testEnvironment": "node",
     "roots": [
       "<rootDir>/tests"
