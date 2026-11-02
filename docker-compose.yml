@@ -1,5 +1,21 @@
-# Desarrollo local: base en Docker con los 6 schemas. La HU-03 cambia DATABASE_URL a Supabase (ADR-004).
+# Desarrollo local completo: base con los 6 schemas, migraciones/semilla,
+# 5 microservicios, gateway, Gotenberg y frontend.
+#
+# `docker compose up --build` deja el sistema listo sin pasos manuales.
+# El frontend se construye desde ../frontend-arca, así que ambos repos deben
+# estar clonados uno al lado del otro (backend-arca/ y frontend-arca/).
+#
+# Para Supabase, cambiá DATABASE_URL por la cadena del Session pooler con
+# sslmode=require y corré las migraciones con `npm run db:migrate` (ver
+# docs/Sprints/1/HU3/HU-03-infraestructura.md).
+
 x-database-url: &database-url postgres://postgres:dev@db:5432/arca
+
+x-service-env: &service-env
+  DATABASE_URL: *database-url
+  INTERNAL_API_KEY: ${INTERNAL_API_KEY:-dev-internal-key}
+  LOG_LEVEL: ${LOG_LEVEL:-info}
+  DB_POOL_MAX: ${DB_POOL_MAX:-5}
 
 services:
   db:
@@ -17,75 +33,215 @@ services:
       timeout: 3s
       retries: 20
 
+  # Aplica migraciones y semilla una sola vez. Los servicios esperan a que termine.
+  init:
+    build: { context: ., dockerfile: docker/Dockerfile.init }
+    environment:
+      DATABASE_URL: *database-url
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
   gateway:
     build: { context: ., dockerfile: gateway/Dockerfile }
     env_file: [{ path: gateway/.env, required: false }]
     environment:
+      <<: *service-env
       PORT: 8080
-      DATABASE_URL: *database-url
       DB_SCHEMA: auditoria
+      JWT_SECRET: ${JWT_SECRET:-dev-jwt-secret}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173,http://127.0.0.1:5173}
       AUTH_SERVICE_URL: http://ms-auth:3001
       PERSONAL_SERVICE_URL: http://ms-personal:3002
       VACACIONES_SERVICE_URL: http://ms-vacaciones:3003
       CONTRATOS_SERVICE_URL: http://ms-contratos:3004
       BOLETAS_SERVICE_URL: http://ms-boletas:3005
     ports: ["8080:8080"]
-    depends_on: [db, ms-auth, ms-personal, ms-vacaciones, ms-contratos, ms-boletas]
+    depends_on:
+      db:
+        condition: service_healthy
+      init:
+        condition: service_completed_successfully
+      ms-auth:
+        condition: service_healthy
+      ms-personal:
+        condition: service_healthy
+      ms-vacaciones:
+        condition: service_healthy
+      ms-contratos:
+        condition: service_healthy
+      ms-boletas:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:8080/health').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 20s
 
   ms-auth:
     build: { context: ., dockerfile: services/ms-auth/Dockerfile }
     env_file: [{ path: services/ms-auth/.env, required: false }]
     environment:
+      <<: *service-env
       PORT: 3001
-      DATABASE_URL: *database-url
       DB_SCHEMA: autenticacion
+      JWT_SECRET: ${JWT_SECRET:-dev-jwt-secret}
       PERSONAL_SERVICE_URL: http://ms-personal:3002
-    depends_on: [db]
+    depends_on:
+      db:
+        condition: service_healthy
+      init:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3001/health').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 20s
 
   ms-personal:
     build: { context: ., dockerfile: services/ms-personal/Dockerfile }
     env_file: [{ path: services/ms-personal/.env, required: false }]
     environment:
+      <<: *service-env
       PORT: 3002
-      DATABASE_URL: *database-url
       DB_SCHEMA: personal
       AUTH_SERVICE_URL: http://ms-auth:3001
-    depends_on: [db]
+    depends_on:
+      db:
+        condition: service_healthy
+      init:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3002/health').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 20s
 
   ms-vacaciones:
     build: { context: ., dockerfile: services/ms-vacaciones/Dockerfile }
     env_file: [{ path: services/ms-vacaciones/.env, required: false }]
     environment:
+      <<: *service-env
       PORT: 3003
-      DATABASE_URL: *database-url
       DB_SCHEMA: vacaciones
       PERSONAL_SERVICE_URL: http://ms-personal:3002
-    depends_on: [db]
+    depends_on:
+      db:
+        condition: service_healthy
+      init:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3003/health').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 20s
 
   ms-contratos:
     build: { context: ., dockerfile: services/ms-contratos/Dockerfile }
     env_file: [{ path: services/ms-contratos/.env, required: false }]
     environment:
+      <<: *service-env
       PORT: 3004
-      DATABASE_URL: *database-url
       DB_SCHEMA: contratos
       PERSONAL_SERVICE_URL: http://ms-personal:3002
       GOTENBERG_URL: http://gotenberg:3000
-    depends_on: [db]
+    depends_on:
+      db:
+        condition: service_healthy
+      init:
+        condition: service_completed_successfully
+      gotenberg:
+        condition: service_started
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3004/health').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 20s
 
   ms-boletas:
     build: { context: ., dockerfile: services/ms-boletas/Dockerfile }
     env_file: [{ path: services/ms-boletas/.env, required: false }]
     environment:
+      <<: *service-env
       PORT: 3005
-      DATABASE_URL: *database-url
       DB_SCHEMA: boletas
       PERSONAL_SERVICE_URL: http://ms-personal:3002
       GOTENBERG_URL: http://gotenberg:3000
-    depends_on: [db]
+    depends_on:
+      db:
+        condition: service_healthy
+      init:
+        condition: service_completed_successfully
+      gotenberg:
+        condition: service_started
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3005/health').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 20s
 
   gotenberg:
     image: gotenberg/gotenberg:8
+    ports: ["3000:3000"]
+
+  frontend:
+    build:
+      context: ../frontend-arca
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:8080}
+    ports: ["5173:80"]
+    depends_on:
+      gateway:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/ || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
 
 volumes:
   db-data:
