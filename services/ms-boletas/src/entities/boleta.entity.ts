@@ -1,21 +1,18 @@
-import {
-  Check,
-  Column,
-  CreateDateColumn,
-  Entity,
-  Index,
-  JoinColumn,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Check, Column, CreateDateColumn, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { EstadoBoleta, numericTransformer } from '@arca/shared';
 import { Periodo } from './periodo.entity';
 
 @Entity('boleta')
 @Index('ux_boleta_vigente', ['periodoId', 'funcionarioId'], { unique: true, where: `"estado" <> 'RECTIFICADA'` })
-@Check('ck_boleta_emision', `"estado" = 'BORRADOR' OR ("numero" IS NOT NULL AND "hash_sha256" IS NOT NULL AND "emitida_en" IS NOT NULL)`)
+@Check(
+  'ck_boleta_emision',
+  `"estado" = 'BORRADOR' OR ("numero" IS NOT NULL AND "hash_sha256" IS NOT NULL AND "emitida_en" IS NOT NULL)`,
+)
 @Check('ck_boleta_liquido', `"estado" = 'BORRADOR' OR "liquido_pagable" >= 0`)
-@Check('ck_boleta_rectificacion', '"version" = 1 OR ("boleta_original_id" IS NOT NULL AND "motivo_rectificacion" IS NOT NULL)')
+@Check(
+  'ck_boleta_rectificacion',
+  '"version" = 1 OR ("boleta_original_id" IS NOT NULL AND "motivo_rectificacion" IS NOT NULL)',
+)
 @Check('ck_boleta_dias_trabajados', '"dias_trabajados" BETWEEN 0 AND 30')
 export class Boleta {
   @PrimaryGeneratedColumn('uuid')

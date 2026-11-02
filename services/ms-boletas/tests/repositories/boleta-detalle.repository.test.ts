@@ -42,8 +42,9 @@ describe('BoletaDetalleRepository', () => {
     const [boleta, concepto] = await Promise.all([crearBoleta(), crearConcepto()]);
     const detalle = await repo.save(nuevo(boleta.id, concepto.id));
 
+    // PostgreSQL 16 reporta 23503 y PostgreSQL 18 reporta 23001 para ON DELETE RESTRICT.
     await expect(AppDataSource.getRepository(Concepto).delete({ id: concepto.id })).rejects.toMatchObject({
-      driverError: { code: '23503' },
+      driverError: { code: expect.stringMatching(/^(23001|23503)$/) },
     });
 
     await AppDataSource.getRepository(Boleta).delete({ id: boleta.id });

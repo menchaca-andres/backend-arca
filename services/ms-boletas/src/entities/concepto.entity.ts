@@ -2,7 +2,10 @@ import { Check, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, Update
 import { BaseCalculo, FormaCalculo, TipoConcepto, numericTransformer } from '@arca/shared';
 
 @Entity('concepto')
-@Check('ck_concepto_porcentaje', `"forma_calculo" <> 'PORCENTAJE' OR ("valor" BETWEEN 0 AND 100 AND "base" IS NOT NULL)`)
+@Check(
+  'ck_concepto_porcentaje',
+  `"forma_calculo" <> 'PORCENTAJE' OR ("valor" BETWEEN 0 AND 100 AND "base" IS NOT NULL)`,
+)
 @Check('ck_concepto_monto_fijo', `"forma_calculo" <> 'MONTO_FIJO' OR "valor" > 0`)
 @Check('ck_concepto_sistema', `"forma_calculo" <> 'SISTEMA' OR ("valor" IS NULL AND "base" IS NULL)`)
 export class Concepto {
