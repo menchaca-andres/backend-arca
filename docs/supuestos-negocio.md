@@ -1,8 +1,8 @@
 # Supuestos de negocio – Gestión Humana ARCA (HU-01 / CA-06)
 
-Tabla de supuestos. **Decisión del equipo (30/10/2026): se trabaja con la propuesta por defecto** de cada fila; no se espera respuesta del ingeniero para avanzar. Cuando responda, completar las columnas *Respuesta* y *Fecha* y avisar al equipo si cambia algo.
+Tabla de supuestos. **Mientras tanto se trabaja con la propuesta por defecto** de cada fila. **Pendiente (HU-01 CA-06):** enviar la tabla al ingeniero y completar las columnas *Respuesta* y *Fecha*; si cambia algo, avisar al equipo y ajustar la HU afectada.
 
-**Estado:** ☑ Propuestas por defecto adoptadas (30/10/2026)  ☐ Revisadas por el ingeniero (opcional)
+**Estado:** ☑ Propuestas por defecto adoptadas (30/10/2026)  ☐ Enviadas al ingeniero  ☐ Revisadas por el ingeniero
 
 | ID | Módulo | Pregunta / supuesto | Propuesta por defecto | Impacto si cambia | Respuesta | Fecha |
 |----|--------|---------------------|-----------------------|-------------------|-----------|-------|

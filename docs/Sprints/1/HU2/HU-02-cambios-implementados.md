@@ -14,11 +14,11 @@ La HU-02 construye la **capa de datos** de todos los servicios: las tablas, las 
 | Semilla con 5 funcionarios de ejemplo | Base en Supabase y roles por schema (HU-03) |
 | Pruebas de cada repository | Pantallas del frontend |
 
-Hoy el sistema no atiende peticiones de negocio. Las HU siguientes construyen sobre esta capa.
+Hoy el sistema no atiende peticiones de negocio. Ya tiene arranque común, `/health` con chequeo real de la base y el gateway enruta `/api/*`; los endpoints de negocio los construyen las HU siguientes.
 
 ## 2. Cómo levantarlo
 
-Necesitas Node 20 o superior y Docker Desktop abierto. Desde la raíz de `backend-arca`:
+Necesitas Node 22 o superior y Docker Desktop abierto. Desde la raíz de `backend-arca`:
 
 ```bash
 npm install          # instala todo y compila @arca/shared
@@ -105,7 +105,7 @@ La base es la última defensa: un dato inválido se rechaza aunque el service te
 
 ### 4.3 Atender una petición (lo que construirán las próximas HU)
 
-Hoy solo existe el último tramo, desde el repository hasta Postgres.
+Hoy existe el tramo repository → Postgres y el gateway ya enruta `/api/*`; todavía no hay endpoints de negocio.
 
 ```mermaid
 flowchart LR
@@ -183,6 +183,7 @@ Para empezar de cero: `npm run db:reset`, `npm run db:migrate` y `npm run db:see
 | Enums | Se declaran solo en `packages/shared/src/enums.ts` | Una sola fuente de valores |
 | Datos de otro servicio | Columna `uuid` sin FK, y se validan por API | Los schemas son independientes |
 | TypeORM | Solo en `repositories/` | Los services no lo usan directo |
+| SQL crudo | Prohibido, salvo el trigger de boletas (HU-22) y el `SELECT 1` del health check | El health check es infraestructura, no lógica de negocio |
 | Repositories | Cada HU agrega las consultas que necesite | La base solo trae `findById`, `findAll` y `save` |
 | Cambios en `packages/shared` | Después corre `npm run build --workspace=@arca/shared` | Los servicios usan la versión compilada |
 
@@ -218,6 +219,7 @@ Pendientes:
 - [ ] **HU-03:** correr las migraciones y la semilla en Supabase por el Session pooler. Todo se probó solo en Postgres local.
 - [ ] **HU-03:** cambiar `JWT_SECRET` e `INTERNAL_API_KEY`. Los actuales solo sirven para desarrollo.
 - [ ] **Equipo:** decidir si `usuarioId` sale del contrato interno de `Funcionario`. Está en la sección "Dudas" de [data-model.md](data-model.md), junto con las demás notas.
+- [x] **Equipo:** test de `boleta_detalle` corregido. `ON DELETE RESTRICT` devuelve `23001` (`restrict_violation`), no `23503`; la suite queda verde.
 
 ## 8. Documentos relacionados
 
