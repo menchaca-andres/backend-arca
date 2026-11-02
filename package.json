@@ -11,12 +11,32 @@
   "scripts": {
     "build": "npm run build --workspaces",
     "test": "npm run test --workspaces --if-present",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"gateway/**/*.ts\" \"services/**/*.ts\" \"packages/**/*.ts\" \"scripts/**/*.js\" \"*.json\" \"*.md\"",
+    "format:check": "prettier --check \"gateway/**/*.ts\" \"services/**/*.ts\" \"packages/**/*.ts\" \"scripts/**/*.js\" \"*.json\" \"*.md\"",
+    "typecheck": "npm run typecheck --workspaces --if-present",
     "docker:up": "docker compose up --build",
     "docker:down": "docker compose down",
     "setup": "node scripts/setup.js",
+    "env:init": "node scripts/env.js",
+    "db:schemas": "node scripts/create-schemas.js",
+    "db:verify-isolation": "node scripts/verify-isolation.js",
     "db:up": "docker compose up -d --wait db",
     "db:reset": "docker compose down -v db && docker compose up -d --wait db",
     "db:migrate": "npm run build --workspace=@arca/shared && npm run migration:run --workspaces --if-present",
     "db:seed": "npm run seed:dev --workspaces --if-present"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.14.0",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.14.0",
+    "pg": "^8.23.1",
+    "prettier": "^3.9.10",
+    "typescript-eslint": "^8.72.1"
   }
 }
