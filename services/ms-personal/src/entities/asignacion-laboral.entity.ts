@@ -1,13 +1,4 @@
-import {
-  Check,
-  Column,
-  CreateDateColumn,
-  Entity,
-  Index,
-  JoinColumn,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Check, Column, CreateDateColumn, Entity, Index, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { MotivoAsignacion, numericTransformer } from '@arca/shared';
 import { Cargo } from './cargo.entity';
 import { Funcionario } from './funcionario.entity';

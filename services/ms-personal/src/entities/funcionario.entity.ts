@@ -46,7 +46,12 @@ export class Funcionario {
   @Column('smallint', { default: 90 })
   diasPrueba!: number;
 
-  @Column({ type: 'enum', enum: EstadoFuncionario, enumName: 'estado_funcionario', default: EstadoFuncionario.EN_PRUEBA })
+  @Column({
+    type: 'enum',
+    enum: EstadoFuncionario,
+    enumName: 'estado_funcionario',
+    default: EstadoFuncionario.EN_PRUEBA,
+  })
   estado!: EstadoFuncionario;
 
   @Column('date', { nullable: true })
