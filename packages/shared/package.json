@@ -7,9 +7,15 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "prepare": "tsc"
+    "prepare": "tsc",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.10.0",
     "typescript": "^5.4.5"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }
