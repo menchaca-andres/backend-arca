@@ -8,6 +8,9 @@ on:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgres://postgres:dev@localhost:5433/arca
+      INTERNAL_API_KEY: ci-internal-key-not-for-deployment
     services:
       postgres:
         image: postgres:16

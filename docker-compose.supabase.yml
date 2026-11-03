@@ -1,0 +1,66 @@
+# Superponer al Compose local para usar Supabase. Requiere Docker Compose >= 2.24.4.
+# Las conexiones se leen del archivo privado .env.supabase.runtime.
+x-cloud-environment: &cloud-environment
+  DB_SSL_CA_FILE: /run/secrets/supabase-ca.crt
+  DB_POOL_MAX: "5"
+x-cloud-volumes: &cloud-volumes
+  - type: bind
+    source: ./.env.supabase-ca.crt
+    target: /run/secrets/supabase-ca.crt
+    read_only: true
+services:
+  init:
+    profiles: [local-init]
+  gateway:
+    environment:
+      <<: *cloud-environment
+      DATABASE_URL: ${GATEWAY_DATABASE_URL:?Configura GATEWAY_DATABASE_URL en .env.supabase.runtime}
+    volumes: *cloud-volumes
+    depends_on: !override
+      ms-auth:
+        condition: service_healthy
+      ms-personal:
+        condition: service_healthy
+      ms-vacaciones:
+        condition: service_healthy
+      ms-contratos:
+        condition: service_healthy
+      ms-boletas:
+        condition: service_healthy
+  ms-auth:
+    environment:
+      <<: *cloud-environment
+      DATABASE_URL: ${AUTH_DATABASE_URL:?Configura AUTH_DATABASE_URL en .env.supabase.runtime}
+    volumes: *cloud-volumes
+    depends_on: !reset {}
+  ms-personal:
+    environment:
+      <<: *cloud-environment
+      DATABASE_URL: ${PERSONAL_DATABASE_URL:?Configura PERSONAL_DATABASE_URL en .env.supabase.runtime}
+    volumes: *cloud-volumes
+    depends_on: !reset {}
+  ms-vacaciones:
+    environment:
+      <<: *cloud-environment
+      DATABASE_URL: ${VACACIONES_DATABASE_URL:?Configura VACACIONES_DATABASE_URL en .env.supabase.runtime}
+    volumes: *cloud-volumes
+    depends_on: !reset {}
+  ms-contratos:
+    environment:
+      <<: *cloud-environment
+      DATABASE_URL: ${CONTRATOS_DATABASE_URL:?Configura CONTRATOS_DATABASE_URL en .env.supabase.runtime}
+    volumes: *cloud-volumes
+    depends_on: !override
+      gotenberg:
+        condition: service_healthy
+  ms-boletas:
+    environment:
+      <<: *cloud-environment
+      DATABASE_URL: ${BOLETAS_DATABASE_URL:?Configura BOLETAS_DATABASE_URL en .env.supabase.runtime}
+    volumes: *cloud-volumes
+    depends_on: !override
+      gotenberg:
+        condition: service_healthy
+  frontend:
+    ports: !override
+      - "127.0.0.1:${FRONTEND_PORT:-5174}:80"

@@ -1,6 +1,6 @@
 # HU-03 – Infraestructura y plantilla de microservicio
 
-**Sprint 1 · Responsable:** I3 · **Estado:** parcial cerrado en local; Supabase queda pendiente de ejecución con credenciales.
+**Sprint 1 · Responsable:** I3 · **Estado:** Supabase provisionado y verificado; entrega integrada con main para revisión del PR.
 
 ## 1. Estado de los criterios de aceptación
 
@@ -8,7 +8,7 @@
 |---|---|---|
 | CA-01 monorepo | **Parcial** | `backend-arca` tiene `gateway/`, `services/ms-*` y `packages/shared`; el frontend vive en el repo hermano `frontend-arca` (no en `apps/frontend`). Documentar la desviación. |
 | CA-02 compose completo | **Hecho** | `docker-compose.yml` levanta db, init, gateway, 5 servicios, Gotenberg y frontend; `init` aplica migraciones y semilla. Requiere ambos repos clonados uno al lado del otro. |
-| CA-03 Supabase + roles | **Pendiente de ejecución** | `docker/supabase-roles.sql` crea 6 roles, grants y default privileges; `scripts/verify-isolation.js` verifica el aislamiento. Falta correrlo en el proyecto real. |
+| CA-03 Supabase + roles | **Ejecutado y verificado** | Seis schemas y roles arca_* provisionados; ver CA03-supabase-evidencia.json y CA03-supabase-health-evidencia.json. |
 | CA-04 plantilla con capas | **Hecho** | `routes/controllers/services/repositories/entities/schemas/clients/middlewares/config` en los 5 servicios. La carpeta se llama `schemas/` (Zod), no `dtos/`. |
 | CA-05 `/health` con BD | **Hecho** | `@arca/shared/health` ejecuta `SELECT 1`; responde 503 si la base está caída. |
 | CA-06 gateway enruta `/api/*` | **Hecho** | Proxy con `http-proxy-middleware`; `/api/*` se reenvía al servicio; rutas desconocidas devuelven 404 JSON. |
@@ -42,7 +42,9 @@ Los defaults de compose (`JWT_SECRET`, `INTERNAL_API_KEY`, `CORS_ORIGIN`) permit
 
 **Verificado el 02/11/2026:** `docker compose up -d --wait` dejó sanos db, init (6 migraciones + semilla), los 5 servicios, gateway, Gotenberg y frontend; `/health` del gateway responde `db: up`, `/api/funcionarios` se reenvía a `ms-personal` y Gotenberg convierte HTML a PDF. Queda pendiente repetir la misma prueba contra Supabase.
 
-## 3. Supabase (pendiente de ejecución)
+## 3. Supabase (procedimiento de referencia)
+
+**Actualización:** el proyecto arca-gestion-humana ya está configurado. No crear otro proyecto ni repetir la provisión sobre la base compartida. Las ejecuciones y el alcance vigente están en [CA03-supabase.md](CA03-supabase.md); las instrucciones siguientes se conservan como referencia histórica.
 
 1. Crear el proyecto en Supabase y elegir la región más cercana. Anotar el `project-ref`.
 2. Ejecutar [`docker/supabase-roles.sql`](../../../../docker/supabase-roles.sql) en el SQL Editor **después de reemplazar `CAMBIAR_ESTA_CLAVE` por una clave fuerte por rol**. El script es idempotente para los roles.

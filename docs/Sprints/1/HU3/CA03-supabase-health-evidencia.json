@@ -1,0 +1,171 @@
+{
+  "checkedAt": "2026-11-02T23:37:19.999Z",
+  "project": "backend-arca",
+  "destination": "Supabase Session Pooler",
+  "projectRef": "othblpxxhhqwevzofpqi",
+  "results": [
+    {
+      "service": "gateway",
+      "status": 200,
+      "body": {
+        "service": "gateway",
+        "status": "OK"
+      },
+      "role": "arca_auditoria",
+      "schema": "auditoria",
+      "database": "postgres",
+      "host": "aws-1-sa-east-1.pooler.supabase.com",
+      "projectRef": "othblpxxhhqwevzofpqi",
+      "tlsEncrypted": true,
+      "tlsAuthorized": true,
+      "poolMax": 5,
+      "synchronize": false,
+      "hostPortsPublished": true
+    },
+    {
+      "service": "ms-auth",
+      "status": 200,
+      "body": {
+        "service": "ms-auth",
+        "status": "OK"
+      },
+      "role": "arca_auth",
+      "schema": "autenticacion",
+      "database": "postgres",
+      "host": "aws-1-sa-east-1.pooler.supabase.com",
+      "projectRef": "othblpxxhhqwevzofpqi",
+      "tlsEncrypted": true,
+      "tlsAuthorized": true,
+      "poolMax": 5,
+      "synchronize": false,
+      "hostPortsPublished": false
+    },
+    {
+      "service": "ms-personal",
+      "status": 200,
+      "body": {
+        "service": "ms-personal",
+        "status": "OK"
+      },
+      "role": "arca_personal",
+      "schema": "personal",
+      "database": "postgres",
+      "host": "aws-1-sa-east-1.pooler.supabase.com",
+      "projectRef": "othblpxxhhqwevzofpqi",
+      "tlsEncrypted": true,
+      "tlsAuthorized": true,
+      "poolMax": 5,
+      "synchronize": false,
+      "hostPortsPublished": false
+    },
+    {
+      "service": "ms-vacaciones",
+      "status": 200,
+      "body": {
+        "service": "ms-vacaciones",
+        "status": "OK"
+      },
+      "role": "arca_vacaciones",
+      "schema": "vacaciones",
+      "database": "postgres",
+      "host": "aws-1-sa-east-1.pooler.supabase.com",
+      "projectRef": "othblpxxhhqwevzofpqi",
+      "tlsEncrypted": true,
+      "tlsAuthorized": true,
+      "poolMax": 5,
+      "synchronize": false,
+      "hostPortsPublished": false
+    },
+    {
+      "service": "ms-contratos",
+      "status": 200,
+      "body": {
+        "service": "ms-contratos",
+        "status": "OK"
+      },
+      "role": "arca_contratos",
+      "schema": "contratos",
+      "database": "postgres",
+      "host": "aws-1-sa-east-1.pooler.supabase.com",
+      "projectRef": "othblpxxhhqwevzofpqi",
+      "tlsEncrypted": true,
+      "tlsAuthorized": true,
+      "poolMax": 5,
+      "synchronize": false,
+      "hostPortsPublished": false
+    },
+    {
+      "service": "ms-boletas",
+      "status": 200,
+      "body": {
+        "service": "ms-boletas",
+        "status": "OK"
+      },
+      "role": "arca_boletas",
+      "schema": "boletas",
+      "database": "postgres",
+      "host": "aws-1-sa-east-1.pooler.supabase.com",
+      "projectRef": "othblpxxhhqwevzofpqi",
+      "tlsEncrypted": true,
+      "tlsAuthorized": true,
+      "poolMax": 5,
+      "synchronize": false,
+      "hostPortsPublished": false
+    }
+  ],
+  "gatewayHostHealth": 200,
+  "smokeTest": {
+    "command": "bash scripts/smoke-test.sh",
+    "exitCode": 0,
+    "status": 200
+  },
+  "gatewayProxyHealth": [
+    {
+      "service": "auth",
+      "status": 200,
+      "body": {
+        "service": "ms-auth",
+        "status": "OK"
+      }
+    },
+    {
+      "service": "personal",
+      "status": 200,
+      "body": {
+        "service": "ms-personal",
+        "status": "OK"
+      }
+    },
+    {
+      "service": "vacaciones",
+      "status": 200,
+      "body": {
+        "service": "ms-vacaciones",
+        "status": "OK"
+      }
+    },
+    {
+      "service": "contratos",
+      "status": 200,
+      "body": {
+        "service": "ms-contratos",
+        "status": "OK"
+      }
+    },
+    {
+      "service": "boletas",
+      "status": 200,
+      "body": {
+        "service": "ms-boletas",
+        "status": "OK"
+      }
+    }
+  ],
+  "infrastructureTests": {
+    "runner": "Jest + Supertest",
+    "command": "npm run test:infra",
+    "testsPassed": 109,
+    "suitesPassed": 12,
+    "exitCode": 0
+  }
+}
