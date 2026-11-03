@@ -68,6 +68,7 @@ npm run format:check  # Prettier
 npm run typecheck     # tsc --noEmit por workspace
 npm run db:up         # levanta la base si está apagada
 npm run db:schemas    # crea los 6 schemas si faltan (CI o base ya inicializada)
+npm run db:verify-isolation  # verifica que cada rol solo lea su schema (requiere URLs cloud)
 npm run db:reset      # borra la base local y la crea de nuevo
 npm run docker:up     # levanta todo con Docker Compose
 ```
@@ -77,11 +78,26 @@ Cada servicio responde `GET /health` y devuelve 503 si perdió la conexión a la
 ## Semilla y pruebas
 
 ```bash
-npm run db:seed   # 3 áreas, 5 cargos y 5 funcionarios; se puede correr varias veces
+npm run db:seed   # 3 áreas, 5 cargos, 5 funcionarios y 4 usuarios (uno por rol)
 npm test          # necesita la base levantada y migrada
 ```
 
-Las pruebas de repositories usan la base local y borran lo que crean. La suite incluye `/health`, el formato común de error y las restricciones de la base.
+Las pruebas de repositories usan la base local y borran lo que crean. La suite incluye `/health`, el formato común de error, las restricciones de la base y el login (JWT, bloqueo, usuario inactivo y roles).
+
+## Autenticación y usuarios de demo
+
+El login vive en `ms-auth`; el gateway valida el JWT y propaga `x-user-id`, `x-user-rol` y `x-funcionario-id` a los servicios.
+
+| Rol         | Correo                | Contraseña                                 |
+| ----------- | --------------------- | ------------------------------------------ |
+| ADMIN       | `admin@arca.bo`       | `Admin123!`                                |
+| RRHH        | `rrhh@arca.bo`        | `Rrhh123!`                                 |
+| DIRECCION   | `direccion@arca.bo`   | `Direccion123!`                            |
+| FUNCIONARIO | `funcionario@arca.bo` | `Funcionario123!` (vinculado a CI 9000003) |
+
+> Son credenciales **solo de desarrollo**. En producción hay que cambiarlas y rotar `JWT_SECRET`.
+
+`POST /api/auth/login` devuelve un JWT de 8 h; `GET /api/auth/me` devuelve la identidad que inyecta el gateway. El detalle de la HU está en [docs/Sprints/1/HU5/HU-05-login.md](docs/Sprints/1/HU5/HU-05-login.md).
 
 ## Supabase
 
