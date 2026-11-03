@@ -1,0 +1,595 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ARCA | Portal de Arquitectura</title>
+    <meta
+      name="description"
+      content="Portal de arquitectura, módulos y diagramas del Sistema de Gestión Humana de ARCA Ltda."
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="brand">
+          <span class="brand-mark"><i class="fas fa-layer-group"></i></span>
+          <span class="brand-text">
+            <strong>ARCA</strong>
+            <small>Gestión Humana</small>
+          </span>
+        </div>
+        <button class="icon-button sidebar-toggle" id="toggleSidebar" aria-label="Contraer menú">
+          <i class="fas fa-bars"></i>
+        </button>
+      </div>
+
+      <nav class="sidebar-nav" aria-label="Navegación principal">
+        <div class="nav-section">
+          <h3 class="nav-title">Inicio</h3>
+          <a href="#inicio" class="nav-link active" data-section="inicio">
+            <i class="fas fa-home"></i><span>Principal</span>
+          </a>
+          <a href="#arquitectura" class="nav-link" data-section="arquitectura">
+            <i class="fas fa-sitemap"></i><span>Arquitectura</span>
+          </a>
+          <a href="#microservicios" class="nav-link" data-section="microservicios">
+            <i class="fas fa-cubes"></i><span>Microservicios</span>
+          </a>
+          <a href="#estado" class="nav-link" data-section="estado">
+            <i class="fas fa-clipboard-check"></i><span>Estado y alcance</span>
+          </a>
+        </div>
+
+        <div class="nav-section">
+          <h3 class="nav-title">Módulos</h3>
+          <a href="#ms-auth" class="nav-link" data-section="ms-auth">
+            <i class="fas fa-key"></i><span>Identidad y acceso</span>
+          </a>
+          <a href="#ms-personal" class="nav-link" data-section="ms-personal">
+            <i class="fas fa-users"></i><span>Personal</span>
+          </a>
+          <a href="#ms-vacaciones" class="nav-link" data-section="ms-vacaciones">
+            <i class="fas fa-calendar-alt"></i><span>Vacaciones</span>
+          </a>
+          <a href="#ms-contratos" class="nav-link" data-section="ms-contratos">
+            <i class="fas fa-file-signature"></i><span>Contratos</span>
+          </a>
+          <a href="#ms-boletas" class="nav-link" data-section="ms-boletas">
+            <i class="fas fa-receipt"></i><span>Boletas</span>
+          </a>
+        </div>
+
+        <div class="nav-section">
+          <h3 class="nav-title">Recursos</h3>
+          <a href="../c4/README.md" class="nav-link" target="_blank" rel="noreferrer">
+            <i class="fas fa-diagram-project"></i><span>Diagramas C4</span>
+          </a>
+          <a
+            href="../api/internal-contracts.openapi.yaml"
+            class="nav-link"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <i class="fas fa-file-code"></i><span>Contratos OpenAPI</span>
+          </a>
+          <a href="../BacklogOficial.csv" class="nav-link" target="_blank" rel="noreferrer">
+            <i class="fas fa-list-check"></i><span>Backlog</span>
+          </a>
+          <a href="../../README.md" class="nav-link" target="_blank" rel="noreferrer">
+            <i class="fas fa-book"></i><span>README del proyecto</span>
+          </a>
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <span>ARCA v1.0</span>
+        <span>Sprint 1 · 2026</span>
+      </div>
+    </aside>
+
+    <main class="main-content" id="mainContent">
+      <header class="header">
+        <div class="header-left">
+          <button class="icon-button mobile-menu" id="mobileMenu" aria-label="Abrir menú">
+            <i class="fas fa-bars"></i>
+          </button>
+          <div>
+            <p class="header-eyebrow">Sistema de Gestión Humana</p>
+            <h1 class="page-title" id="pageTitle">Portal de Arquitectura</h1>
+          </div>
+        </div>
+        <div class="header-right">
+          <span class="version">v1.0</span>
+          <span class="header-date">Noviembre 2026</span>
+        </div>
+      </header>
+
+      <div class="content-container">
+        <section class="content-section active" id="inicio">
+          <div class="welcome-card">
+            <div class="welcome-copy">
+              <span class="eyebrow">ARCA Ltda. · Kata Tercer Desafío</span>
+              <h2>Arquitectura de microservicios para Gestión Humana</h2>
+              <p>
+                Portal de consulta del sistema: arquitectura C4, mapa de servicios, modelos de
+                datos, procesos y diagramas por módulo. Todo el contenido se deriva del backlog,
+                los ADR, los contratos OpenAPI y el modelo de datos del repositorio.
+              </p>
+              <div class="welcome-actions">
+                <button class="button primary" data-go="arquitectura">
+                  <i class="fas fa-sitemap"></i> Ver arquitectura
+                </button>
+                <button class="button outline" data-go="microservicios">
+                  <i class="fas fa-cubes"></i> Ver microservicios
+                </button>
+              </div>
+            </div>
+            <div class="welcome-visual" aria-hidden="true">
+              <div class="visual-node gateway">Gateway</div>
+              <div class="visual-line"></div>
+              <div class="visual-services">
+                <span>auth</span><span>personal</span><span>vacaciones</span>
+                <span>contratos</span><span>boletas</span>
+              </div>
+              <div class="visual-line"></div>
+              <div class="visual-node database"><i class="fas fa-database"></i> PostgreSQL</div>
+            </div>
+          </div>
+
+          <div class="stats-grid">
+            <div class="stat-card">
+              <span class="stat-icon"><i class="fas fa-cubes"></i></span>
+              <div><strong>5</strong><span>microservicios</span></div>
+            </div>
+            <div class="stat-card">
+              <span class="stat-icon"><i class="fas fa-database"></i></span>
+              <div><strong>6</strong><span>schemas</span></div>
+            </div>
+            <div class="stat-card">
+              <span class="stat-icon"><i class="fas fa-table"></i></span>
+              <div><strong>20</strong><span>tablas</span></div>
+            </div>
+            <div class="stat-card">
+              <span class="stat-icon"><i class="fas fa-diagram-project"></i></span>
+              <div><strong>35</strong><span>diagramas de módulo</span></div>
+            </div>
+          </div>
+
+          <div class="section-subheader">
+            <h3>Módulos del sistema</h3>
+            <p>Selecciona un módulo para ver sus casos de uso, clases, secuencias, procesos y ER.</p>
+          </div>
+
+          <div class="module-cards" id="homeModules">
+            <button class="module-card" data-go="ms-auth">
+              <span class="module-card-icon"><i class="fas fa-key"></i></span>
+              <strong>Identidad y acceso</strong>
+              <small>Login, JWT, usuarios y roles</small>
+              <span class="status-dot partial">Parcial</span>
+            </button>
+            <button class="module-card" data-go="ms-personal">
+              <span class="module-card-icon"><i class="fas fa-users"></i></span>
+              <strong>Personal</strong>
+              <small>Áreas, cargos, funcionarios e historial</small>
+              <span class="status-dot partial">Parcial</span>
+            </button>
+            <button class="module-card" data-go="ms-vacaciones">
+              <span class="module-card-icon"><i class="fas fa-calendar-alt"></i></span>
+              <strong>Vacaciones</strong>
+              <small>Saldos, solicitudes, aprobación y feriados</small>
+              <span class="status-dot pending">Planificado</span>
+            </button>
+            <button class="module-card" data-go="ms-contratos">
+              <span class="module-card-icon"><i class="fas fa-file-signature"></i></span>
+              <strong>Contratos</strong>
+              <small>Plantillas versionadas y PDF</small>
+              <span class="status-dot pending">Planificado</span>
+            </button>
+            <button class="module-card" data-go="ms-boletas">
+              <span class="module-card-icon"><i class="fas fa-receipt"></i></span>
+              <strong>Boletas</strong>
+              <small>Planilla, emisión y rectificación</small>
+              <span class="status-dot pending">Planificado</span>
+            </button>
+          </div>
+
+          <div class="info-grid">
+            <article class="info-card">
+              <h3><i class="fas fa-bullseye"></i> Objetivo</h3>
+              <p>
+                Centralizar la gestión de personal, vacaciones, contratos y boletas de ARCA en una
+                plataforma modular, con responsabilidades separadas por servicio y datos aislados
+                por schema.
+              </p>
+            </article>
+            <article class="info-card">
+              <h3><i class="fas fa-shield-halved"></i> Principios</h3>
+              <ul>
+                <li>Un bounded context por microservicio.</li>
+                <li>Un schema de PostgreSQL por servicio, sin FK entre schemas.</li>
+                <li>Comunicación interna por REST con <code>X-Internal-Key</code>.</li>
+                <li>TypeORM solo en repositorios y migraciones versionadas.</li>
+              </ul>
+            </article>
+            <article class="info-card">
+              <h3><i class="fas fa-code-branch"></i> Estado actual</h3>
+              <p>
+                Sprint 1 con autenticación, catálogos de áreas y cargos, base del frontend e
+                infraestructura. Los módulos de vacaciones, contratos y boletas están diseñados y
+                tienen modelo de datos, pero sus endpoints aún no están implementados.
+              </p>
+            </article>
+          </div>
+        </section>
+
+        <section class="content-section" id="arquitectura">
+          <div class="section-header">
+            <div>
+              <span class="eyebrow">Vista general</span>
+              <h2><i class="fas fa-sitemap"></i> Arquitectura C4</h2>
+            </div>
+            <span class="section-badge">ADR-001 a ADR-007</span>
+          </div>
+
+          <p class="lead">
+            El sistema se organiza en un frontend SPA, un API Gateway y cinco microservicios. Cada
+            servicio es dueño de un schema de PostgreSQL y se comunica con los demás por contratos
+            internos. Gotenberg convierte HTML a PDF para contratos y boletas.
+          </p>
+
+          <div class="image-grid">
+            <button
+              class="image-card"
+              onclick="showImageModal('images/c4-nivel1-contexto.png', 'C4 Nivel 1 - Contexto')"
+            >
+              <img src="images/c4-nivel1-contexto.png" alt="C4 Nivel 1 - Contexto" />
+              <span><strong>Nivel 1 · Contexto</strong><small>Actores y Sistema Core</small></span>
+            </button>
+            <button
+              class="image-card"
+              onclick="showImageModal('images/c4-nivel2-contenedores.png', 'C4 Nivel 2 - Contenedores')"
+            >
+              <img src="images/c4-nivel2-contenedores.png" alt="C4 Nivel 2 - Contenedores" />
+              <span><strong>Nivel 2 · Contenedores</strong><small>Frontend, gateway, servicios y BD</small></span>
+            </button>
+            <button
+              class="image-card"
+              onclick="showImageModal('images/c4-nivel3-ms-personal.png', 'C4 Nivel 3 - ms-personal')"
+            >
+              <img src="images/c4-nivel3-ms-personal.png" alt="C4 Nivel 3 - ms-personal" />
+              <span><strong>Nivel 3 · ms-personal</strong><small>Route → controller → service → repository</small></span>
+            </button>
+            <button
+              class="image-card"
+              onclick="showImageModal('images/c4-nivel3-ms-boletas.png', 'C4 Nivel 3 - ms-boletas')"
+            >
+              <img src="images/c4-nivel3-ms-boletas.png" alt="C4 Nivel 3 - ms-boletas" />
+              <span><strong>Nivel 3 · ms-boletas</strong><small>PlanillaCalculator y PDF</small></span>
+            </button>
+          </div>
+
+          <div class="info-grid">
+            <article class="info-card">
+              <h3><i class="fas fa-layer-group"></i> Capas por servicio</h3>
+              <p>
+                <code>route → controller → service → repository</code>. Los controllers traducen
+                HTTP; los services concentran reglas de negocio; los repositories son el único
+                punto con TypeORM.
+              </p>
+            </article>
+            <article class="info-card">
+              <h3><i class="fas fa-lock"></i> Seguridad</h3>
+              <p>
+                El gateway valida el JWT, descarta cabeceras de identidad enviadas por el cliente y
+                propaga <code>x-user-id</code>, <code>x-user-rol</code> y
+                <code>x-funcionario-id</code>. Las rutas <code>/internal/*</code> no salen por el
+                gateway.
+              </p>
+            </article>
+            <article class="info-card">
+              <h3><i class="fas fa-database"></i> Persistencia</h3>
+              <p>
+                Una instancia PostgreSQL con seis schemas: <code>autenticacion</code>,
+                <code>personal</code>, <code>vacaciones</code>, <code>contratos</code>,
+                <code>boletas</code> y <code>auditoria</code>. Sin foreign keys entre schemas.
+              </p>
+            </article>
+          </div>
+
+          <div class="doc-links">
+            <a class="doc-link" href="../c4/nivel1-contexto.puml" target="_blank" rel="noreferrer">
+              <i class="fas fa-file-code"></i> C4 Nivel 1 (.puml)
+            </a>
+            <a class="doc-link" href="../c4/nivel2-contenedores.puml" target="_blank" rel="noreferrer">
+              <i class="fas fa-file-code"></i> C4 Nivel 2 (.puml)
+            </a>
+            <a class="doc-link" href="../c4/nivel3-ms-personal.puml" target="_blank" rel="noreferrer">
+              <i class="fas fa-file-code"></i> C4 Nivel 3 ms-personal
+            </a>
+            <a class="doc-link" href="../c4/nivel3-ms-boletas.puml" target="_blank" rel="noreferrer">
+              <i class="fas fa-file-code"></i> C4 Nivel 3 ms-boletas
+            </a>
+            <a class="doc-link" href="../HU-01_Arquitectura_Contexto_Equipo.md" target="_blank" rel="noreferrer">
+              <i class="fas fa-book-open"></i> Documento de arquitectura
+            </a>
+          </div>
+        </section>
+
+        <section class="content-section" id="microservicios">
+          <div class="section-header">
+            <div>
+              <span class="eyebrow">Contenedores y dependencias</span>
+              <h2><i class="fas fa-cubes"></i> Microservicios</h2>
+            </div>
+            <span class="section-badge">6 schemas · 20 tablas</span>
+          </div>
+
+          <p class="lead">
+            El gateway es el único punto de entrada público. Los servicios se llaman entre sí por
+            <code>/internal/*</code> con timeout de 3 segundos y un reintento. Los PDFs viven en
+            tablas separadas con columna <code>bytea</code>.
+          </p>
+
+          <div class="diagrams-grid architecture-diagrams" id="architectureDiagrams"></div>
+
+          <div class="table-card">
+            <div class="table-header">
+              <h3>Mapa de servicios</h3>
+              <span>Rutas públicas bajo <code>/api/v1</code></span>
+            </div>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Servicio</th>
+                    <th>Puerto</th>
+                    <th>Schema</th>
+                    <th>Responsabilidad</th>
+                    <th>Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>ms-auth</strong></td>
+                    <td><code>3001</code></td>
+                    <td><code>autenticacion</code></td>
+                    <td>Login, JWT, usuarios y roles</td>
+                    <td><span class="status-pill partial">Parcial</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>ms-personal</strong></td>
+                    <td><code>3002</code></td>
+                    <td><code>personal</code></td>
+                    <td>Áreas, cargos, funcionarios e historial</td>
+                    <td><span class="status-pill partial">Parcial</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>ms-vacaciones</strong></td>
+                    <td><code>3003</code></td>
+                    <td><code>vacaciones</code></td>
+                    <td>Saldos, solicitudes y feriados</td>
+                    <td><span class="status-pill pending">Planificado</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>ms-contratos</strong></td>
+                    <td><code>3004</code></td>
+                    <td><code>contratos</code></td>
+                    <td>Plantillas, contratos y PDF</td>
+                    <td><span class="status-pill pending">Planificado</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>ms-boletas</strong></td>
+                    <td><code>3005</code></td>
+                    <td><code>boletas</code></td>
+                    <td>Planilla, boletas y rectificaciones</td>
+                    <td><span class="status-pill pending">Planificado</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>gateway</strong></td>
+                    <td><code>8080</code></td>
+                    <td><code>auditoria</code></td>
+                    <td>Proxy, JWT, identidad y auditoría</td>
+                    <td><span class="status-pill partial">Parcial</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="info-grid">
+            <article class="info-card">
+              <h3><i class="fas fa-arrows-left-right"></i> Dependencias permitidas</h3>
+              <p>
+                Vacaciones, contratos y boletas consultan a personal. Personal y auth se llaman en
+                ambos sentidos solo para baja y validación de funcionario. No hay ciclos en tiempo
+                de ejecución.
+              </p>
+            </article>
+            <article class="info-card">
+              <h3><i class="fas fa-clock"></i> Resiliencia</h3>
+              <p>
+                Cliente HTTP común con timeout de 3 segundos, un reintento y respuesta 503 cuando
+                el servicio de destino no está disponible. Los errores usan
+                <code>{ code, message, details }</code>.
+              </p>
+            </article>
+            <article class="info-card">
+              <h3><i class="fas fa-file-pdf"></i> Documentos</h3>
+              <p>
+                Gotenberg convierte HTML a PDF. El archivo se guarda en una tabla separada y el
+                hash SHA-256 vive en la fila padre para verificar la descarga.
+              </p>
+            </article>
+          </div>
+        </section>
+
+        <section class="content-section" id="estado">
+          <div class="section-header">
+            <div>
+              <span class="eyebrow">Alcance y pendientes</span>
+              <h2><i class="fas fa-clipboard-check"></i> Estado del proyecto</h2>
+            </div>
+            <span class="section-badge">Sprint 1</span>
+          </div>
+
+          <div class="progress-grid">
+            <article class="progress-card">
+              <span class="progress-kicker">Implementado</span>
+              <h3>Infraestructura, login, frontend y catálogos</h3>
+              <p>HU-03, HU-04, HU-05 y HU-07 tienen implementación verificable en el repositorio.</p>
+              <span class="progress-bar"><i style="width: 82%"></i></span>
+            </article>
+            <article class="progress-card">
+              <span class="progress-kicker">Cerrado</span>
+              <h3>Cierre formal del Sprint 1</h3>
+              <p>Declarado el 03/11/2026. Quedan pendientes de evidencia y ajustes menores para una tarea posterior.</p>
+              <span class="progress-bar"><i style="width: 100%"></i></span>
+            </article>
+            <article class="progress-card">
+              <span class="progress-kicker">Diseñado</span>
+              <h3>Vacaciones, contratos y boletas</h3>
+              <p>Modelo de datos, reglas y diagramas listos; endpoints y pantallas aún no implementados.</p>
+              <span class="progress-bar pending"><i style="width: 55%"></i></span>
+            </article>
+          </div>
+
+          <div class="table-card">
+            <div class="table-header">
+              <h3>Historias por épica</h3>
+              <span>Fuente: <code>docs/BacklogOficial.csv</code></span>
+            </div>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr><th>Épica</th><th>Historias</th><th>Estado</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>E1 · Fundaciones</td>
+                    <td>HU-01, HU-02, HU-03, HU-04</td>
+                    <td><span class="status-pill ok">Cerrado formalmente</span></td>
+                  </tr>
+                  <tr>
+                    <td>E2 · Identidad y acceso</td>
+                    <td>HU-05, HU-06</td>
+                    <td><span class="status-pill partial">Login implementado; usuarios pendiente</span></td>
+                  </tr>
+                  <tr>
+                    <td>E3 · Personal</td>
+                    <td>HU-07 a HU-12</td>
+                    <td><span class="status-pill partial">Catálogos implementados; altas y bajas pendientes</span></td>
+                  </tr>
+                  <tr>
+                    <td>E4 · Vacaciones</td>
+                    <td>HU-13 a HU-16</td>
+                    <td><span class="status-pill pending">Diseñado</span></td>
+                  </tr>
+                  <tr>
+                    <td>E5 · Contratos</td>
+                    <td>HU-17 a HU-19</td>
+                    <td><span class="status-pill pending">Diseñado</span></td>
+                  </tr>
+                  <tr>
+                    <td>E6 · Boletas</td>
+                    <td>HU-20 a HU-23</td>
+                    <td><span class="status-pill pending">Diseñado</span></td>
+                  </tr>
+                  <tr>
+                    <td>E7 · Transversales</td>
+                    <td>HU-24 a HU-27</td>
+                    <td><span class="status-pill pending">Pendiente</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="callout warning">
+            <i class="fas fa-circle-info"></i>
+            <div>
+              <strong>Auditoría:</strong> la pantalla existe como maqueta y la tabla
+              <code>auditoria.evento</code> está creada, pero el gateway todavía no inserta eventos
+              ni expone un endpoint de consulta. Eso corresponde a HU-24.
+            </div>
+          </div>
+        </section>
+
+        <section class="content-section module-template" id="module-template">
+          <div class="section-header">
+            <div>
+              <span class="eyebrow module-eyebrow">Módulo</span>
+              <h2><i class="fas fa-cube"></i> <span class="module-title">Módulo</span></h2>
+            </div>
+            <div class="module-badges">
+              <span class="section-badge module-sprint">Sprint</span>
+              <span class="status-pill module-status">Estado</span>
+            </div>
+          </div>
+
+          <p class="lead module-description"></p>
+
+          <div class="module-facts">
+            <div><span>Schema</span><strong class="module-schema">—</strong></div>
+            <div><span>Puerto</span><strong class="module-port">—</strong></div>
+            <div><span>Historias</span><strong class="module-hus-count">—</strong></div>
+          </div>
+
+          <div class="info-grid">
+            <article class="info-card">
+              <h3><i class="fas fa-list-check"></i> Responsabilidades</h3>
+              <ul class="module-responsibilities"></ul>
+            </article>
+            <article class="info-card">
+              <h3><i class="fas fa-tags"></i> Historias de usuario</h3>
+              <div class="chip-list module-hus"></div>
+            </article>
+            <article class="info-card">
+              <h3><i class="fas fa-route"></i> Endpoints principales</h3>
+              <div class="endpoint-list"></div>
+            </article>
+          </div>
+
+          <div class="section-subheader">
+            <h3>Diagramas del módulo</h3>
+            <p>Casos de uso, clases, secuencia, actividades, procesos, ER y despliegue.</p>
+          </div>
+          <div class="diagrams-grid module-diagrams"></div>
+        </section>
+      </div>
+    </main>
+
+    <div class="modal" id="diagramModal" aria-hidden="true">
+      <div class="modal-backdrop" data-close-modal></div>
+      <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal-header">
+          <div>
+            <span class="eyebrow">Diagrama</span>
+            <h3 id="modalTitle">Diagrama</h3>
+          </div>
+          <div class="modal-actions">
+            <button class="icon-button" id="zoomOut" aria-label="Alejar"><i class="fas fa-minus"></i></button>
+            <span class="zoom-level" id="zoomLevel">100%</span>
+            <button class="icon-button" id="zoomIn" aria-label="Acercar"><i class="fas fa-plus"></i></button>
+            <button class="icon-button" id="zoomReset" aria-label="Restablecer zoom"><i class="fas fa-expand"></i></button>
+            <button class="button outline compact" id="viewSource"><i class="fas fa-code"></i> Código</button>
+            <button class="button outline compact" id="downloadDiagram"><i class="fas fa-download"></i> Descargar</button>
+            <button class="button outline compact" id="openInTab"><i class="fas fa-arrow-up-right-from-square"></i> Abrir</button>
+            <button class="icon-button close-button" data-close-modal aria-label="Cerrar"><i class="fas fa-xmark"></i></button>
+          </div>
+        </div>
+        <div class="modal-body" id="diagramModalBody">
+          <div class="diagram-stage" id="diagramContainer"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="diagrams-data.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>

@@ -20,6 +20,16 @@ Cada aplicación sigue route → controller → service → repository. Los dato
 
 El frontend permanece en el repositorio hermano `../frontend-arca`, por excepción aprobada de CA-01. Compose utiliza su Dockerfile; no se crea `apps/frontend`.
 
+## Portal de arquitectura
+
+El portal estático con arquitectura C4, mapa de microservicios y diagramas por módulo está en [`docs/portal/`](docs/portal/). Incluye casos de uso, clases, secuencia, actividades, procesos, ER y despliegue para `ms-auth`, `ms-personal`, `ms-vacaciones`, `ms-contratos` y `ms-boletas`.
+
+```bash
+python3 -m http.server 8099 --directory docs/portal
+```
+
+Abrir `http://localhost:8099`. No requiere build ni dependencias locales.
+
 ## Requisitos
 
 - Docker Desktop abierto y Docker Compose disponible.
