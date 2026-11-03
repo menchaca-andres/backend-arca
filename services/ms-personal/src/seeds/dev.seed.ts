@@ -31,6 +31,7 @@ const FUNCIONARIOS = [
     cargo: 'Operador',
     remuneracion: 3200,
     datos: {
+      id: '11111111-1111-4111-8111-111111111101',
       ci: '9000001',
       ciExpedido: 'CB',
       nombres: 'Lucía',
@@ -45,6 +46,7 @@ const FUNCIONARIOS = [
     cargo: 'Asistente Administrativo',
     remuneracion: 3800,
     datos: {
+      id: '11111111-1111-4111-8111-111111111102',
       ci: '9000002',
       ciExpedido: 'LP',
       nombres: 'Marco',
@@ -61,6 +63,7 @@ const FUNCIONARIOS = [
     cargo: 'Desarrollador',
     remuneracion: 9500,
     datos: {
+      id: '11111111-1111-4111-8111-111111111103',
       ci: '9000003',
       ciExpedido: 'SC',
       nombres: 'Daniela',
@@ -76,6 +79,7 @@ const FUNCIONARIOS = [
     cargo: 'Supervisor de Operaciones',
     remuneracion: 7200,
     datos: {
+      id: '11111111-1111-4111-8111-111111111104',
       ci: '9000004',
       ciExpedido: 'CB',
       nombres: 'Jorge',
@@ -91,6 +95,7 @@ const FUNCIONARIOS = [
     cargo: 'Jefe de RRHH',
     remuneracion: 10500,
     datos: {
+      id: '11111111-1111-4111-8111-111111111105',
       ci: '9000005',
       ciExpedido: 'OR',
       nombres: 'Elena',
