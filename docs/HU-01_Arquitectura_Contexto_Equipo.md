@@ -15,9 +15,9 @@ Este documento resume lo definido en la HU-01 para que todo el equipo construya 
 | CA-03 | C4 Nivel 3 – Componentes de `ms-personal` y `ms-boletas` (route → controller → service → repository) | `docs/c4/nivel3-ms-personal.puml`, `nivel3-ms-boletas.puml` | Hecho |
 | CA-04 | 7 ADRs | `docs/Sprints/1/adr/ADR-001` … `ADR-007` | Hecho |
 | CA-05 | Contratos internos OpenAPI | `docs/api/internal-contracts.openapi.yaml` | Hecho (borrador) |
-| CA-06 | Tabla de supuestos enviada al ingeniero y respuestas registradas | `docs/supuestos-negocio.md` | Hecho por decisión del equipo: no se envía; se trabaja con las propuestas por defecto |
+| CA-06 | Tabla de supuestos enviada al ingeniero y respuestas registradas | `docs/supuestos-negocio.md` | **Pendiente:** se trabaja con las propuestas por defecto; falta el envío y registrar respuestas |
 
-Para ver los diagramas: abrir los `.puml` con la extensión *PlantUML* de VS Code o pegarlos en plantuml.com. Usan la librería C4 incluida en PlantUML (`!include <C4/...>`).
+Para ver los diagramas: abrir los `.puml` con la extensión *PlantUML* de VS Code o pegarlos en plantuml.com. Usan la librería C4 incluida en PlantUML (`!include <C4/...>`). Las versiones renderizadas para el Directorio están en `docs/c4/rendered/`.
 
 ---
 
@@ -97,7 +97,7 @@ ms-<nombre>/
 
 **Variables de entorno comunes:** `PORT`, `DATABASE_URL`, `DB_SCHEMA`, `INTERNAL_API_KEY`, `JWT_SECRET` (gateway y auth), y las URLs de otros servicios (`PERSONAL_SERVICE_URL`, `AUTH_SERVICE_URL`, `GOTENBERG_URL`). Nunca subir `.env` al repositorio; usar `.env.example`.
 
-**Autenticación:** `ms-auth` emite JWT; el Gateway lo valida y propaga `X-User-Id`, `X-User-Role` y `X-Funcionario-Id` (este último vacío si el usuario no está vinculado a un funcionario; lo usan las reglas de "solo sus propios datos" de HU-09, 14, 16, 19 y 23). Las rutas `/internal/*` no pasan por el Gateway.
+**Autenticación:** `ms-auth` emite JWT; el Gateway lo valida y propaga `X-User-Id`, `X-User-Rol` y `X-Funcionario-Id` (este último vacío si el usuario no está vinculado a un funcionario; lo usan las reglas de "solo sus propios datos" de HU-09, 14, 16, 19 y 23). Las rutas `/internal/*` no pasan por el Gateway.
 
 ---
 
@@ -114,7 +114,7 @@ ms-<nombre>/
 
 ## 6. Pendientes y puntos a confirmar
 
-1. **CA-06 (resuelto 30/10):** el equipo decidió trabajar con las propuestas por defecto de `docs/supuestos-negocio.md` sin esperar respuesta. Si el ingeniero corrige alguna, se ajusta la HU afectada.
+1. **CA-06 (pendiente):** el equipo trabaja con las propuestas por defecto de `docs/supuestos-negocio.md`; falta enviar la tabla al ingeniero y registrar sus respuestas. Si corrige alguna, se ajusta la HU afectada.
 2. **ADR-004 (resuelto 30/10):** Supabase. Ojo: el proyecto gratuito se pausa por inactividad; confirmarlo activo antes de revisiones y de la demo.
 3. **Sexto schema (resuelto):** es `auditoria`, según el backlog (HU-02 CA-01, HU-24). Se descartó `catalogos`: áreas y cargos van en `personal` y los feriados en `vacaciones`, para que cada servicio sea dueño de lo que usa.
 4. **Frontend (resuelto):** React + Vite, como dice el stack del backlog.
@@ -126,11 +126,10 @@ ms-<nombre>/
 ## 7. Cambios y archivos nuevos
 
 ```
-hu-01-arquitectura/
+docs/
 ├── HU-01_Arquitectura_Contexto_Equipo.md   (este archivo)
-└── docs/
-    ├── c4/   nivel1-contexto.puml · nivel2-contenedores.puml · nivel3-ms-personal.puml · nivel3-ms-boletas.puml
-    ├── adr/  ADR-001 … ADR-007
-    ├── api/  internal-contracts.openapi.yaml
-    └── supuestos-negocio.md
+├── supuestos-negocio.md
+├── api/   internal-contracts.openapi.yaml
+├── c4/    nivel1-contexto.puml · nivel2-contenedores.puml · nivel3-ms-personal.puml · nivel3-ms-boletas.puml
+└── Sprints/1/adr/  ADR-001 … ADR-007
 ```

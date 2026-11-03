@@ -7,7 +7,7 @@
 Los contratos y las boletas generan PDFs que deben conservarse y poder descargarse. Los PDFs son pequeños (típicamente decenas o pocos cientos de KB) y no se quiere operar un almacenamiento de objetos para el kata.
 
 ## Decisión
-Guardar el PDF en una columna `bytea` de una **tabla separada** de los metadatos (`contrato_pdf`, `boleta_pdf`), con `sha256`, `tamano_bytes` y `generado_en`. Los listados nunca leen el `bytea`.
+Guardar el PDF en una columna `bytea` de una **tabla separada** de los metadatos (`contrato_pdf`, `boleta_pdf`), con `tamano_bytes`. El hash SHA-256 vive en la fila padre (`contrato.hash_sha256`, `boleta.hash_sha256`) porque identifica al documento completo y se valida en la descarga. La fecha de generación se toma del `created_at` del contrato y del `emitida_en` de la boleta. Los listados nunca leen el `bytea`.
 
 ## Alternativas consideradas
 - **Sistema de archivos/volumen Docker:** simple, pero se pierde con el contenedor y complica la copia entre entornos.

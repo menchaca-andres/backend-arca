@@ -14,6 +14,8 @@ describe('AreaRepository', () => {
 
   it('rechaza un codigo repetido', async () => {
     const area = await crearArea();
-    await expect(repo.save(nuevaArea({ codigo: area.codigo }))).rejects.toMatchObject({ driverError: { code: '23505' } });
+    await expect(repo.save(nuevaArea({ codigo: area.codigo }))).rejects.toMatchObject({
+      driverError: { code: '23505' },
+    });
   });
 });

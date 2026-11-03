@@ -1,0 +1,11 @@
+# Imagen de una sola ejecución: aplica las migraciones y la semilla antes de
+# levantar los servicios. Solo se usa en docker-compose (desarrollo/demo).
+FROM node:22-alpine
+
+WORKDIR /app
+
+COPY . .
+RUN npm ci
+RUN npm run build --workspace=@arca/shared
+
+CMD ["sh", "docker/init.sh"]

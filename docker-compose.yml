@@ -15,6 +15,7 @@ x-backend-runtime: &backend-runtime
     - backend
 
 x-common-environment: &common-environment
+  LOG_LEVEL: ${LOG_LEVEL:-info}
   INTERNAL_API_KEY: ${INTERNAL_API_KEY:?Configura INTERNAL_API_KEY en el .env de la raiz}
 
 services:
@@ -38,6 +39,18 @@ services:
       timeout: 3s
       retries: 20
       start_period: 10s
+
+  init:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.init
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@db:5432/arca
+    networks: [backend]
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
 
   gotenberg:
     <<: *backend-runtime
@@ -65,6 +78,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      init:
+        condition: service_completed_successfully
     healthcheck:
       <<: *http-healthcheck
       test: ["CMD", "curl", "-fsS", "--max-time", "4", "http://localhost:3001/health"]
@@ -85,6 +100,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      init:
+        condition: service_completed_successfully
     healthcheck:
       <<: *http-healthcheck
       test: ["CMD", "curl", "-fsS", "--max-time", "4", "http://localhost:3002/health"]
@@ -105,6 +122,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      init:
+        condition: service_completed_successfully
     healthcheck:
       <<: *http-healthcheck
       test: ["CMD", "curl", "-fsS", "--max-time", "4", "http://localhost:3003/health"]
@@ -126,6 +145,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      init:
+        condition: service_completed_successfully
       gotenberg:
         condition: service_healthy
     healthcheck:
@@ -149,6 +170,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      init:
+        condition: service_completed_successfully
       gotenberg:
         condition: service_healthy
     healthcheck:
@@ -165,6 +188,7 @@ services:
       PORT: "8080"
       DATABASE_URL: "postgres://user_gateway:arca_local_gateway_2026@db:5432/arca"
       DB_SCHEMA: auditoria
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5174,http://127.0.0.1:5174,http://localhost:3000,http://127.0.0.1:3000}
       AUTH_SERVICE_URL: http://ms-auth:3001
       PERSONAL_SERVICE_URL: http://ms-personal:3002
       VACACIONES_SERVICE_URL: http://ms-vacaciones:3003
@@ -178,6 +202,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      init:
+        condition: service_completed_successfully
       ms-auth:
         condition: service_healthy
       ms-personal:

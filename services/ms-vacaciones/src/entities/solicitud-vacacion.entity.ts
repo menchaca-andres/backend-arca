@@ -1,12 +1,4 @@
-import {
-  Check,
-  Column,
-  CreateDateColumn,
-  Entity,
-  Index,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import { Check, Column, CreateDateColumn, Entity, Index, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import { EstadoSolicitud } from '@arca/shared';
 
 @Entity('solicitud_vacacion')
@@ -15,7 +7,10 @@ import { EstadoSolicitud } from '@arca/shared';
 @Check('ck_solicitud_fechas', '"fecha_fin" >= "fecha_inicio"')
 @Check('ck_solicitud_dias_habiles', '"dias_habiles" > 0')
 @Check('ck_solicitud_motivo_rechazo', `"estado" <> 'RECHAZADA' OR "motivo_rechazo" IS NOT NULL`)
-@Check('ck_solicitud_resolucion', `"estado" = 'PENDIENTE' OR ("resuelto_por" IS NOT NULL AND "fecha_resolucion" IS NOT NULL)`)
+@Check(
+  'ck_solicitud_resolucion',
+  `"estado" = 'PENDIENTE' OR ("resuelto_por" IS NOT NULL AND "fecha_resolucion" IS NOT NULL)`,
+)
 export class SolicitudVacacion {
   @PrimaryGeneratedColumn('uuid')
   id!: string;

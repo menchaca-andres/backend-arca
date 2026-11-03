@@ -1,7 +1,8 @@
-export type LogLevel = 'info' | 'warn' | 'error';
+export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 export type LogSink = (line: string) => void;
 
-const sensitiveKey = /password|passwd|secret|token|authorization|cookie|apikey|internalkey|databaseurl|connectionstring|body/i;
+const sensitiveKey =
+  /password|passwd|secret|token|authorization|cookie|apikey|internalkey|databaseurl|connectionstring|body/i;
 
 function sanitize(value: unknown, seen: WeakSet<object>): unknown {
   // Los errores pueden contener URLs de conexion y datos de la peticion.
@@ -14,15 +15,20 @@ function sanitize(value: unknown, seen: WeakSet<object>): unknown {
   if (seen.has(value)) return '[Circular]';
   seen.add(value);
   if (Array.isArray(value)) return value.map((item) => sanitize(item, seen));
-  return Object.fromEntries(Object.entries(value).map(([key, item]) => [
-    key,
-    sensitiveKey.test(key.replace(/[-_]/g, '')) ? '[REDACTED]' : sanitize(item, seen),
-  ]));
+  return Object.fromEntries(
+    Object.entries(value).map(([key, item]) => [
+      key,
+      sensitiveKey.test(key.replace(/[-_]/g, '')) ? '[REDACTED]' : sanitize(item, seen),
+    ]),
+  );
 }
 
 // El mensaje describe el evento; no pasar cuerpos, tokens ni secretos como texto libre.
 export function createLogger(service: string, sink?: LogSink) {
-  function log(level: LogLevel, message: string, context: Record<string, unknown> = {}) {
+  function log(level: LogLevel, message: string, context: unknown = {}) {
+    const levels: Record<LogLevel, number> = { debug: 10, info: 20, warn: 30, error: 40 };
+    const configured = (process.env.LOG_LEVEL ?? 'info') as LogLevel;
+    if (levels[level] < (levels[configured] ?? levels.info)) return;
     const line = JSON.stringify({
       timestamp: new Date().toISOString(),
       level,
@@ -36,9 +42,10 @@ export function createLogger(service: string, sink?: LogSink) {
     else console.log(line);
   }
   return {
-    info: (message: string, context?: Record<string, unknown>) => log('info', message, context),
-    warn: (message: string, context?: Record<string, unknown>) => log('warn', message, context),
-    error: (message: string, context?: Record<string, unknown>) => log('error', message, context),
+    debug: (message: string, context?: unknown) => log('debug', message, context),
+    info: (message: string, context?: unknown) => log('info', message, context),
+    warn: (message: string, context?: unknown) => log('warn', message, context),
+    error: (message: string, context?: unknown) => log('error', message, context),
   };
 }
 

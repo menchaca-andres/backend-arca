@@ -48,8 +48,11 @@ export class HttpClient {
       const timer = setTimeout(() => controller.abort(), this.timeoutMs);
       try {
         const response = await fetch(url, {
-          method: options.method ?? 'GET', headers, body,
-          signal: controller.signal, redirect: 'error',
+          method: options.method ?? 'GET',
+          headers,
+          body,
+          signal: controller.signal,
+          redirect: 'error',
         });
         if ([502, 503, 504].includes(response.status)) {
           await response.body?.cancel();
@@ -58,13 +61,19 @@ export class HttpClient {
         }
         const text = await response.text();
         let data: unknown;
-        try { data = text ? JSON.parse(text) : undefined; }
-        catch { throw new AppError('SERVICE_UNAVAILABLE', 'Respuesta invalida del servicio remoto'); }
+        try {
+          data = text ? JSON.parse(text) : undefined;
+        } catch {
+          throw new AppError('SERVICE_UNAVAILABLE', 'Respuesta invalida del servicio remoto');
+        }
         if (!response.ok) {
           // Conservar solo codigos comunes cuyo estado coincida. Nunca reflejar texto remoto.
           const code = typeof data === 'object' && data !== null && 'code' in data ? data.code : undefined;
-          if (typeof code === 'string' && Object.hasOwn(errorStatus, code)
-            && errorStatus[code as ErrorCode] === response.status) {
+          if (
+            typeof code === 'string' &&
+            Object.hasOwn(errorStatus, code) &&
+            errorStatus[code as ErrorCode] === response.status
+          ) {
             throw new AppError(code as ErrorCode, 'El servicio remoto rechazo la solicitud');
           }
           throw new AppError('SERVICE_UNAVAILABLE', 'Respuesta inesperada del servicio remoto');

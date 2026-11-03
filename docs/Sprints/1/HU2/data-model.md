@@ -1,7 +1,7 @@
 # Modelo de datos – Sistema de Gestión Humana ARCA (HU-02)
 
 **Base:** una instancia PostgreSQL en Supabase, 6 schemas (ADR-002). Cada schema pertenece a un solo servicio y tiene su propio rol de BD.
-**ORM:** TypeORM con migraciones (ADR-005). Sin SQL crudo, salvo el trigger de inmutabilidad de boletas (HU-22).
+**ORM:** TypeORM con migraciones (ADR-005). Sin SQL crudo en la aplicación, salvo el trigger de inmutabilidad de boletas (HU-22) y el `SELECT 1` del health check de infraestructura.
 
 | Schema | Dueño | Tablas |
 |---|---|---|
@@ -655,8 +655,8 @@ Los enums (`EstadoFuncionario`, `RolUsuario`, etc.) se definen una vez en `packa
 | # | Tabla / columna | HU afectada | Duda |
 |---|---|---|---|
 | 1 | Schema `autenticacion` | HU-03, HU-05, HU-06 | **Resuelta.** Se llamaba `auth`, pero Supabase ya usa ese nombre para su propio servicio de autenticación. Se renombró el schema a `autenticacion`; la tabla sigue siendo `usuario` y el servicio `ms-auth`. |
-| 2 | `funcionario.ci`, `funcionario` sin `usuario_id` | HU-06, HU-08 | `internal-contracts.openapi.yaml` expone `documentoIdentidad` y `usuarioId`. Aquí la columna es `ci`, y el vínculo está en `usuario.funcionario_id`. El endpoint debe traducir `ci`, pero `usuarioId` no se puede sacar de `personal` sin llamar a `ms-auth`. Falta decidir si `usuarioId` sale del contrato. |
+| 2 | `funcionario.ci`, `funcionario` sin `usuario_id` | HU-06, HU-08 | `internal-contracts.openapi.yaml` expone `documentoIdentidad` y `usuarioId`. Aquí la columna es `ci`, y el vínculo está en `usuario.funcionario_id`. El endpoint debe traducir `ci`, pero `usuarioId` no se puede sacar de `personal` sin llamar a `ms-auth`. **Pendiente:** decidir en el contrato v0.2 si `usuarioId` sale o si `ms-auth` expone una búsqueda por funcionario; afecta también la baja (HU-12). |
 | 3 | `boleta_detalle`, `evento` | HU-21, HU-24 | El handoff dice que estas tablas llevan `created_at`, pero este documento no se lo pone: `boleta_detalle` no tiene fecha y `evento` usa `fecha`. Se siguió este documento. |
 | 4 | `boleta_detalle.tipo`, `concepto.tipo` | HU-20, HU-21 | TypeORM genera dos veces `CREATE TYPE tipo_concepto` porque dos tablas comparten `enumName`, y la migración no corre. Se quitó a mano el `CREATE` y el `DROP` duplicados de la migración de `ms-boletas`, aunque la regla es no editarlas. `migration:generate --check` confirma que no hay diferencias con las entities. |
 | 5 | Todas las PK `uuid` | HU-03 | Los `DataSource` usan `uuidExtension: 'pgcrypto'` y `installExtensions: false`, para que el default sea `gen_random_uuid()` (incluida en Postgres) y no `uuid_generate_v4()`. Esta última depende de la extensión `uuid-ossp`, que queda instalada en un solo schema y no la verían los roles de los demás servicios. |
-| 6 | `contrato_pdf`, `boleta_pdf` | HU-18, HU-19, HU-22, HU-23 | ADR-006 pone `sha256` y `generado_en` en las tablas de PDF. Este documento guarda el hash en `contrato` y `boleta`, y las tablas de PDF solo tienen `contenido` y `tamano_bytes`. Se siguió este documento. |
+| 6 | `contrato_pdf`, `boleta_pdf` | HU-18, HU-19, HU-22, HU-23 | **Resuelta:** ADR-006 se alineó con este documento. El hash SHA-256 vive en `contrato`/`boleta`; las tablas de PDF solo tienen `contenido` y `tamano_bytes`; la fecha sale de `created_at`/`emitida_en`. |

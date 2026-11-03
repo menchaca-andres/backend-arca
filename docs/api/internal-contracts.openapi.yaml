@@ -1,11 +1,12 @@
 openapi: 3.0.3
 info:
-  title: Contratos internos – Sistema de Gestión Humana (borrador)
-  version: 0.1.0
+  title: Contratos internos e infraestructura – Sistema de Gestión Humana (borrador)
+  version: 0.2.0
   description: |
     Contratos entre servicios. Rutas /internal/* NO se exponen por el API Gateway.
     Se protegen con la cabecera X-Internal-Key dentro de la red de Docker.
     Errores siempre con el formato { code, message, details }.
+    GET /health es publico y esta disponible en gateway y los cinco microservicios.
 servers:
   - url: http://ms-personal:3002
     description: ms-personal
@@ -14,6 +15,54 @@ servers:
 security:
   - InternalKey: []
 paths:
+  /health:
+    get:
+      tags: [Infraestructura]
+      operationId: getHealth
+      summary: Comprueba la conexion a PostgreSQL del componente
+      description: |
+        Disponible en gateway y los cinco microservicios. Inicializa el
+        DataSource si es necesario y ejecuta una consulta real con TypeORM.
+        No define body, query ni parametros de ruta: no requiere Zod.
+        No requiere JWT ni X-Internal-Key. No comprueba tablas de negocio.
+      security: []
+      servers:
+        - url: http://gateway:8080
+          description: Gateway dentro de Docker
+        - url: http://ms-auth:3001
+          description: ms-auth dentro de Docker
+        - url: http://ms-personal:3002
+          description: ms-personal dentro de Docker
+        - url: http://ms-vacaciones:3003
+          description: ms-vacaciones dentro de Docker
+        - url: http://ms-contratos:3004
+          description: ms-contratos dentro de Docker
+        - url: http://ms-boletas:3005
+          description: ms-boletas dentro de Docker
+        - url: http://localhost:8080
+          description: Gateway desde el host; los microservicios no publican puertos
+      responses:
+        "200":
+          description: OK - conexion a PostgreSQL comprobada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+              examples:
+                gateway:
+                  value: { service: gateway, status: OK, db: up }
+                auth:
+                  value: { service: ms-auth, status: OK, db: up }
+                personal:
+                  value: { service: ms-personal, status: OK, db: up }
+                vacaciones:
+                  value: { service: ms-vacaciones, status: OK, db: up }
+                contratos:
+                  value: { service: ms-contratos, status: OK, db: up }
+                boletas:
+                  value: { service: ms-boletas, status: OK, db: up }
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
   /internal/funcionarios/{id}:
     get:
       tags: [ms-personal]
@@ -114,6 +163,20 @@ components:
       in: header
       name: X-Internal-Key
   schemas:
+    HealthResponse:
+      type: object
+      additionalProperties: false
+      required: [service, status, db]
+      properties:
+        service:
+          type: string
+          enum: [gateway, ms-auth, ms-personal, ms-vacaciones, ms-contratos, ms-boletas]
+        status:
+          type: string
+          enum: [OK]
+        db:
+          type: string
+          enum: [up]
     EstadoFuncionario:
       type: string
       enum: [EN_PRUEBA, RATIFICADO, BAJA]
@@ -154,6 +217,16 @@ components:
         message: { type: string }
         details: { type: object, additionalProperties: true, nullable: true }
   responses:
+    ServiceUnavailable:
+      description: SERVICE_UNAVAILABLE - no se pudo comprobar la conexion a PostgreSQL
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            code: SERVICE_UNAVAILABLE
+            message: Base de datos no disponible
+            details: null
     ValidationError:
       description: Entrada inválida (code VALIDATION_ERROR)
       content:

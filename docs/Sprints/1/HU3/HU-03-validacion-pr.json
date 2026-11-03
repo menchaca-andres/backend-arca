@@ -1,0 +1,218 @@
+{
+  "checkedAt": "2026-11-03T00:16:11.759Z",
+  "baseMain": "76523f7a5674ac2138e6ef57a994439e63cfb3d5",
+  "build": true,
+  "lint": true,
+  "format": true,
+  "typecheck": true,
+  "tests": {
+    "total": 229,
+    "jest": 190,
+    "jestSuites": 32,
+    "shared": 39,
+    "failures": 0,
+    "isolatedPostgres": true,
+    "gatewayRerun": 54
+  },
+  "initScript": true,
+  "runtime": {
+    "checkedAt": "2026-11-03T00:16:11.355Z",
+    "project": "backend-arca",
+    "destination": "Supabase Session Pooler",
+    "projectRef": "othblpxxhhqwevzofpqi",
+    "results": [
+      {
+        "service": "gateway",
+        "status": 200,
+        "body": {
+          "service": "gateway",
+          "status": "OK",
+          "db": "up"
+        },
+        "role": "arca_auditoria",
+        "schema": "auditoria",
+        "database": "postgres",
+        "host": "aws-1-sa-east-1.pooler.supabase.com",
+        "projectRef": "othblpxxhhqwevzofpqi",
+        "tlsEncrypted": true,
+        "tlsAuthorized": true,
+        "poolMax": 5,
+        "synchronize": false,
+        "hostPortsPublished": true
+      },
+      {
+        "service": "ms-auth",
+        "status": 200,
+        "body": {
+          "service": "ms-auth",
+          "status": "OK",
+          "db": "up"
+        },
+        "role": "arca_auth",
+        "schema": "autenticacion",
+        "database": "postgres",
+        "host": "aws-1-sa-east-1.pooler.supabase.com",
+        "projectRef": "othblpxxhhqwevzofpqi",
+        "tlsEncrypted": true,
+        "tlsAuthorized": true,
+        "poolMax": 5,
+        "synchronize": false,
+        "hostPortsPublished": false
+      },
+      {
+        "service": "ms-personal",
+        "status": 200,
+        "body": {
+          "service": "ms-personal",
+          "status": "OK",
+          "db": "up"
+        },
+        "role": "arca_personal",
+        "schema": "personal",
+        "database": "postgres",
+        "host": "aws-1-sa-east-1.pooler.supabase.com",
+        "projectRef": "othblpxxhhqwevzofpqi",
+        "tlsEncrypted": true,
+        "tlsAuthorized": true,
+        "poolMax": 5,
+        "synchronize": false,
+        "hostPortsPublished": false
+      },
+      {
+        "service": "ms-vacaciones",
+        "status": 200,
+        "body": {
+          "service": "ms-vacaciones",
+          "status": "OK",
+          "db": "up"
+        },
+        "role": "arca_vacaciones",
+        "schema": "vacaciones",
+        "database": "postgres",
+        "host": "aws-1-sa-east-1.pooler.supabase.com",
+        "projectRef": "othblpxxhhqwevzofpqi",
+        "tlsEncrypted": true,
+        "tlsAuthorized": true,
+        "poolMax": 5,
+        "synchronize": false,
+        "hostPortsPublished": false
+      },
+      {
+        "service": "ms-contratos",
+        "status": 200,
+        "body": {
+          "service": "ms-contratos",
+          "status": "OK",
+          "db": "up"
+        },
+        "role": "arca_contratos",
+        "schema": "contratos",
+        "database": "postgres",
+        "host": "aws-1-sa-east-1.pooler.supabase.com",
+        "projectRef": "othblpxxhhqwevzofpqi",
+        "tlsEncrypted": true,
+        "tlsAuthorized": true,
+        "poolMax": 5,
+        "synchronize": false,
+        "hostPortsPublished": false
+      },
+      {
+        "service": "ms-boletas",
+        "status": 200,
+        "body": {
+          "service": "ms-boletas",
+          "status": "OK",
+          "db": "up"
+        },
+        "role": "arca_boletas",
+        "schema": "boletas",
+        "database": "postgres",
+        "host": "aws-1-sa-east-1.pooler.supabase.com",
+        "projectRef": "othblpxxhhqwevzofpqi",
+        "tlsEncrypted": true,
+        "tlsAuthorized": true,
+        "poolMax": 5,
+        "synchronize": false,
+        "hostPortsPublished": false
+      }
+    ],
+    "gatewayHostHealth": 200
+  },
+  "nodeVersions": [
+    {
+      "service": "gateway",
+      "node": "v22.23.4"
+    },
+    {
+      "service": "ms-auth",
+      "node": "v22.23.4"
+    },
+    {
+      "service": "ms-personal",
+      "node": "v22.23.4"
+    },
+    {
+      "service": "ms-vacaciones",
+      "node": "v22.23.4"
+    },
+    {
+      "service": "ms-contratos",
+      "node": "v22.23.4"
+    },
+    {
+      "service": "ms-boletas",
+      "node": "v22.23.4"
+    }
+  ],
+  "frontend": {
+    "url": "http://localhost:5174/",
+    "status": 200,
+    "corsOrigin": "http://localhost:5174"
+  },
+  "proxyChecks": [
+    {
+      "service": "auth",
+      "status": 200
+    },
+    {
+      "service": "personal",
+      "status": 200
+    },
+    {
+      "service": "vacaciones",
+      "status": 200
+    },
+    {
+      "service": "contratos",
+      "status": 200
+    },
+    {
+      "service": "boletas",
+      "status": 200
+    }
+  ],
+  "gatewayInternalStatus": 403,
+  "serviceInternalStatuses": [
+    {
+      "service": "ms-auth",
+      "status": 401
+    },
+    {
+      "service": "ms-personal",
+      "status": 401
+    },
+    {
+      "service": "ms-vacaciones",
+      "status": 401
+    },
+    {
+      "service": "ms-contratos",
+      "status": 401
+    },
+    {
+      "service": "ms-boletas",
+      "status": 401
+    }
+  ],
+  "smoke": "OK: http://localhost:8080/health respondio 200 OK."
+}

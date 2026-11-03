@@ -2,7 +2,10 @@ import 'dotenv/config';
 import express, { Router } from 'express';
 import cors from 'cors';
 import {
-  AppError, createLogger, errorHandler,
+  AppError,
+  createLogger,
+  errorHandler,
+  requestId,
   requireInternalKey as internalKeyMiddleware,
 } from '@arca/shared';
 import { createHealthRouter } from './routes/health.routes';
@@ -15,6 +18,7 @@ export function createApp(internalRoutes: Router = Router()) {
   const protectInternal = internalKeyMiddleware(process.env.INTERNAL_API_KEY ?? '');
 
   app.disable('x-powered-by');
+  app.use(requestId);
   app.use(cors());
   app.use((req, res, next) => {
     res.once('finish', () => {

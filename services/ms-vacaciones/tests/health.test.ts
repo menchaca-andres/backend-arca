@@ -6,7 +6,9 @@ import { app } from '../src/app';
 import { AppDataSource } from '../src/data-source';
 
 const source = AppDataSource as unknown as {
-  isInitialized: boolean; initialize: jest.Mock; createQueryBuilder: jest.Mock;
+  isInitialized: boolean;
+  initialize: jest.Mock;
+  createQueryBuilder: jest.Mock;
 };
 const query = { select: jest.fn(), from: jest.fn(), limit: jest.fn(), getRawOne: jest.fn() };
 
@@ -31,7 +33,7 @@ describe('Infraestructura: GET /health', () => {
   it('inicializa y consulta PostgreSQL antes de responder 200', async () => {
     const response = await request(app).get('/health');
     expect(response.status).toBe(200);
-    expect(response.body).toEqual({ service: expect.any(String), status: 'OK' });
+    expect(response.body).toEqual({ service: expect.any(String), status: 'OK', db: 'up' });
     expect(source.initialize).toHaveBeenCalledTimes(1);
     expect(query.select).toHaveBeenCalledWith('1', 'ok');
     expect(query.from).toHaveBeenCalledWith('pg_catalog.pg_database', 'database');
@@ -49,7 +51,9 @@ describe('Infraestructura: GET /health', () => {
     const response = await request(app).get('/health');
     expect(response.status).toBe(503);
     expect(response.body).toEqual({
-      code: 'SERVICE_UNAVAILABLE', message: 'Base de datos no disponible', details: null,
+      code: 'SERVICE_UNAVAILABLE',
+      message: 'Base de datos no disponible',
+      details: null,
     });
     expect(JSON.stringify(response.body)).not.toContain('clave-privada');
     expect(query.getRawOne).not.toHaveBeenCalled();
@@ -72,9 +76,15 @@ describe('Infraestructura: GET /health', () => {
     expect(source.initialize).toHaveBeenCalledTimes(2);
   });
   it('comparte la inicializacion entre peticiones simultaneas', async () => {
-    source.initialize.mockImplementationOnce(() => new Promise((resolve) => {
-      setTimeout(() => { source.isInitialized = true; resolve(source); }, 20);
-    }));
+    source.initialize.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          setTimeout(() => {
+            source.isInitialized = true;
+            resolve(source);
+          }, 20);
+        }),
+    );
     const responses = await Promise.all([request(app).get('/health'), request(app).get('/health')]);
     expect(responses.map((response) => response.status)).toEqual([200, 200]);
     expect(source.initialize).toHaveBeenCalledTimes(1);

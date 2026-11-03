@@ -1,0 +1,147 @@
+{
+  "checkedAt": "2026-11-02T23:13:00.209Z",
+  "destination": "Supabase Session Pooler",
+  "projectRef": "othblpxxhhqwevzofpqi",
+  "poolerHost": "aws-1-sa-east-1.pooler.supabase.com",
+  "scope": "Aislamiento de datos entre los seis schemas ARCA; no certifica ausencia de todos los privilegios PUBLIC de la plataforma.",
+  "results": [
+    {
+      "service": "gateway",
+      "role": "arca_auditoria",
+      "schema": "auditoria",
+      "ownRead": true,
+      "ownTablesChecked": 2,
+      "deniedTablesChecked": 24,
+      "tlsVerified": true,
+      "deniedSchemas": [
+        "autenticacion",
+        "personal",
+        "vacaciones",
+        "contratos",
+        "boletas"
+      ],
+      "privileges": {
+        "read": true,
+        "insert": true,
+        "update": false,
+        "delete": false
+      },
+      "sequencesChecked": 2
+    },
+    {
+      "service": "ms-auth",
+      "role": "arca_auth",
+      "schema": "autenticacion",
+      "ownRead": true,
+      "ownTablesChecked": 2,
+      "deniedTablesChecked": 24,
+      "tlsVerified": true,
+      "deniedSchemas": [
+        "auditoria",
+        "personal",
+        "vacaciones",
+        "contratos",
+        "boletas"
+      ],
+      "privileges": {
+        "read": true,
+        "insert": true,
+        "update": true,
+        "delete": true
+      },
+      "sequencesChecked": 1
+    },
+    {
+      "service": "ms-personal",
+      "role": "arca_personal",
+      "schema": "personal",
+      "ownRead": true,
+      "ownTablesChecked": 5,
+      "deniedTablesChecked": 21,
+      "tlsVerified": true,
+      "deniedSchemas": [
+        "auditoria",
+        "autenticacion",
+        "vacaciones",
+        "contratos",
+        "boletas"
+      ],
+      "privileges": {
+        "read": true,
+        "insert": true,
+        "update": true,
+        "delete": true
+      },
+      "sequencesChecked": 1
+    },
+    {
+      "service": "ms-vacaciones",
+      "role": "arca_vacaciones",
+      "schema": "vacaciones",
+      "ownRead": true,
+      "ownTablesChecked": 3,
+      "deniedTablesChecked": 23,
+      "tlsVerified": true,
+      "deniedSchemas": [
+        "auditoria",
+        "autenticacion",
+        "personal",
+        "contratos",
+        "boletas"
+      ],
+      "privileges": {
+        "read": true,
+        "insert": true,
+        "update": true,
+        "delete": true
+      },
+      "sequencesChecked": 1
+    },
+    {
+      "service": "ms-contratos",
+      "role": "arca_contratos",
+      "schema": "contratos",
+      "ownRead": true,
+      "ownTablesChecked": 6,
+      "deniedTablesChecked": 20,
+      "tlsVerified": true,
+      "deniedSchemas": [
+        "auditoria",
+        "autenticacion",
+        "personal",
+        "vacaciones",
+        "boletas"
+      ],
+      "privileges": {
+        "read": true,
+        "insert": true,
+        "update": true,
+        "delete": true
+      },
+      "sequencesChecked": 1
+    },
+    {
+      "service": "ms-boletas",
+      "role": "arca_boletas",
+      "schema": "boletas",
+      "ownRead": true,
+      "ownTablesChecked": 8,
+      "deniedTablesChecked": 18,
+      "tlsVerified": true,
+      "deniedSchemas": [
+        "auditoria",
+        "autenticacion",
+        "personal",
+        "vacaciones",
+        "contratos"
+      ],
+      "privileges": {
+        "read": true,
+        "insert": true,
+        "update": true,
+        "delete": true
+      },
+      "sequencesChecked": 1
+    }
+  ]
+}
