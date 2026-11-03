@@ -80,7 +80,11 @@ export function createApp() {
   app.use('/health', createHealthRouter('gateway'));
 
   const routes: Array<{ prefix: string; target: string; forwardedPrefix?: string }> = [
-    { prefix: '/api/v1/auth', target: process.env.AUTH_SERVICE_URL ?? 'http://ms-auth:3001' },
+    {
+      prefix: '/api/v1/auth',
+      target: process.env.AUTH_SERVICE_URL ?? 'http://ms-auth:3001',
+      forwardedPrefix: '/auth',
+    },
     { prefix: '/api/v1/personal', target: process.env.PERSONAL_SERVICE_URL ?? 'http://ms-personal:3002' },
     { prefix: '/api/v1/vacaciones', target: process.env.VACACIONES_SERVICE_URL ?? 'http://ms-vacaciones:3003' },
     { prefix: '/api/v1/contratos', target: process.env.CONTRATOS_SERVICE_URL ?? 'http://ms-contratos:3004' },
