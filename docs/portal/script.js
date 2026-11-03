@@ -363,7 +363,11 @@ window.showImageModal = function showImageModal(src, alt) {
   state.showingSource = false;
   setImageMode(true);
   openModal(alt);
-  elements.diagramContainer.innerHTML = `<img class="diagram-image" src="${src}" alt="${alt}" />`;
+  elements.diagramContainer.innerHTML = `
+    <div class="diagram-render">
+      <img class="diagram-image" src="${src}" alt="${alt}" />
+    </div>`;
+  resetZoom();
 };
 
 function downloadCurrent() {
