@@ -1,63 +1,204 @@
-# Desarrollo local completo: base con los 6 schemas, migraciones/semilla,
-# 5 microservicios, gateway, Gotenberg y frontend.
-#
-# `docker compose up --build` deja el sistema listo sin pasos manuales.
-# El frontend se construye desde ../frontend-arca, así que ambos repos deben
-# estar clonados uno al lado del otro (backend-arca/ y frontend-arca/).
-#
-# Para Supabase, cambiá DATABASE_URL por la cadena del Session pooler con
-# sslmode=require y corré las migraciones con `npm run db:migrate` (ver
-# docs/Sprints/1/HU3/HU-03-infraestructura.md).
+# Desarrollo local: credenciales publicas de docker/init-schemas.sql.
+# INTERNAL_API_KEY se obtiene del .env de la raiz.
+# Contexto raiz para el backend: sus Dockerfiles necesitan packages/shared.
 
-x-database-url: &database-url postgres://postgres:dev@db:5432/arca
+x-http-healthcheck: &http-healthcheck
+  interval: 10s
+  timeout: 5s
+  retries: 6
+  start_period: 20s
 
-x-service-env: &service-env
-  DATABASE_URL: *database-url
-  INTERNAL_API_KEY: ${INTERNAL_API_KEY:-dev-internal-key}
+x-backend-runtime: &backend-runtime
+  init: true
+  restart: unless-stopped
+  networks:
+    - backend
+
+x-common-environment: &common-environment
   LOG_LEVEL: ${LOG_LEVEL:-info}
-  DB_POOL_MAX: ${DB_POOL_MAX:-5}
+  INTERNAL_API_KEY: ${INTERNAL_API_KEY:?Configura INTERNAL_API_KEY en el .env de la raiz}
 
 services:
   db:
     image: postgres:16
+    restart: unless-stopped
     environment:
-      POSTGRES_PASSWORD: dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
       POSTGRES_DB: arca
-    ports: ["5433:5432"]
+    ports:
+      - "5433:5432"
     volumes:
       - db-data:/var/lib/postgresql/data
       - ./docker/init-schemas.sql:/docker-entrypoint-initdb.d/init-schemas.sql:ro
+    networks:
+      - backend
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -h localhost -U postgres -d arca"]
+      test: ["CMD", "pg_isready", "-h", "127.0.0.1", "-U", "postgres", "-d", "arca"]
       interval: 3s
       timeout: 3s
       retries: 20
+      start_period: 10s
 
-  # Aplica migraciones y semilla una sola vez. Los servicios esperan a que termine.
   init:
-    build: { context: ., dockerfile: docker/Dockerfile.init }
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.init
     environment:
-      DATABASE_URL: *database-url
+      DATABASE_URL: postgres://postgres:postgres@db:5432/arca
+    networks: [backend]
     depends_on:
       db:
         condition: service_healthy
     restart: "no"
 
-  gateway:
-    build: { context: ., dockerfile: gateway/Dockerfile }
-    env_file: [{ path: gateway/.env, required: false }]
+  gotenberg:
+    <<: *backend-runtime
+    image: gotenberg/gotenberg:8
+    expose:
+      - "3000"
+    healthcheck:
+      <<: *http-healthcheck
+      start_period: 30s
+      test: ["CMD", "curl", "-fsS", "--max-time", "4", "http://localhost:3000/health"]
+
+  ms-auth:
+    <<: *backend-runtime
+    build:
+      context: .
+      dockerfile: services/ms-auth/Dockerfile
     environment:
-      <<: *service-env
-      PORT: 8080
+      <<: *common-environment
+      PORT: "3001"
+      DATABASE_URL: "postgres://user_auth:arca_local_auth_2026@db:5432/arca"
+      DB_SCHEMA: autenticacion
+      PERSONAL_SERVICE_URL: http://ms-personal:3002
+    expose:
+      - "3001"
+    depends_on:
+      db:
+        condition: service_healthy
+      init:
+        condition: service_completed_successfully
+    healthcheck:
+      <<: *http-healthcheck
+      test: ["CMD", "curl", "-fsS", "--max-time", "4", "http://localhost:3001/health"]
+
+  ms-personal:
+    <<: *backend-runtime
+    build:
+      context: .
+      dockerfile: services/ms-personal/Dockerfile
+    environment:
+      <<: *common-environment
+      PORT: "3002"
+      DATABASE_URL: "postgres://user_personal:arca_local_personal_2026@db:5432/arca"
+      DB_SCHEMA: personal
+      AUTH_SERVICE_URL: http://ms-auth:3001
+    expose:
+      - "3002"
+    depends_on:
+      db:
+        condition: service_healthy
+      init:
+        condition: service_completed_successfully
+    healthcheck:
+      <<: *http-healthcheck
+      test: ["CMD", "curl", "-fsS", "--max-time", "4", "http://localhost:3002/health"]
+
+  ms-vacaciones:
+    <<: *backend-runtime
+    build:
+      context: .
+      dockerfile: services/ms-vacaciones/Dockerfile
+    environment:
+      <<: *common-environment
+      PORT: "3003"
+      DATABASE_URL: "postgres://user_vacaciones:arca_local_vacaciones_2026@db:5432/arca"
+      DB_SCHEMA: vacaciones
+      PERSONAL_SERVICE_URL: http://ms-personal:3002
+    expose:
+      - "3003"
+    depends_on:
+      db:
+        condition: service_healthy
+      init:
+        condition: service_completed_successfully
+    healthcheck:
+      <<: *http-healthcheck
+      test: ["CMD", "curl", "-fsS", "--max-time", "4", "http://localhost:3003/health"]
+
+  ms-contratos:
+    <<: *backend-runtime
+    build:
+      context: .
+      dockerfile: services/ms-contratos/Dockerfile
+    environment:
+      <<: *common-environment
+      PORT: "3004"
+      DATABASE_URL: "postgres://user_contratos:arca_local_contratos_2026@db:5432/arca"
+      DB_SCHEMA: contratos
+      PERSONAL_SERVICE_URL: http://ms-personal:3002
+      GOTENBERG_URL: http://gotenberg:3000
+    expose:
+      - "3004"
+    depends_on:
+      db:
+        condition: service_healthy
+      init:
+        condition: service_completed_successfully
+      gotenberg:
+        condition: service_healthy
+    healthcheck:
+      <<: *http-healthcheck
+      test: ["CMD", "curl", "-fsS", "--max-time", "4", "http://localhost:3004/health"]
+
+  ms-boletas:
+    <<: *backend-runtime
+    build:
+      context: .
+      dockerfile: services/ms-boletas/Dockerfile
+    environment:
+      <<: *common-environment
+      PORT: "3005"
+      DATABASE_URL: "postgres://user_boletas:arca_local_boletas_2026@db:5432/arca"
+      DB_SCHEMA: boletas
+      PERSONAL_SERVICE_URL: http://ms-personal:3002
+      GOTENBERG_URL: http://gotenberg:3000
+    expose:
+      - "3005"
+    depends_on:
+      db:
+        condition: service_healthy
+      init:
+        condition: service_completed_successfully
+      gotenberg:
+        condition: service_healthy
+    healthcheck:
+      <<: *http-healthcheck
+      test: ["CMD", "curl", "-fsS", "--max-time", "4", "http://localhost:3005/health"]
+
+  gateway:
+    <<: *backend-runtime
+    build:
+      context: .
+      dockerfile: gateway/Dockerfile
+    environment:
+      <<: *common-environment
+      PORT: "8080"
+      DATABASE_URL: "postgres://user_gateway:arca_local_gateway_2026@db:5432/arca"
       DB_SCHEMA: auditoria
-      JWT_SECRET: ${JWT_SECRET:-dev-jwt-secret}
-      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173,http://127.0.0.1:5173}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5174,http://127.0.0.1:5174,http://localhost:3000,http://127.0.0.1:3000}
       AUTH_SERVICE_URL: http://ms-auth:3001
       PERSONAL_SERVICE_URL: http://ms-personal:3002
       VACACIONES_SERVICE_URL: http://ms-vacaciones:3003
       CONTRATOS_SERVICE_URL: http://ms-contratos:3004
       BOLETAS_SERVICE_URL: http://ms-boletas:3005
-    ports: ["8080:8080"]
+    ports:
+      - "8080:8080"
+    networks:
+      - backend
+      - web
     depends_on:
       db:
         condition: service_healthy
@@ -74,174 +215,31 @@ services:
       ms-boletas:
         condition: service_healthy
     healthcheck:
-      test:
-        [
-          "CMD",
-          "node",
-          "-e",
-          "fetch('http://127.0.0.1:8080/health').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))",
-        ]
-      interval: 5s
-      timeout: 3s
-      retries: 12
-      start_period: 20s
-
-  ms-auth:
-    build: { context: ., dockerfile: services/ms-auth/Dockerfile }
-    env_file: [{ path: services/ms-auth/.env, required: false }]
-    environment:
-      <<: *service-env
-      PORT: 3001
-      DB_SCHEMA: autenticacion
-      JWT_SECRET: ${JWT_SECRET:-dev-jwt-secret}
-      PERSONAL_SERVICE_URL: http://ms-personal:3002
-    depends_on:
-      db:
-        condition: service_healthy
-      init:
-        condition: service_completed_successfully
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "node",
-          "-e",
-          "fetch('http://127.0.0.1:3001/health').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))",
-        ]
-      interval: 5s
-      timeout: 3s
-      retries: 12
-      start_period: 20s
-
-  ms-personal:
-    build: { context: ., dockerfile: services/ms-personal/Dockerfile }
-    env_file: [{ path: services/ms-personal/.env, required: false }]
-    environment:
-      <<: *service-env
-      PORT: 3002
-      DB_SCHEMA: personal
-      AUTH_SERVICE_URL: http://ms-auth:3001
-    depends_on:
-      db:
-        condition: service_healthy
-      init:
-        condition: service_completed_successfully
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "node",
-          "-e",
-          "fetch('http://127.0.0.1:3002/health').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))",
-        ]
-      interval: 5s
-      timeout: 3s
-      retries: 12
-      start_period: 20s
-
-  ms-vacaciones:
-    build: { context: ., dockerfile: services/ms-vacaciones/Dockerfile }
-    env_file: [{ path: services/ms-vacaciones/.env, required: false }]
-    environment:
-      <<: *service-env
-      PORT: 3003
-      DB_SCHEMA: vacaciones
-      PERSONAL_SERVICE_URL: http://ms-personal:3002
-    depends_on:
-      db:
-        condition: service_healthy
-      init:
-        condition: service_completed_successfully
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "node",
-          "-e",
-          "fetch('http://127.0.0.1:3003/health').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))",
-        ]
-      interval: 5s
-      timeout: 3s
-      retries: 12
-      start_period: 20s
-
-  ms-contratos:
-    build: { context: ., dockerfile: services/ms-contratos/Dockerfile }
-    env_file: [{ path: services/ms-contratos/.env, required: false }]
-    environment:
-      <<: *service-env
-      PORT: 3004
-      DB_SCHEMA: contratos
-      PERSONAL_SERVICE_URL: http://ms-personal:3002
-      GOTENBERG_URL: http://gotenberg:3000
-    depends_on:
-      db:
-        condition: service_healthy
-      init:
-        condition: service_completed_successfully
-      gotenberg:
-        condition: service_started
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "node",
-          "-e",
-          "fetch('http://127.0.0.1:3004/health').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))",
-        ]
-      interval: 5s
-      timeout: 3s
-      retries: 12
-      start_period: 20s
-
-  ms-boletas:
-    build: { context: ., dockerfile: services/ms-boletas/Dockerfile }
-    env_file: [{ path: services/ms-boletas/.env, required: false }]
-    environment:
-      <<: *service-env
-      PORT: 3005
-      DB_SCHEMA: boletas
-      PERSONAL_SERVICE_URL: http://ms-personal:3002
-      GOTENBERG_URL: http://gotenberg:3000
-    depends_on:
-      db:
-        condition: service_healthy
-      init:
-        condition: service_completed_successfully
-      gotenberg:
-        condition: service_started
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "node",
-          "-e",
-          "fetch('http://127.0.0.1:3005/health').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))",
-        ]
-      interval: 5s
-      timeout: 3s
-      retries: 12
-      start_period: 20s
-
-  gotenberg:
-    image: gotenberg/gotenberg:8
-    ports: ["3000:3000"]
+      <<: *http-healthcheck
+      test: ["CMD", "curl", "-fsS", "--max-time", "4", "http://localhost:8080/health"]
 
   frontend:
     build:
       context: ../frontend-arca
-      args:
-        VITE_API_URL: ${VITE_API_URL:-http://localhost:8080}
-    ports: ["5173:80"]
+      dockerfile: Dockerfile
+    init: true
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    networks:
+      - web
     depends_on:
       gateway:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/ || exit 1"]
-      interval: 10s
-      timeout: 3s
-      retries: 5
-      start_period: 5s
+      <<: *http-healthcheck
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/"]
 
 volumes:
   db-data:
+
+networks:
+  backend:
+    driver: bridge
+  web:
+    driver: bridge

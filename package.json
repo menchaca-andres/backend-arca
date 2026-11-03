@@ -25,7 +25,8 @@
     "db:up": "docker compose up -d --wait db",
     "db:reset": "docker compose down -v db && docker compose up -d --wait db",
     "db:migrate": "npm run build --workspace=@arca/shared && npm run migration:run --workspaces --if-present",
-    "db:seed": "npm run seed:dev --workspace=ms-personal && npm run seed:dev --workspace=ms-auth"
+    "db:seed": "npm run seed:dev --workspace=ms-personal && npm run seed:dev --workspace=ms-auth",
+    "test:infra": "npm run build --workspace=@arca/shared && npm run test --workspace=gateway --workspace=ms-auth --workspace=ms-personal --workspace=ms-vacaciones --workspace=ms-contratos --workspace=ms-boletas -- --testPathPattern=\"(health|infra)\\.test\\.ts$\""
   },
   "engines": {
     "node": ">=22"

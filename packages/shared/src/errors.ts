@@ -1,5 +1,15 @@
-import type { NextFunction, Request, RequestHandler, Response } from 'express';
-import { logger } from './logger';
+import type { Request, Response, NextFunction, RequestHandler } from 'express';
+export const errorStatus = {
+  VALIDATION_ERROR: 400,
+  UNAUTHORIZED: 401,
+  FORBIDDEN: 403,
+  NOT_FOUND: 404,
+  CONFLICT: 409,
+  SERVICE_UNAVAILABLE: 503,
+  INTERNAL_ERROR: 500,
+} as const;
+
+export type ErrorCode = keyof typeof errorStatus;
 
 export interface ErrorResponse {
   code: string;
@@ -7,23 +17,23 @@ export interface ErrorResponse {
   details: unknown | null;
 }
 
-/**
- * Error de negocio con el formato común del proyecto: { code, message, details }.
- * Los controllers/services lanzan AppError; el errorHandler lo traduce a HTTP.
- */
+// Solo usar mensajes y detalles que sea seguro devolver al cliente.
 export class AppError extends Error {
-  readonly code: string;
+  readonly statusCode: number;
   readonly status: number;
+  readonly code: string;
   readonly details: unknown | null;
-
-  constructor(code: string, message: string, status = 500, details: unknown = null) {
+  constructor(code: string, message: string, detailsOrStatus: unknown = null, details: unknown = null) {
     super(message);
     this.name = 'AppError';
     this.code = code;
-    this.status = status;
-    this.details = details;
+    this.statusCode = typeof detailsOrStatus === 'number' ? detailsOrStatus : (errorStatus[code as ErrorCode] ?? 500);
+    this.status = this.statusCode;
+    this.details = typeof detailsOrStatus === 'number' ? details : detailsOrStatus;
   }
-
+  toResponse(): ErrorResponse {
+    return { code: this.code, message: this.message, details: this.details };
+  }
   static badRequest(message = 'Solicitud inválida', details: unknown = null): AppError {
     return new AppError('VALIDATION_ERROR', message, 400, details);
   }
@@ -64,34 +74,4 @@ export function asyncHandler(
 
 export function notFoundHandler(req: Request, _res: Response, next: NextFunction): void {
   next(AppError.notFound(`Ruta no encontrada: ${req.method} ${req.path}`));
-}
-
-/**
- * Middleware final de errores. Debe registrarse después de todas las rutas.
- * Los errores no controlados no filtran stack ni mensaje interno al cliente.
- */
-export function errorHandler(error: unknown, req: Request, res: Response, _next: NextFunction): void {
-  if (res.headersSent) return;
-
-  const appError = error instanceof AppError ? error : null;
-  const status = appError?.status ?? 500;
-  const body: ErrorResponse = {
-    code: appError?.code ?? 'INTERNAL_ERROR',
-    message: appError?.message ?? 'Error interno del servidor',
-    details: appError?.details ?? null,
-  };
-
-  const requestId = typeof res.locals.requestId === 'string' ? res.locals.requestId : undefined;
-  if (status >= 500) {
-    logger.error('Error no controlado', { requestId, path: req.originalUrl, error });
-  } else {
-    logger.warn('Solicitud rechazada', {
-      requestId,
-      path: req.originalUrl,
-      code: body.code,
-      message: body.message,
-    });
-  }
-
-  res.status(status).json(body);
 }
