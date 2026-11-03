@@ -16,6 +16,10 @@ app.get('/api/auth/login', (_req, res) => {
   res.json({ publico: true });
 });
 
+app.post('/api/v1/auth/login', (_req, res) => {
+  res.json({ publico: true });
+});
+
 app.get('/api/privado', (req, res) => {
   res.json({
     userId: req.headers[HEADERS.userId],
@@ -33,6 +37,7 @@ const firmar = (payload: Record<string, unknown>, options: jwt.SignOptions = { e
 describe('jwtAuth del gateway', () => {
   it('deja pasar el login y las rutas que no son /api', async () => {
     expect((await request(app).get('/api/auth/login')).status).toBe(200);
+    expect((await request(app).post('/api/v1/auth/login')).status).toBe(200);
     expect((await request(app).get('/health')).status).toBe(200);
   });
 
