@@ -16,11 +16,15 @@ export class UsuarioRepository {
     return this.repo.save(entity);
   }
 
+  findByEmail(email: string) {
+    return this.repo.findOneBy({ email: email.trim().toLowerCase() });
+  }
+
   findByEmailWithPassword(email: string) {
     return this.repo
       .createQueryBuilder('usuario')
       .addSelect('usuario.passwordHash')
-      .where('usuario.email = :email', { email })
+      .where('LOWER(usuario.email) = :email', { email: email.trim().toLowerCase() })
       .getOne();
   }
 }

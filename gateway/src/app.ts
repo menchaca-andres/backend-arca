@@ -2,8 +2,9 @@ import express from 'express';
 import cors from 'cors';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import type { Request } from 'express';
-import { AppError, errorHandler, healthHandler, logger, notFoundHandler, requestId } from '@arca/shared';
+import { AppError, HEADERS, errorHandler, healthHandler, logger, notFoundHandler, requestId } from '@arca/shared';
 import { AppDataSource } from './data-source';
+import { jwtAuth } from './middlewares/auth.middleware';
 
 const SERVICE_URLS = {
   auth: process.env.AUTH_SERVICE_URL ?? 'http://localhost:3001',
@@ -49,6 +50,16 @@ app.disable('x-powered-by');
 app.use(requestId);
 app.use(cors({ origin: corsOrigin() }));
 
+// La identidad solo la puede inyectar el gateway; se descarta la del cliente.
+app.use((req, _res, next) => {
+  delete req.headers[HEADERS.userId];
+  delete req.headers[HEADERS.userRole];
+  delete req.headers[HEADERS.funcionarioId];
+  next();
+});
+
+app.use(jwtAuth());
+
 app.get('/health', healthHandler({ service: 'gateway', dataSource: AppDataSource }));
 
 // Una ruta /api que no pertenece a ningún servicio devuelve 404 con el formato común.
@@ -74,12 +85,6 @@ app.use(
         const response = res as express.Response;
         const id = typeof response.locals?.requestId === 'string' ? response.locals.requestId : undefined;
         if (id) proxyReq.setHeader('x-request-id', id);
-
-        // La identidad la inyectará el gateway cuando valide el JWT (HU-05).
-        // Mientras tanto, se descarta cualquier cabecera de identidad del cliente.
-        for (const header of ['x-user-id', 'x-user-rol', 'x-funcionario-id']) {
-          proxyReq.removeHeader(header);
-        }
       },
       error: (error, req, res) => {
         logger.error('Error en el proxy del gateway', {

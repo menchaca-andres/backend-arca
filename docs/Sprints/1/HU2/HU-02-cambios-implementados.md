@@ -8,13 +8,13 @@ La HU-02 construye la **capa de datos** de todos los servicios: las tablas, las 
 
 | Ya existe | Todavía no existe |
 |---|---|
-| Estructura de los 5 microservicios, el gateway y el frontend | Endpoints de negocio, salvo `GET /health` |
+| Estructura de los 5 microservicios, el gateway y el frontend | Endpoints de negocio, salvo `GET /health` y `/auth/*` |
 | 6 schemas y 20 tablas, con sus restricciones | Services, controllers y routes |
 | 20 repositories con `findById`, `findAll` y `save` | Login, JWT y enrutamiento del gateway |
 | Semilla con 5 funcionarios de ejemplo | Base en Supabase y roles por schema (HU-03) |
 | Pruebas de cada repository | Pantallas del frontend |
 
-Hoy el sistema no atiende peticiones de negocio. Ya tiene arranque común, `/health` con chequeo real de la base y el gateway enruta `/api/*`; los endpoints de negocio los construyen las HU siguientes.
+Hoy el sistema ya tiene arranque común, `/health` con chequeo real de la base, gateway que enruta `/api/*`, login con JWT y `/auth/me`; el resto de los endpoints de negocio los construyen las HU siguientes.
 
 ## 2. Cómo levantarlo
 
@@ -105,7 +105,7 @@ La base es la última defensa: un dato inválido se rechaza aunque el service te
 
 ### 4.3 Atender una petición (lo que construirán las próximas HU)
 
-Hoy existe el tramo repository → Postgres y el gateway ya enruta `/api/*`; todavía no hay endpoints de negocio.
+Hoy existe el tramo repository → Postgres, el gateway enruta `/api/*` y `ms-auth` expone login y `/auth/me`; todavía no hay endpoints de negocio de los módulos.
 
 ```mermaid
 flowchart LR

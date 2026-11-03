@@ -73,6 +73,7 @@ export interface LoginResponse {
   token: string;
   usuario: {
     id: string;
+    email: string;
     rol: RolUsuario;
     funcionarioId: string | null;
   };
