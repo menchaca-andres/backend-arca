@@ -36,7 +36,7 @@ Desde la raíz de `backend-arca`:
 cp .env.example .env
 ```
 
-Edita el `.env` raíz y completa `INTERNAL_API_KEY` con una clave propia no vacía. Compose distribuye esa clave a los componentes. No publiques archivos `.env` ni credenciales reales.
+Edita el `.env` raíz y completa `INTERNAL_API_KEY` y `JWT_SECRET` con claves propias no vacías. Compose distribuye `INTERNAL_API_KEY` a todos los componentes y `JWT_SECRET` a `ms-auth` y al gateway. No publiques archivos `.env` ni credenciales reales.
 
 El Compose actual está destinado al desarrollo local: sus `DATABASE_URL` apuntan a `db:5432`, con los usuarios y contraseñas dummy de `docker/init-schemas.sql`. Las variables de conexión adicionales del `.env.example` raíz no sustituyen esas URLs en este Compose.
 
@@ -114,7 +114,7 @@ El gateway elimina el prefijo público, conserva la query y propaga `X-Request-I
 
 Por excepción justificada, `/health` no utiliza Zod: no define body, query ni parámetros de ruta. Las nuevas operaciones que reciban datos deben validarlos con Zod.
 
-El gateway valida el JWT de la HU-05 (ver "Autenticación y usuarios de demo") y acepta el login en `/api/auth/login` y `/api/v1/auth/login`. El registro de auditoría es de la HU-24.
+El gateway valida el JWT de la HU-05 (ver "Autenticación y usuarios de demo") y deja pasar sin token solo `POST /api/auth/login`. El registro de auditoría es de la HU-24.
 
 ## Pruebas
 
