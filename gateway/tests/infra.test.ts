@@ -12,11 +12,11 @@ jest.mock('../src/data-source', () => ({ AppDataSource: {} }));
 import { createApp } from '../src/app';
 
 const destinations = [
-  ['auth', 'AUTH_SERVICE_URL'],
-  ['personal', 'PERSONAL_SERVICE_URL'],
-  ['vacaciones', 'VACACIONES_SERVICE_URL'],
-  ['contratos', 'CONTRATOS_SERVICE_URL'],
-  ['boletas', 'BOLETAS_SERVICE_URL'],
+  ['auth', 'AUTH_SERVICE_URL', '/auth'],
+  ['personal', 'PERSONAL_SERVICE_URL', ''],
+  ['vacaciones', 'VACACIONES_SERVICE_URL', ''],
+  ['contratos', 'CONTRATOS_SERVICE_URL', ''],
+  ['boletas', 'BOLETAS_SERVICE_URL', ''],
 ] as const;
 
 describe('Infraestructura: gateway', () => {
@@ -90,10 +90,10 @@ describe('Infraestructura: gateway', () => {
     jest.restoreAllMocks();
   });
 
-  it.each(destinations)('enruta %s y conserva la query al eliminar el prefijo', async (service) => {
+  it.each(destinations)('enruta %s y conserva la query al eliminar el prefijo', async (service, _key, pathPrefix) => {
     const response = await request(app).get(`/api/v1/${service}/ping?x=1`);
     expect(response.status).toBe(200);
-    expect(response.body).toMatchObject({ service, path: '/ping?x=1', method: 'GET' });
+    expect(response.body).toMatchObject({ service, path: `${pathPrefix}/ping?x=1`, method: 'GET' });
   });
 
   it.each([
@@ -148,7 +148,14 @@ describe('Infraestructura: gateway', () => {
   it('reescribe correctamente una peticion al prefijo raiz con query', async () => {
     const response = await request(app).get('/api/v1/auth?x=1');
     expect(response.status).toBe(200);
-    expect(response.body.path).toBe('/?x=1');
+    expect(response.body.path).toBe('/auth?x=1');
+  });
+
+  it('permite el login v1 sin token y lo reenvia a /auth/login', async () => {
+    const body = { email: 'admin@arca.bo', password: 'Admin123!' };
+    const response = await supertest(app).post('/api/v1/auth/login').send(body);
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({ service: 'auth', path: '/auth/login', method: 'POST', body });
   });
 
   it('propaga un request-id valido', async () => {
