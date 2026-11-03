@@ -37,6 +37,11 @@ const architectureMeta = {
     icon: 'fa-shield-halved',
     description: 'Flujo previsto para HU-24 en el gateway.',
   },
+  auditoriaEr: {
+    name: 'ER auditoría',
+    icon: 'fa-database',
+    description: 'Tabla evento del schema auditoria, de solo inserción.',
+  },
   despliegue: {
     name: 'Despliegue',
     icon: 'fa-server',

@@ -298,6 +298,29 @@ note right of DB
 end note
 @enduml`,
 
+  auditoriaEr: `@startuml
+title ARCA - ER schema auditoria
+entity "EVENTO" as EVENTO {
+  * id : bigint <<PK>>
+  --
+  * fecha : timestamptz
+  * usuario_id : uuid
+  * rol : varchar(20)
+  * metodo : varchar(7)
+  * ruta : varchar(300)
+  * servicio : varchar(30)
+  * recurso_id : varchar(64)
+  * status_code : smallint
+  * ip : inet
+  * request_id : uuid
+}
+note right of EVENTO
+  Tabla de solo inserción:
+  el rol del gateway no tiene
+  UPDATE ni DELETE.
+end note
+@enduml`,
+
   despliegue: `@startuml
 title ARCA - Despliegue local y nube
 node "Equipo del usuario" {
@@ -663,6 +686,8 @@ entity "CARGO" as CARGO {
   * salario_min : numeric(12,2)
   * salario_max : numeric(12,2)
   * activo : boolean
+  * created_at : timestamptz
+  * updated_at : timestamptz
 }
 entity "FUNCIONARIO" as FUNC {
   * id : uuid <<PK>>
@@ -673,12 +698,18 @@ entity "FUNCIONARIO" as FUNC {
   * apellidos : varchar(100)
   * fecha_nacimiento : date
   * sexo : char(1)
+  * correo : varchar(150)
+  * telefono : varchar(20)
+  * direccion : varchar(200)
   * fecha_ingreso : date
   * dias_prueba : smallint
   * estado : enum
   * fecha_ratificacion : date
   * fecha_baja : date
   * motivo_baja : enum
+  * detalle_baja : varchar(300)
+  * created_at : timestamptz
+  * updated_at : timestamptz
 }
 entity "ASIGNACION_LABORAL" as ASIG {
   * id : uuid <<PK>>
@@ -690,10 +721,11 @@ entity "ASIGNACION_LABORAL" as ASIG {
   * vigente_hasta : date
   * motivo : enum
   * registrado_por : uuid
+  * created_at : timestamptz
 }
 AREA ||--o{ CARGO : contiene
 CARGO ||--o{ ASIG : se asigna
-FUNCIONARIO ||--o{ ASIG : historial
+FUNC ||--o{ ASIG : historial
 note right of ASIG
   Índice único parcial:
   una sola asignación vigente
@@ -1063,6 +1095,8 @@ entity "PLANTILLA" as PLA {
   * nombre : varchar(150)
   * tipo : enum
   * activo : boolean
+  * created_at : timestamptz
+  * updated_at : timestamptz
 }
 entity "PLANTILLA_VERSION" as VER {
   * id : uuid <<PK>>
@@ -1073,6 +1107,7 @@ entity "PLANTILLA_VERSION" as VER {
   * variables : jsonb
   * activa : boolean
   * creado_por : uuid
+  * created_at : timestamptz
 }
 entity "CONTRATO" as CON {
   * id : uuid <<PK>>
@@ -1083,7 +1118,10 @@ entity "CONTRATO" as CON {
   * version : int
   * estado : enum
   * datos : jsonb
+  * contenido_renderizado : text
   * hash_sha256 : char(64)
+  * generado_por : uuid
+  * created_at : timestamptz
 }
 entity "CONTRATO_PDF" as PDF {
   * contrato_id : uuid <<PK, FK>>
@@ -1305,10 +1343,13 @@ entity "CONCEPTO" as CON {
   * tipo : enum
   * forma_calculo : enum
   * valor : numeric(12,4)
+  * base : enum
   * automatico : boolean
   * es_sistema : boolean
   * orden : smallint
   * activo : boolean
+  * created_at : timestamptz
+  * updated_at : timestamptz
 }
 entity "PERIODO" as PER {
   * id : uuid <<PK>>
@@ -1316,6 +1357,11 @@ entity "PERIODO" as PER {
   * anio : smallint
   * mes : smallint
   * estado : enum
+  * fecha_calculo : timestamptz
+  * fecha_emision : timestamptz
+  * emitido_por : uuid
+  * created_at : timestamptz
+  * updated_at : timestamptz
 }
 entity "NOVEDAD" as NOV {
   * id : uuid <<PK>>
@@ -1325,6 +1371,10 @@ entity "NOVEDAD" as NOV {
   * funcionario_id : uuid
   * concepto_id : uuid <<FK>>
   * monto : numeric(12,2)
+  * descripcion : varchar(200)
+  * registrado_por : uuid
+  * created_at : timestamptz
+  * updated_at : timestamptz
 }
 entity "BOLETA" as BOL {
   * id : uuid <<PK>>
@@ -1335,6 +1385,7 @@ entity "BOLETA" as BOL {
   * version : smallint
   * estado : enum
   * boleta_original_id : uuid <<FK>>
+  * motivo_rectificacion : varchar(300)
   * datos_funcionario : jsonb
   * dias_trabajados : smallint
   * total_ganado : numeric(12,2)
@@ -1342,20 +1393,33 @@ entity "BOLETA" as BOL {
   * liquido_pagable : numeric(12,2)
   * tiene_alerta : boolean
   * hash_sha256 : char(64)
+  * emitida_en : timestamptz
+  * created_at : timestamptz
 }
 entity "BOLETA_DETALLE" as DET {
   * id : uuid <<PK>>
   --
   * boleta_id : uuid <<FK>>
   * concepto_id : uuid <<FK>>
+  * concepto_codigo : varchar(20)
   * concepto_nombre : varchar(100)
+  * tipo : enum
+  * base_monto : numeric(12,2)
+  * porcentaje : numeric(7,4)
   * monto : numeric(12,2)
+  * orden : smallint
 }
 entity "BOLETA_PDF" as PDF {
   * boleta_id : uuid <<PK, FK>>
   --
   * contenido : bytea
   * tamano_bytes : int
+}
+entity "CORRELATIVO" as COR {
+  * tipo : varchar(10) <<PK>>
+  * anio : smallint <<PK>>
+  --
+  * ultimo : int
 }
 PER ||--o{ BOL : contiene
 BOL ||--|{ DET : lineas

@@ -44,4 +44,4 @@ curl -I http://localhost:8099/
 curl -I http://localhost:8099/images/c4-nivel2-contenedores.png
 ```
 
-La validación de sintaxis de los diagramas se hizo contra el servidor de PlantUML: los 39 diagramas del portal responden con SVG válido.
+La validación de sintaxis de los diagramas se hizo contra el servidor de PlantUML: los 40 diagramas del portal responden con SVG válido.
