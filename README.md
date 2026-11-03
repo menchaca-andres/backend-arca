@@ -110,11 +110,13 @@ Los microservicios y Gotenberg no publican puertos al host. El frontend utiliza 
 
 El gateway elimina el prefijo público, conserva la query y propaga `X-Request-Id`. Bloquea el acceso exterior a rutas internas. Los cinco servicios protegen `/internal` con `X-Internal-Key` y responden 401 cuando falta o es incorrecta.
 
+La HU-07 agrega `GET/POST /api/v1/personal/areas`, `PATCH /api/v1/personal/areas/:id`, `GET/POST /api/v1/personal/cargos` y `PATCH /api/v1/personal/cargos/:id`. Por compatibilidad también responden `/api/areas` y `/api/cargos`. Solo `ADMIN` y `RRHH` pueden operar los catálogos; los listados ocultan inactivos salvo `?incluirInactivos=true`. El contrato está en [docs/api/hu-07-catalogos.openapi.yaml](docs/api/hu-07-catalogos.openapi.yaml).
+
 `GET /health` es público y consulta PostgreSQL mediante TypeORM: devuelve 200 con `{ service, status: "OK" }` o 503 con `{ code: "SERVICE_UNAVAILABLE", message, details: null }`.
 
 Por excepción justificada, `/health` no utiliza Zod: no define body, query ni parámetros de ruta. Las nuevas operaciones que reciban datos deben validarlos con Zod.
 
-El gateway valida el JWT de la HU-05 (ver "Autenticación y usuarios de demo") y deja pasar sin token solo `POST /api/auth/login`. El registro de auditoría es de la HU-24.
+El gateway valida el JWT de la HU-05 (ver "Autenticación y usuarios de demo") y deja pasar sin token solo `POST /api/auth/login` y su alias `POST /api/v1/auth/login`. El registro de auditoría es de la HU-24.
 
 ## Pruebas
 
@@ -178,6 +180,8 @@ El proyecto arca-gestion-humana de Supabase fue provisionado y verificado el 02/
 - [Guía para desarrollar nuevas historias](docs/guia-desarrollo.md).
 - [Verificación de HU-03](docs/Sprints/1/HU3/HU-03-verificacion.md).
 - [OpenAPI: contratos internos y salud](docs/api/internal-contracts.openapi.yaml).
+- [OpenAPI: login y sesión (HU-05)](docs/api/hu-05-auth.openapi.yaml).
+- [OpenAPI: áreas y cargos (HU-07)](docs/api/hu-07-catalogos.openapi.yaml).
 - [Arquitectura y convenciones](docs/HU-01_Arquitectura_Contexto_Equipo.md).
 - [Modelo de datos](docs/Sprints/1/HU2/data-model.md).
 - Diagramas C4: `docs/c4/`. ADRs: `docs/Sprints/1/adr/`.
