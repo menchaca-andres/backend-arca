@@ -9,11 +9,12 @@ import {
   requireInternalKey as internalKeyMiddleware,
 } from '@arca/shared';
 import { authRouter } from './routes/auth.routes';
+import { usuarioRouter, internalUsuarioRouter } from './routes/usuario.routes';
 import { createHealthRouter } from './routes/health.routes';
 
 const SERVICE_NAME = 'ms-auth';
 
-export function createApp(internalRoutes: Router = Router()) {
+export function createApp(customInternalRoutes?: Router) {
   const app = express();
   const logger = createLogger(SERVICE_NAME);
   const protectInternal = internalKeyMiddleware(process.env.INTERNAL_API_KEY ?? '');
@@ -29,13 +30,25 @@ export function createApp(internalRoutes: Router = Router()) {
     });
     next();
   });
+
   // La clave se valida antes de interpretar el body o resolver la ruta.
   app.use('/internal', protectInternal);
   app.use(express.json());
   app.use('/health', createHealthRouter(SERVICE_NAME));
-  app.use('/internal', internalRoutes);
-  // El gateway quita /api, así que el servicio recibe /auth/login y /auth/me.
+
+  // Rutas internas protegidas con clave
+  const internalRouter = Router();
+  internalRouter.use(internalUsuarioRouter);
+  if (customInternalRoutes) {
+    internalRouter.use(customInternalRoutes);
+  }
+  app.use('/internal', internalRouter);
+
+  // El gateway enruta /api/auth/* hacia /auth/* y /api/usuarios/* hacia /usuarios/*
   app.use('/auth', authRouter);
+  app.use('/usuarios', usuarioRouter);
+  app.use('/auth/usuarios', usuarioRouter);
+
   app.use((_req, _res, next) => {
     next(new AppError('NOT_FOUND', 'Ruta no encontrada'));
   });
