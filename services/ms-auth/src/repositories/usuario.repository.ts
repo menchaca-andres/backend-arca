@@ -1,5 +1,12 @@
 import { AppDataSource } from '../data-source';
 import { Usuario } from '../entities/usuario.entity';
+import { RolUsuario } from '@arca/shared';
+import type { FindOptionsWhere } from 'typeorm';
+
+export interface UsuarioFilters {
+  rol?: RolUsuario;
+  activo?: boolean;
+}
 
 export class UsuarioRepository {
   private repo = AppDataSource.getRepository(Usuario);
@@ -8,8 +15,19 @@ export class UsuarioRepository {
     return this.repo.findOneBy({ id });
   }
 
-  findAll() {
-    return this.repo.find();
+  findAll(filters?: UsuarioFilters) {
+    const where: FindOptionsWhere<Usuario> = {};
+    if (filters?.rol) where.rol = filters.rol;
+    if (filters?.activo !== undefined) where.activo = filters.activo;
+
+    return this.repo.find({
+      where,
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+  findByFuncionarioId(funcionarioId: string) {
+    return this.repo.findOneBy({ funcionarioId });
   }
 
   save(entity: Usuario) {
