@@ -1,11 +1,15 @@
-import { AppError, EstadoFuncionario, MotivoAsignacion } from '@arca/shared';
-import type { FuncionarioContrato } from '@arca/shared';
+import { AppError, EstadoFuncionario, MotivoAsignacion, MotivoBaja, type FuncionarioContrato } from '@arca/shared';
 import { AppDataSource } from '../data-source';
 import { Funcionario } from '../entities/funcionario.entity';
 import { AsignacionLaboral } from '../entities/asignacion-laboral.entity';
 import { FuncionarioRepository } from '../repositories/funcionario.repository';
 import { CargoRepository } from '../repositories/cargo.repository';
-import type { RegistrarFuncionarioInput } from '../schemas/funcionario.schema';
+import { AuthClient, type IAuthClient } from '../clients/auth.client';
+import type {
+  RegistrarFuncionarioInput,
+  RatificarFuncionarioInput,
+  DarDeBajaInput,
+} from '../schemas/funcionario.schema';
 import type { EntityManager } from 'typeorm';
 
 export interface FichaFuncionarioResponse {
@@ -24,6 +28,8 @@ export interface FichaFuncionarioResponse {
   estado: EstadoFuncionario;
   fechaRatificacion: string | null;
   fechaBaja: string | null;
+  motivoBaja: MotivoBaja | null;
+  detalleBaja: string | null;
   asignacionVigente: {
     id: string;
     cargoId: string;
@@ -45,6 +51,16 @@ export interface FuncionarioResumen {
   ciExpedido: string;
   nombreCompleto: string;
   estado: EstadoFuncionario;
+  fechaIngreso?: string;
+  diasPrueba?: number;
+}
+
+export interface PruebaPorVencerItem extends FuncionarioResumen {
+  fechaIngreso: string;
+  diasPrueba: number;
+  fechaFinPrueba: string;
+  diasRestantes: number;
+  listoParaRatificar: boolean;
 }
 
 export function validarEdadMinima(fechaNacimiento: string, fechaIngreso: string): boolean {
@@ -59,6 +75,22 @@ export function validarEdadMinima(fechaNacimiento: string, fechaIngreso: string)
   return anios >= 18;
 }
 
+export function calcularFinPrueba(fechaIngreso: string, diasPrueba: number): string {
+  const [y, m, d] = fechaIngreso.split('-').map(Number);
+  const date = new Date(Date.UTC(y, m - 1, d));
+  date.setUTCDate(date.getUTCDate() + diasPrueba);
+  return date.toISOString().split('T')[0];
+}
+
+export function diasDiferencia(fechaA: string, fechaB: string): number {
+  const [yA, mA, dA] = fechaA.split('-').map(Number);
+  const [yB, mB, dB] = fechaB.split('-').map(Number);
+  const utcA = Date.UTC(yA, mA - 1, dA);
+  const utcB = Date.UTC(yB, mB - 1, dB);
+  const msPerDay = 1000 * 60 * 60 * 24;
+  return Math.round((utcA - utcB) / msPerDay);
+}
+
 export class FuncionarioService {
   constructor(
     private readonly funcionarioRepo: FuncionarioRepository = new FuncionarioRepository(),
@@ -66,6 +98,7 @@ export class FuncionarioService {
     private readonly runTransaction: <T>(
       runInTransaction: (entityManager: EntityManager) => Promise<T>,
     ) => Promise<T> = (fn) => AppDataSource.transaction(fn),
+    private readonly authClient: IAuthClient = new AuthClient(),
   ) {}
 
   async registrar(input: RegistrarFuncionarioInput, userId: string): Promise<FichaFuncionarioResponse> {
@@ -148,6 +181,8 @@ export class FuncionarioService {
         estado: funcionarioGuardado.estado,
         fechaRatificacion: funcionarioGuardado.fechaRatificacion,
         fechaBaja: funcionarioGuardado.fechaBaja,
+        motivoBaja: funcionarioGuardado.motivoBaja,
+        detalleBaja: funcionarioGuardado.detalleBaja,
         asignacionVigente: {
           id: asignacionGuardada.id,
           cargoId: cargo.id,
@@ -163,6 +198,115 @@ export class FuncionarioService {
         updatedAt: funcionarioGuardado.updatedAt,
       };
     });
+  }
+
+  // HU-11: Ratificar funcionario
+  async ratificar(id: string, input?: RatificarFuncionarioInput, _userId?: string): Promise<FichaFuncionarioResponse> {
+    const funcionario = await this.funcionarioRepo.findById(id);
+    if (!funcionario) {
+      throw AppError.notFound('Funcionario no encontrado');
+    }
+
+    // CA-01: Solo se puede ratificar a un funcionario en estado EN_PRUEBA
+    if (funcionario.estado !== EstadoFuncionario.EN_PRUEBA) {
+      throw AppError.badRequest('Solo se puede ratificar a un funcionario en estado EN_PRUEBA');
+    }
+
+    // CA-02: Solo se puede ratificar cuando ya pasaron sus días de prueba desde la fecha de ingreso
+    const finPrueba = calcularFinPrueba(funcionario.fechaIngreso, funcionario.diasPrueba);
+    const fechaRatificacion = input?.fechaRatificacion ?? new Date().toISOString().split('T')[0];
+
+    if (fechaRatificacion < finPrueba) {
+      throw AppError.badRequest(
+        `Solo se puede ratificar cuando ya pasaron sus días de prueba (${funcionario.diasPrueba} días desde el ingreso: ${finPrueba})`,
+      );
+    }
+
+    // CA-03: Al ratificar, el estado pasa a RATIFICADO y se guarda fecha_ratificacion
+    return this.runTransaction(async (manager) => {
+      funcionario.estado = EstadoFuncionario.RATIFICADO;
+      funcionario.fechaRatificacion = fechaRatificacion;
+
+      await manager.save(Funcionario, funcionario);
+
+      return this.obtenerFicha(id);
+    });
+  }
+
+  // HU-11: CA-04 Aviso con funcionarios cuyo periodo de prueba termina en los próximos 7 días
+  async obtenerPruebaPorVencer(diasLimite: number = 7, fechaReferencia?: string): Promise<PruebaPorVencerItem[]> {
+    const funcionarios = await this.funcionarioRepo.findAll();
+    const hoy = fechaReferencia ?? new Date().toISOString().split('T')[0];
+
+    const enPrueba = funcionarios.filter((f) => f.estado === EstadoFuncionario.EN_PRUEBA);
+
+    const resultados: PruebaPorVencerItem[] = [];
+
+    for (const f of enPrueba) {
+      const fechaFinPrueba = calcularFinPrueba(f.fechaIngreso, f.diasPrueba);
+      const diasRestantes = diasDiferencia(fechaFinPrueba, hoy);
+
+      // Incluye aquellos cuyo periodo termina en los próximos 7 días (o ya concluyó y está listo para ratificar)
+      if (diasRestantes <= diasLimite) {
+        resultados.push({
+          id: f.id,
+          ci: f.ci,
+          ciExpedido: f.ciExpedido,
+          nombreCompleto: `${f.nombres} ${f.apellidos}`,
+          estado: f.estado,
+          fechaIngreso: f.fechaIngreso,
+          diasPrueba: f.diasPrueba,
+          fechaFinPrueba,
+          diasRestantes,
+          listoParaRatificar: diasRestantes <= 0,
+        });
+      }
+    }
+
+    // Ordenar por proximidad al vencimiento
+    return resultados.sort((a, b) => a.diasRestantes - b.diasRestantes);
+  }
+
+  // HU-12: Dar de baja a un funcionario
+  async darDeBaja(id: string, input: DarDeBajaInput, _userId?: string): Promise<FichaFuncionarioResponse> {
+    const data = await this.funcionarioRepo.findWithAsignacionVigente(id);
+    if (!data) {
+      throw AppError.notFound('Funcionario no encontrado');
+    }
+
+    const { funcionario, asignacionVigente } = data;
+
+    // CA-02: Es una baja lógica; no se puede dar de baja a alguien ya dado de baja
+    if (funcionario.estado === EstadoFuncionario.BAJA) {
+      throw AppError.badRequest('El funcionario ya se encuentra dado de baja');
+    }
+
+    // CA-04: La fecha de baja no puede ser anterior a la fecha de ingreso
+    if (input.fechaBaja < funcionario.fechaIngreso) {
+      throw AppError.badRequest('La fecha de baja no puede ser anterior a la fecha de ingreso');
+    }
+
+    // CA-01, CA-02, CA-03: Transacción atómica para baja de funcionario y cierre de asignación
+    await this.runTransaction(async (manager) => {
+      // CA-02: Estado pasa a BAJA, se guarda fecha, motivo y detalle
+      funcionario.estado = EstadoFuncionario.BAJA;
+      funcionario.fechaBaja = input.fechaBaja;
+      funcionario.motivoBaja = input.motivoBaja;
+      funcionario.detalleBaja = input.detalleBaja?.trim() || null;
+
+      await manager.save(Funcionario, funcionario);
+
+      // CA-03: La asignación vigente se cierra con vigente_hasta = fecha de baja
+      if (asignacionVigente) {
+        asignacionVigente.vigenteHasta = input.fechaBaja;
+        await manager.save(AsignacionLaboral, asignacionVigente);
+      }
+    });
+
+    // CA-05: Si el funcionario tiene cuenta de usuario, se desactiva con el endpoint interno de HU-06
+    await this.authClient.desactivarUsuarioPorFuncionario(funcionario.id, `Baja de funcionario: ${input.motivoBaja}`);
+
+    return this.obtenerFicha(id);
   }
 
   async obtenerFicha(id: string): Promise<FichaFuncionarioResponse> {
@@ -188,6 +332,8 @@ export class FuncionarioService {
       estado: funcionario.estado,
       fechaRatificacion: funcionario.fechaRatificacion,
       fechaBaja: funcionario.fechaBaja,
+      motivoBaja: funcionario.motivoBaja,
+      detalleBaja: funcionario.detalleBaja,
       asignacionVigente: asignacionVigente
         ? {
             id: asignacionVigente.id,
@@ -204,6 +350,30 @@ export class FuncionarioService {
       createdAt: funcionario.createdAt,
       updatedAt: funcionario.updatedAt,
     };
+  }
+
+  // CA-07: Un funcionario de baja sigue apareciendo en el padrón con el filtro de estado BAJA
+  async listarResumen(estado?: string): Promise<FuncionarioResumen[]> {
+    const funcionarios = await this.funcionarioRepo.findAll();
+
+    let filtrados = funcionarios;
+
+    if (estado && estado !== 'TODOS') {
+      filtrados = funcionarios.filter((f) => f.estado === estado);
+    } else if (!estado) {
+      // Por defecto, listar activos si no se envía filtro
+      filtrados = funcionarios.filter((f) => f.estado !== EstadoFuncionario.BAJA);
+    }
+
+    return filtrados.map((f) => ({
+      id: f.id,
+      ci: f.ci,
+      ciExpedido: f.ciExpedido,
+      nombreCompleto: `${f.nombres} ${f.apellidos}`,
+      estado: f.estado,
+      fechaIngreso: f.fechaIngreso,
+      diasPrueba: f.diasPrueba,
+    }));
   }
 
   async obtenerContratoInterno(id: string): Promise<FuncionarioContrato> {
@@ -226,18 +396,5 @@ export class FuncionarioService {
       remuneracion: { monto: asignacionVigente?.remuneracion ?? 0, moneda: 'BOB' },
       estado: funcionario.estado,
     };
-  }
-
-  async listarResumen(): Promise<FuncionarioResumen[]> {
-    const funcionarios = await this.funcionarioRepo.findAll();
-    return funcionarios
-      .filter((f) => f.estado !== EstadoFuncionario.BAJA)
-      .map((f) => ({
-        id: f.id,
-        ci: f.ci,
-        ciExpedido: f.ciExpedido,
-        nombreCompleto: `${f.nombres} ${f.apellidos}`,
-        estado: f.estado,
-      }));
   }
 }
