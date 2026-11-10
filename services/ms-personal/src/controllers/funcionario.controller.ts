@@ -1,22 +1,33 @@
 import type { NextFunction, Request, Response } from 'express';
 import { AppError, getIdentity } from '@arca/shared';
 import { FuncionarioService } from '../services/funcionario.service';
+import { AsignacionService } from '../services/asignacion.service';
 import type {
   RegistrarFuncionarioInput,
   RatificarFuncionarioInput,
   DarDeBajaInput,
+  ListarPadronQuery,
+  CambiarAsignacionInput,
+  ActualizarContactoInput,
 } from '../schemas/funcionario.schema';
 
 export class FuncionarioController {
   private serviceInstance?: FuncionarioService;
+  private asignacionServiceInstance?: AsignacionService;
 
-  constructor(service?: FuncionarioService) {
+  constructor(service?: FuncionarioService, asignacionService?: AsignacionService) {
     this.serviceInstance = service;
+    this.asignacionServiceInstance = asignacionService;
   }
 
   private get service() {
     this.serviceInstance ??= new FuncionarioService();
     return this.serviceInstance;
+  }
+
+  private get asignacionService() {
+    this.asignacionServiceInstance ??= new AsignacionService();
+    return this.asignacionServiceInstance;
   }
 
   registrar = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -37,17 +48,17 @@ export class FuncionarioController {
   obtenerFicha = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { id } = req.params;
-      const result = await this.service.obtenerFicha(id);
+      const { rol, funcionarioId } = getIdentity(req);
+      const result = await this.service.obtenerFicha(id, { rol, funcionarioId });
       res.json(result);
     } catch (error) {
       next(error);
     }
   };
 
-  listar = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  listar = async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const estado = req.query.estado as string | undefined;
-      const result = await this.service.listarResumen(estado);
+      const result = await this.service.listarPadron(res.locals.query as ListarPadronQuery);
       res.json(result);
     } catch (error) {
       next(error);
@@ -86,6 +97,33 @@ export class FuncionarioController {
       const { userId } = getIdentity(req);
       const input = req.body as DarDeBajaInput;
       const result = await this.service.darDeBaja(id, input, userId ?? undefined);
+      res.json(result);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  // HU-10: Cambio de área, cargo o remuneración con historial
+  cambiarAsignacion = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { userId } = getIdentity(req);
+      if (!userId) {
+        throw AppError.unauthorized('Falta la identidad del usuario');
+      }
+
+      const { id } = req.params;
+      const result = await this.asignacionService.cambiar(id, req.body as CambiarAsignacionInput, userId);
+      res.status(201).json(result);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  // HU-10: CA-07 Datos de contacto
+  actualizarContacto = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const result = await this.service.actualizarContacto(id, req.body as ActualizarContactoInput);
       res.json(result);
     } catch (error) {
       next(error);

@@ -1,0 +1,230 @@
+openapi: 3.0.3
+info:
+  title: API ms-personal – HU-09 Padrón y ficha, HU-10 Cambios con historial
+  version: 1.0.0
+  description: |
+    - HU-09: padrón paginado con búsqueda y filtros, ficha con historial de asignaciones y el
+      listado interno de funcionarios. El contrato interno está en internal-contracts.openapi.yaml.
+    - HU-10: cambio de cargo (y con él, de área) o de remuneración guardando el historial, y
+      actualización de los datos de contacto.
+servers:
+  - url: http://localhost:8080/api/v1/personal
+    description: A través del API Gateway
+  - url: http://ms-personal:3002
+    description: Acceso directo interno (Docker)
+
+paths:
+  /funcionarios:
+    get:
+      tags: [ms-personal - HU-09]
+      summary: Padrón de funcionarios paginado
+      description: |
+        Pagina de 20 en 20 (CA-01). Se busca por CI o nombre y se filtra por área, cargo y estado (CA-02).
+        Sin `estado` lista a los activos (EN_PRUEBA y RATIFICADO); `BAJA` o `TODOS` incluyen a los dados de baja.
+        Roles: ADMIN, RRHH, DIRECCION.
+      parameters:
+        - { name: q, in: query, schema: { type: string, maxLength: 100 }, description: CI o nombre y apellidos }
+        - { name: areaId, in: query, schema: { type: string, format: uuid } }
+        - { name: cargoId, in: query, schema: { type: string, format: uuid } }
+        - name: estado
+          in: query
+          schema: { type: string, enum: [EN_PRUEBA, RATIFICADO, BAJA, TODOS] }
+        - { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+        - { name: pageSize, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 20 } }
+      responses:
+        "200":
+          description: Página del padrón
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, page, pageSize, total]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: "#/components/schemas/FuncionarioPadronItem" }
+                  page: { type: integer }
+                  pageSize: { type: integer }
+                  total: { type: integer }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /funcionarios/{id}:
+    get:
+      tags: [ms-personal - HU-09]
+      summary: Ficha del funcionario con historial de asignaciones
+      description: |
+        Datos personales, asignación vigente, estado e historial de asignaciones de la más reciente a la
+        más antigua (CA-03). Un FUNCIONARIO solo puede ver su propia ficha; si pide otra recibe 403 (CA-04).
+      parameters:
+        - $ref: "#/components/parameters/FuncionarioId"
+      responses:
+        "200":
+          description: Ficha del funcionario
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FichaFuncionario" }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /funcionarios/{id}/asignaciones:
+    post:
+      tags: [ms-personal - HU-10]
+      summary: Cambiar cargo, área o remuneración guardando el historial
+      description: |
+        No edita la asignación vigente: la cierra con `vigenteHasta` igual al día anterior a `vigenteDesde`
+        y crea una nueva vigente, en una sola transacción (CA-02, CA-06).
+        Reglas: `vigenteDesde` posterior a la vigencia actual (CA-03), remuneración dentro de la banda del
+        cargo resultante (CA-04) y funcionario no dado de baja (CA-05). El área cambia al elegir un cargo de
+        otra área. Si se omite `cargoId` o `remuneracion`, se conserva el valor actual.
+        Roles: ADMIN, RRHH.
+      parameters:
+        - $ref: "#/components/parameters/FuncionarioId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [vigenteDesde, motivo]
+              properties:
+                cargoId: { type: string, format: uuid }
+                remuneracion: { type: number, minimum: 0, exclusiveMinimum: true }
+                vigenteDesde: { type: string, format: date, example: "2026-12-01" }
+                motivo: { type: string, enum: [ASCENSO, TRASLADO, INCREMENTO, CORRECCION] }
+      responses:
+        "201":
+          description: Ficha actualizada con la nueva asignación vigente
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FichaFuncionario" }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409":
+          description: El funcionario no tiene una asignación vigente
+
+  /funcionarios/{id}/contacto:
+    patch:
+      tags: [ms-personal - HU-10]
+      summary: Actualizar los datos de contacto
+      description: |
+        Correo, teléfono y dirección, sin historial (CA-07). Se envía al menos un campo; `null` lo borra.
+        El CI no se puede editar: cualquier otro campo se rechaza con 400. Roles: ADMIN, RRHH.
+      parameters:
+        - $ref: "#/components/parameters/FuncionarioId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                correo: { type: string, format: email, maxLength: 150, nullable: true }
+                telefono: { type: string, maxLength: 20, nullable: true }
+                direccion: { type: string, maxLength: 200, nullable: true }
+      responses:
+        "200":
+          description: Ficha actualizada
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/FichaFuncionario" }
+        "400": { $ref: "#/components/responses/ValidationError" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+components:
+  parameters:
+    FuncionarioId:
+      name: id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+
+  schemas:
+    Asignacion:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        cargoId: { type: string, format: uuid }
+        cargoNombre: { type: string }
+        areaId: { type: string, format: uuid }
+        areaNombre: { type: string }
+        remuneracion: { type: number }
+        vigenteDesde: { type: string, format: date }
+        vigenteHasta: { type: string, format: date, nullable: true }
+        motivo: { type: string, enum: [INGRESO, ASCENSO, TRASLADO, INCREMENTO, CORRECCION] }
+
+    FichaFuncionario:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        ci: { type: string }
+        ciExpedido: { type: string }
+        nombres: { type: string }
+        apellidos: { type: string }
+        fechaNacimiento: { type: string, format: date }
+        sexo: { type: string, enum: [M, F] }
+        correo: { type: string, nullable: true }
+        telefono: { type: string, nullable: true }
+        direccion: { type: string, nullable: true }
+        fechaIngreso: { type: string, format: date }
+        diasPrueba: { type: integer }
+        estado: { type: string, enum: [EN_PRUEBA, RATIFICADO, BAJA] }
+        fechaRatificacion: { type: string, format: date, nullable: true }
+        fechaBaja: { type: string, format: date, nullable: true }
+        motivoBaja: { type: string, nullable: true }
+        detalleBaja: { type: string, nullable: true }
+        asignacionVigente:
+          allOf: [{ $ref: "#/components/schemas/Asignacion" }]
+          nullable: true
+        historialAsignaciones:
+          type: array
+          items: { $ref: "#/components/schemas/Asignacion" }
+
+    FuncionarioPadronItem:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        ci: { type: string }
+        ciExpedido: { type: string }
+        nombreCompleto: { type: string }
+        estado: { type: string, enum: [EN_PRUEBA, RATIFICADO, BAJA] }
+        fechaIngreso: { type: string, format: date }
+        diasPrueba: { type: integer }
+        areaId: { type: string, format: uuid, nullable: true }
+        areaNombre: { type: string, nullable: true }
+        cargoId: { type: string, format: uuid, nullable: true }
+        cargoNombre: { type: string, nullable: true }
+
+  responses:
+    ValidationError:
+      description: Error de validación de entrada
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code: { type: string, example: "VALIDATION_ERROR" }
+              message: { type: string }
+              details: { type: object }
+    Forbidden:
+      description: El rol no tiene permiso, o un FUNCIONARIO pidió una ficha ajena
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code: { type: string, example: "FORBIDDEN" }
+              message: { type: string }
+    NotFound:
+      description: Recurso no encontrado
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code: { type: string, example: "NOT_FOUND" }
+              message: { type: string }

@@ -13,7 +13,8 @@ describe('FuncionarioController (HU-08, HU-11, HU-12)', () => {
     mockService = {
       registrar: jest.fn(),
       obtenerFicha: jest.fn(),
-      listarResumen: jest.fn(),
+      listarPadron: jest.fn(),
+      actualizarContacto: jest.fn(),
       ratificar: jest.fn(),
       darDeBaja: jest.fn(),
       obtenerPruebaPorVencer: jest.fn(),
@@ -65,7 +66,7 @@ describe('FuncionarioController (HU-08, HU-11, HU-12)', () => {
 
     await controller.obtenerFicha(mockReq, mockRes, mockNext);
 
-    expect(mockService.obtenerFicha).toHaveBeenCalledWith('func-1');
+    expect(mockService.obtenerFicha).toHaveBeenCalledWith('func-1', { rol: null, funcionarioId: null });
     expect(mockRes.json).toHaveBeenCalledWith(fakeFicha);
   });
 
@@ -114,12 +115,60 @@ describe('FuncionarioController (HU-08, HU-11, HU-12)', () => {
     expect(mockRes.json).toHaveBeenCalledWith(fakeFicha);
   });
 
-  it('listar propaga el query param estado', async () => {
-    mockReq.query = { estado: 'BAJA' };
-    mockService.listarResumen.mockResolvedValue([]);
+  it('HU-09: obtenerFicha pasa la identidad para validar CA-04', async () => {
+    mockReq.params = { id: 'func-1' };
+    mockReq.header.mockImplementation((name: string) => {
+      if (name === 'x-user-rol') return 'FUNCIONARIO';
+      if (name === 'x-funcionario-id') return 'func-1';
+      return undefined;
+    });
+    mockService.obtenerFicha.mockResolvedValue({ id: 'func-1' } as any);
+
+    await controller.obtenerFicha(mockReq, mockRes, mockNext);
+
+    expect(mockService.obtenerFicha).toHaveBeenCalledWith('func-1', { rol: 'FUNCIONARIO', funcionarioId: 'func-1' });
+  });
+
+  it('HU-09: listar usa los filtros validados', async () => {
+    const filtros = { estado: 'BAJA', page: 2, pageSize: 20 };
+    mockRes.locals = { query: filtros };
+    mockService.listarPadron.mockResolvedValue({ data: [], page: 2, pageSize: 20, total: 0 });
 
     await controller.listar(mockReq, mockRes, mockNext);
 
-    expect(mockService.listarResumen).toHaveBeenCalledWith('BAJA');
+    expect(mockService.listarPadron).toHaveBeenCalledWith(filtros);
+    expect(mockRes.json).toHaveBeenCalledWith({ data: [], page: 2, pageSize: 20, total: 0 });
+  });
+
+  it('HU-10: cambiarAsignacion responde 201 con la ficha actualizada', async () => {
+    const mockAsignacionService = { cambiar: jest.fn().mockResolvedValue({ id: 'func-1' }) };
+    controller = new FuncionarioController(mockService, mockAsignacionService as any);
+    mockReq.params = { id: 'func-1' };
+    mockReq.body = { remuneracion: 9000, vigenteDesde: '2026-12-01', motivo: 'INCREMENTO' };
+    mockReq.header.mockImplementation((name: string) => (name === 'x-user-id' ? 'user-rrhh-id' : undefined));
+
+    await controller.cambiarAsignacion(mockReq, mockRes, mockNext);
+
+    expect(mockAsignacionService.cambiar).toHaveBeenCalledWith('func-1', mockReq.body, 'user-rrhh-id');
+    expect(mockRes.status).toHaveBeenCalledWith(201);
+  });
+
+  it('HU-10: cambiarAsignacion rechaza sin identidad', async () => {
+    mockReq.params = { id: 'func-1' };
+
+    await controller.cambiarAsignacion(mockReq, mockRes, mockNext);
+
+    expect(mockNext).toHaveBeenCalledWith(expect.objectContaining({ code: 'UNAUTHORIZED' }));
+  });
+
+  it('HU-10: actualizarContacto responde con la ficha', async () => {
+    mockReq.params = { id: 'func-1' };
+    mockReq.body = { telefono: '70000000' };
+    mockService.actualizarContacto.mockResolvedValue({ id: 'func-1' } as any);
+
+    await controller.actualizarContacto(mockReq, mockRes, mockNext);
+
+    expect(mockService.actualizarContacto).toHaveBeenCalledWith('func-1', { telefono: '70000000' });
+    expect(mockRes.json).toHaveBeenCalledWith({ id: 'func-1' });
   });
 });

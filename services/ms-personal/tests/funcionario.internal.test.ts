@@ -23,6 +23,7 @@ describe('GET /internal/funcionarios/:id', () => {
       remuneracion: { monto: 5000, moneda: 'BOB' },
       estado: EstadoFuncionario.RATIFICADO,
     }),
+    listarContratosInterno: jest.fn(),
   };
   const app = express();
   app.use(createFuncionarioInternalRouter(new FuncionarioInternalController(service)));
@@ -46,5 +47,46 @@ describe('GET /internal/funcionarios/:id', () => {
     expect(response.status).toBe(400);
     expect(response.body).toMatchObject({ code: 'VALIDATION_ERROR', details: null });
     expect(service.obtenerContratoInterno).not.toHaveBeenCalled();
+  });
+});
+
+describe('GET /internal/funcionarios (HU-09 CA-05)', () => {
+  const pagina = { data: [], page: 1, pageSize: 100, total: 0 };
+  const service = {
+    obtenerContratoInterno: jest.fn(),
+    listarContratosInterno: jest.fn().mockResolvedValue(pagina),
+  };
+  const app = express();
+  app.use(createFuncionarioInternalRouter(new FuncionarioInternalController(service)));
+  app.use(errorHandler);
+
+  beforeEach(() => service.listarContratosInterno.mockClear());
+
+  it('lista por estado y rango de actividad con paginación por defecto', async () => {
+    const response = await request(app).get(
+      '/funcionarios?estado=RATIFICADO&activosDesde=2026-11-01&activosHasta=2026-11-30',
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual(pagina);
+    expect(service.listarContratosInterno).toHaveBeenCalledWith({
+      estado: EstadoFuncionario.RATIFICADO,
+      activosDesde: '2026-11-01',
+      activosHasta: '2026-11-30',
+      page: 1,
+      pageSize: 100,
+    });
+  });
+
+  it.each([
+    ['un estado desconocido', '/funcionarios?estado=ACTIVO'],
+    ['un rango invertido', '/funcionarios?activosDesde=2026-12-01&activosHasta=2026-11-01'],
+    ['un pageSize mayor a 200', '/funcionarios?pageSize=500'],
+  ])('rechaza %s', async (_caso, url) => {
+    const response = await request(app).get(url);
+
+    expect(response.status).toBe(400);
+    expect(response.body.code).toBe('VALIDATION_ERROR');
+    expect(service.listarContratosInterno).not.toHaveBeenCalled();
   });
 });
