@@ -2,21 +2,13 @@ import { Router } from 'express';
 import { requireRole, RolUsuario } from '@arca/shared';
 import { PlantillaController } from '../controllers/plantilla.controller';
 import { validateBody } from '../middlewares/validate.middleware';
-import {
-  actualizarPlantillaSchema,
-  crearPlantillaSchema,
-  previewPlantillaSchema,
-} from '../schemas/plantilla.schema';
+import { actualizarPlantillaSchema, crearPlantillaSchema, previewPlantillaSchema } from '../schemas/plantilla.schema';
 
 export const plantillaRouter = Router();
 const controller = new PlantillaController();
 
 // Consulta de plantillas (RRHH, ADMIN, DIRECCION)
-plantillaRouter.get(
-  '/',
-  requireRole(RolUsuario.ADMIN, RolUsuario.RRHH, RolUsuario.DIRECCION),
-  controller.listar,
-);
+plantillaRouter.get('/', requireRole(RolUsuario.ADMIN, RolUsuario.RRHH, RolUsuario.DIRECCION), controller.listar);
 
 // Vista previa de renderizado Handlebars (RRHH, ADMIN)
 plantillaRouter.post(
@@ -55,4 +47,3 @@ plantillaRouter.put(
   validateBody(actualizarPlantillaSchema),
   controller.actualizar,
 );
-

@@ -8,6 +8,7 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "test": "jest --runInBand",
+    "seed:dev": "ts-node src/seeds/concepto.seed.ts",
     "migration:generate": "typeorm-ts-node-commonjs migration:generate src/migrations/InitialSchema -d src/data-source.ts",
     "migration:run": "typeorm-ts-node-commonjs migration:run -d src/data-source.ts",
     "migration:revert": "typeorm-ts-node-commonjs migration:revert -d src/data-source.ts",

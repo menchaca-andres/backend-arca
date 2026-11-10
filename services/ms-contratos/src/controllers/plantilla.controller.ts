@@ -1,11 +1,7 @@
 import type { NextFunction, Request, Response } from 'express';
 import { AppError, getIdentity } from '@arca/shared';
 import { PlantillaService } from '../services/plantilla.service';
-import type {
-  ActualizarPlantillaInput,
-  CrearPlantillaInput,
-  PreviewPlantillaInput,
-} from '../schemas/plantilla.schema';
+import type { ActualizarPlantillaInput, CrearPlantillaInput, PreviewPlantillaInput } from '../schemas/plantilla.schema';
 
 export class PlantillaController {
   constructor(private readonly service: PlantillaService = new PlantillaService()) {}
@@ -29,11 +25,7 @@ export class PlantillaController {
     }
   };
 
-  obtenerHistorialVersiones = async (
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> => {
+  obtenerHistorialVersiones = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { id } = req.params;
       const result = await this.service.obtenerHistorialVersiones(id);
@@ -84,4 +76,3 @@ export class PlantillaController {
     }
   };
 }
-

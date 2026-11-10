@@ -140,6 +140,11 @@ export function createApp() {
       target: process.env.BOLETAS_SERVICE_URL ?? 'http://ms-boletas:3005',
       forwardedPrefix: '/conceptos',
     },
+    {
+      prefix: '/api/novedades',
+      target: process.env.BOLETAS_SERVICE_URL ?? 'http://ms-boletas:3005',
+      forwardedPrefix: '/novedades',
+    },
   ];
   for (const { prefix, target, forwardedPrefix } of routes) {
     app.use(
