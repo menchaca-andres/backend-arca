@@ -164,11 +164,7 @@ export class UsuarioService {
     return this.mapResponse(actualizado);
   }
 
-  async cambiarEstado(
-    id: string,
-    input: CambiarEstadoInput,
-    solicitanteId: string | null,
-  ): Promise<UsuarioResponse> {
+  async cambiarEstado(id: string, input: CambiarEstadoInput, solicitanteId: string | null): Promise<UsuarioResponse> {
     // CA-07: Un ADMIN no puede desactivarse a sí mismo
     if (!input.activo && solicitanteId && solicitanteId === id) {
       throw AppError.badRequest('Un administrador no puede desactivarse a sí mismo');
@@ -219,4 +215,3 @@ export class UsuarioService {
     };
   }
 }
-

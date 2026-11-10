@@ -25,12 +25,12 @@ describe('Reglas de negocio de áreas y cargos', () => {
   it('no permite códigos ni nombres de área repetidos', async () => {
     const area = await crearArea();
 
-    await expect(
-      areaService.create({ codigo: area.codigo.toLowerCase(), nombre: unico() }),
-    ).rejects.toMatchObject({ code: 'CONFLICT' });
-    await expect(
-      areaService.create({ codigo: unico(), nombre: area.nombre.toUpperCase() }),
-    ).rejects.toMatchObject({ code: 'CONFLICT' });
+    await expect(areaService.create({ codigo: area.codigo.toLowerCase(), nombre: unico() })).rejects.toMatchObject({
+      code: 'CONFLICT',
+    });
+    await expect(areaService.create({ codigo: unico(), nombre: area.nombre.toUpperCase() })).rejects.toMatchObject({
+      code: 'CONFLICT',
+    });
   });
 
   it('no desactiva un área con una asignación vigente', async () => {

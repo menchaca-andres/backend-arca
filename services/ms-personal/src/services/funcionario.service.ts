@@ -1,4 +1,12 @@
-import { AppError, EstadoFuncionario, MotivoAsignacion, MotivoBaja, type FuncionarioContrato } from '@arca/shared';
+import {
+  AppError,
+  EstadoFuncionario,
+  MotivoAsignacion,
+  MotivoBaja,
+  RolUsuario,
+  type FuncionarioContrato,
+  type Paginated,
+} from '@arca/shared';
 import { AppDataSource } from '../data-source';
 import { Funcionario } from '../entities/funcionario.entity';
 import { AsignacionLaboral } from '../entities/asignacion-laboral.entity';
@@ -9,6 +17,9 @@ import type {
   RegistrarFuncionarioInput,
   RatificarFuncionarioInput,
   DarDeBajaInput,
+  ListarPadronQuery,
+  ListarContratosQuery,
+  ActualizarContactoInput,
 } from '../schemas/funcionario.schema';
 import type { EntityManager } from 'typeorm';
 
@@ -30,19 +41,23 @@ export interface FichaFuncionarioResponse {
   fechaBaja: string | null;
   motivoBaja: MotivoBaja | null;
   detalleBaja: string | null;
-  asignacionVigente: {
-    id: string;
-    cargoId: string;
-    cargoNombre: string;
-    areaId: string;
-    areaNombre: string;
-    remuneracion: number;
-    vigenteDesde: string;
-    vigenteHasta: string | null;
-    motivo: MotivoAsignacion;
-  } | null;
+  asignacionVigente: AsignacionResponse | null;
+  // HU-09: CA-03 Línea de tiempo, de la más reciente a la más antigua
+  historialAsignaciones: AsignacionResponse[];
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface AsignacionResponse {
+  id: string;
+  cargoId: string;
+  cargoNombre: string;
+  areaId: string;
+  areaNombre: string;
+  remuneracion: number;
+  vigenteDesde: string;
+  vigenteHasta: string | null;
+  motivo: MotivoAsignacion;
 }
 
 export interface FuncionarioResumen {
@@ -53,6 +68,35 @@ export interface FuncionarioResumen {
   estado: EstadoFuncionario;
   fechaIngreso?: string;
   diasPrueba?: number;
+}
+
+export interface FuncionarioPadronItem extends FuncionarioResumen {
+  fechaIngreso: string;
+  diasPrueba: number;
+  areaId: string | null;
+  areaNombre: string | null;
+  cargoId: string | null;
+  cargoNombre: string | null;
+}
+
+/** Quién pide la ficha; con rol FUNCIONARIO solo puede ver la suya (HU-09 CA-04). */
+export interface SolicitanteFicha {
+  rol: RolUsuario | null;
+  funcionarioId: string | null;
+}
+
+export function mapAsignacion(asignacion: AsignacionLaboral): AsignacionResponse {
+  return {
+    id: asignacion.id,
+    cargoId: asignacion.cargoId,
+    cargoNombre: asignacion.cargo?.nombre ?? '',
+    areaId: asignacion.cargo?.area?.id ?? asignacion.cargo?.areaId,
+    areaNombre: asignacion.cargo?.area?.nombre ?? '',
+    remuneracion: asignacion.remuneracion,
+    vigenteDesde: asignacion.vigenteDesde,
+    vigenteHasta: asignacion.vigenteHasta,
+    motivo: asignacion.motivo,
+  };
 }
 
 export interface PruebaPorVencerItem extends FuncionarioResumen {
@@ -163,6 +207,7 @@ export class FuncionarioService {
       });
 
       const asignacionGuardada = await manager.save(AsignacionLaboral, nuevaAsignacion);
+      const asignacionInicial = mapAsignacion(Object.assign(asignacionGuardada, { cargo }));
 
       // CA-08: Devolver la ficha del nuevo funcionario
       return {
@@ -183,17 +228,8 @@ export class FuncionarioService {
         fechaBaja: funcionarioGuardado.fechaBaja,
         motivoBaja: funcionarioGuardado.motivoBaja,
         detalleBaja: funcionarioGuardado.detalleBaja,
-        asignacionVigente: {
-          id: asignacionGuardada.id,
-          cargoId: cargo.id,
-          cargoNombre: cargo.nombre,
-          areaId: cargo.area?.id ?? cargo.areaId,
-          areaNombre: cargo.area?.nombre ?? '',
-          remuneracion: asignacionGuardada.remuneracion,
-          vigenteDesde: asignacionGuardada.vigenteDesde,
-          vigenteHasta: null,
-          motivo: asignacionGuardada.motivo,
-        },
+        asignacionVigente: asignacionInicial,
+        historialAsignaciones: [asignacionInicial],
         createdAt: funcionarioGuardado.createdAt,
         updatedAt: funcionarioGuardado.updatedAt,
       };
@@ -309,13 +345,19 @@ export class FuncionarioService {
     return this.obtenerFicha(id);
   }
 
-  async obtenerFicha(id: string): Promise<FichaFuncionarioResponse> {
+  async obtenerFicha(id: string, solicitante?: SolicitanteFicha): Promise<FichaFuncionarioResponse> {
+    // HU-09 CA-04: un FUNCIONARIO solo puede ver su propia ficha
+    if (solicitante?.rol === RolUsuario.FUNCIONARIO && solicitante.funcionarioId !== id) {
+      throw AppError.forbidden('Solo puede consultar su propia ficha');
+    }
+
     const data = await this.funcionarioRepo.findWithAsignacionVigente(id);
     if (!data) {
       throw AppError.notFound('Funcionario no encontrado');
     }
 
     const { funcionario, asignacionVigente } = data;
+    const historial = await this.funcionarioRepo.findHistorial(id);
     return {
       id: funcionario.id,
       ci: funcionario.ci,
@@ -334,67 +376,91 @@ export class FuncionarioService {
       fechaBaja: funcionario.fechaBaja,
       motivoBaja: funcionario.motivoBaja,
       detalleBaja: funcionario.detalleBaja,
-      asignacionVigente: asignacionVigente
-        ? {
-            id: asignacionVigente.id,
-            cargoId: asignacionVigente.cargoId,
-            cargoNombre: asignacionVigente.cargo?.nombre ?? '',
-            areaId: asignacionVigente.cargo?.area?.id ?? asignacionVigente.cargo?.areaId,
-            areaNombre: asignacionVigente.cargo?.area?.nombre ?? '',
-            remuneracion: asignacionVigente.remuneracion,
-            vigenteDesde: asignacionVigente.vigenteDesde,
-            vigenteHasta: asignacionVigente.vigenteHasta,
-            motivo: asignacionVigente.motivo,
-          }
-        : null,
+      asignacionVigente: asignacionVigente ? mapAsignacion(asignacionVigente) : null,
+      historialAsignaciones: historial.map(mapAsignacion),
       createdAt: funcionario.createdAt,
       updatedAt: funcionario.updatedAt,
     };
   }
 
-  // CA-07: Un funcionario de baja sigue apareciendo en el padrón con el filtro de estado BAJA
-  async listarResumen(estado?: string): Promise<FuncionarioResumen[]> {
-    const funcionarios = await this.funcionarioRepo.findAll();
+  // HU-09 CA-01 y CA-02. Sin filtro de estado lista a los activos; con BAJA o TODOS incluye a
+  // los dados de baja (HU-12 CA-07).
+  async listarPadron(filtros: ListarPadronQuery): Promise<Paginated<FuncionarioPadronItem>> {
+    const { items, total } = await this.funcionarioRepo.buscarPadron({
+      ...filtros,
+      estado: filtros.estado as EstadoFuncionario | 'TODOS' | undefined,
+    });
 
-    let filtrados = funcionarios;
+    return {
+      data: items.map(({ funcionario: f, asignacionVigente: a }) => ({
+        id: f.id,
+        ci: f.ci,
+        ciExpedido: f.ciExpedido,
+        nombreCompleto: `${f.nombres} ${f.apellidos}`,
+        estado: f.estado,
+        fechaIngreso: f.fechaIngreso,
+        diasPrueba: f.diasPrueba,
+        areaId: a?.cargo?.area?.id ?? a?.cargo?.areaId ?? null,
+        areaNombre: a?.cargo?.area?.nombre ?? null,
+        cargoId: a?.cargoId ?? null,
+        cargoNombre: a?.cargo?.nombre ?? null,
+      })),
+      page: filtros.page,
+      pageSize: filtros.pageSize,
+      total,
+    };
+  }
 
-    if (estado && estado !== 'TODOS') {
-      filtrados = funcionarios.filter((f) => f.estado === estado);
-    } else if (!estado) {
-      // Por defecto, listar activos si no se envía filtro
-      filtrados = funcionarios.filter((f) => f.estado !== EstadoFuncionario.BAJA);
+  // HU-10 CA-07: contacto sin historial; CA-05: no se modifica a un funcionario de baja
+  async actualizarContacto(id: string, input: ActualizarContactoInput): Promise<FichaFuncionarioResponse> {
+    const funcionario = await this.funcionarioRepo.findById(id);
+    if (!funcionario) {
+      throw AppError.notFound('Funcionario no encontrado');
+    }
+    if (funcionario.estado === EstadoFuncionario.BAJA) {
+      throw AppError.badRequest('No se puede modificar a un funcionario dado de baja');
     }
 
-    return filtrados.map((f) => ({
-      id: f.id,
-      ci: f.ci,
-      ciExpedido: f.ciExpedido,
-      nombreCompleto: `${f.nombres} ${f.apellidos}`,
-      estado: f.estado,
-      fechaIngreso: f.fechaIngreso,
-      diasPrueba: f.diasPrueba,
-    }));
+    if (input.correo !== undefined) funcionario.correo = input.correo ? input.correo.toLowerCase() : null;
+    if (input.telefono !== undefined) funcionario.telefono = input.telefono || null;
+    if (input.direccion !== undefined) funcionario.direccion = input.direccion || null;
+
+    await this.funcionarioRepo.save(funcionario);
+    return this.obtenerFicha(id);
   }
 
   async obtenerContratoInterno(id: string): Promise<FuncionarioContrato> {
     const data = await this.funcionarioRepo.findWithAsignacionVigente(id);
     if (!data) throw AppError.notFound('Funcionario no encontrado');
+    return mapContrato(data.funcionario, data.asignacionVigente);
+  }
 
-    const { funcionario, asignacionVigente } = data;
+  // HU-09 CA-05: GET /internal/funcionarios?estado=&activosDesde=&activosHasta=
+  async listarContratosInterno(filtros: ListarContratosQuery): Promise<Paginated<FuncionarioContrato>> {
+    const { items, total } = await this.funcionarioRepo.buscarParaContrato(filtros);
     return {
-      id: funcionario.id,
-      usuarioId: null,
-      nombres: funcionario.nombres,
-      apellidos: funcionario.apellidos,
-      documentoIdentidad: funcionario.ci,
-      fechaIngreso: funcionario.fechaIngreso,
-      diasPrueba: funcionario.diasPrueba,
-      fechaRatificacion: funcionario.fechaRatificacion,
-      fechaBaja: funcionario.fechaBaja,
-      area: asignacionVigente?.cargo?.area?.nombre ?? '',
-      cargo: asignacionVigente?.cargo?.nombre ?? '',
-      remuneracion: { monto: asignacionVigente?.remuneracion ?? 0, moneda: 'BOB' },
-      estado: funcionario.estado,
+      data: items.map(({ funcionario, asignacionVigente }) => mapContrato(funcionario, asignacionVigente)),
+      page: filtros.page,
+      pageSize: filtros.pageSize,
+      total,
     };
   }
+}
+
+function mapContrato(funcionario: Funcionario, asignacionVigente: AsignacionLaboral | null): FuncionarioContrato {
+  return {
+    id: funcionario.id,
+    usuarioId: null,
+    nombres: funcionario.nombres,
+    apellidos: funcionario.apellidos,
+    documentoIdentidad: funcionario.ci,
+    fechaIngreso: funcionario.fechaIngreso,
+    diasPrueba: funcionario.diasPrueba,
+    fechaRatificacion: funcionario.fechaRatificacion,
+    fechaBaja: funcionario.fechaBaja,
+    area: asignacionVigente?.cargo?.area?.nombre ?? '',
+    cargo: asignacionVigente?.cargo?.nombre ?? '',
+    remuneracion: { monto: asignacionVigente?.remuneracion ?? 0, moneda: 'BOB' },
+    estado: funcionario.estado,
+  };
 }

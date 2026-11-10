@@ -2,7 +2,9 @@ import { AppDataSource } from '../data-source';
 import { SolicitudVacacion } from '../entities/solicitud-vacacion.entity';
 
 export class SolicitudVacacionRepository {
-  private readonly repo = AppDataSource.getRepository(SolicitudVacacion);
+  private get repo() {
+    return AppDataSource.getRepository(SolicitudVacacion);
+  }
 
   findById(id: string) {
     return this.repo.findOneBy({ id });

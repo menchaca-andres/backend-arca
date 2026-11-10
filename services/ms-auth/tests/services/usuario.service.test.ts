@@ -168,9 +168,7 @@ describe('UsuarioService (HU-06)', () => {
     it('falla cuando el admin que realiza la petición intenta desactivar su propia cuenta', async () => {
       const adminId = 'admin-actual-uuid';
 
-      await expect(
-        service.cambiarEstado(adminId, { activo: false }, adminId),
-      ).rejects.toMatchObject({
+      await expect(service.cambiarEstado(adminId, { activo: false }, adminId)).rejects.toMatchObject({
         code: 'VALIDATION_ERROR',
         status: 400,
       });
@@ -213,4 +211,3 @@ describe('UsuarioService (HU-06)', () => {
     });
   });
 });
-

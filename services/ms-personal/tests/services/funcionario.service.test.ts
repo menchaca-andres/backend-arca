@@ -1,4 +1,4 @@
-import { EstadoFuncionario, MotivoAsignacion, MotivoBaja } from '@arca/shared';
+import { EstadoFuncionario, MotivoAsignacion, MotivoBaja, RolUsuario } from '@arca/shared';
 import {
   FuncionarioService,
   validarEdadMinima,
@@ -53,6 +53,9 @@ describe('FuncionarioService (HU-08, HU-11, HU-12)', () => {
       findByCi: jest.fn(),
       findAll: jest.fn(),
       findWithAsignacionVigente: jest.fn(),
+      findHistorial: jest.fn().mockResolvedValue([]),
+      buscarPadron: jest.fn(),
+      buscarParaContrato: jest.fn(),
       save: jest.fn(),
     } as any;
 
@@ -470,41 +473,171 @@ describe('FuncionarioService (HU-08, HU-11, HU-12)', () => {
     });
   });
 
-  describe('CA-07: Listado de padrón con filtro de estado', () => {
-    it('devuelve todos los estados si se pide TODOS', async () => {
-      mockFuncionarioRepo.findAll.mockResolvedValue([
-        { id: '1', nombres: 'A', apellidos: 'A', ci: '1', estado: EstadoFuncionario.EN_PRUEBA } as any,
-        { id: '2', nombres: 'B', apellidos: 'B', ci: '2', estado: EstadoFuncionario.RATIFICADO } as any,
-        { id: '3', nombres: 'C', apellidos: 'C', ci: '3', estado: EstadoFuncionario.BAJA } as any,
-      ]);
+  describe('HU-09: Padrón paginado (CA-01, CA-02)', () => {
+    it('pasa los filtros al repositorio y arma la página con área y cargo vigentes', async () => {
+      mockFuncionarioRepo.buscarPadron.mockResolvedValue({
+        items: [
+          {
+            funcionario: {
+              id: '1',
+              ci: '123',
+              ciExpedido: 'LP',
+              nombres: 'Ana',
+              apellidos: 'Rojas',
+              estado: EstadoFuncionario.RATIFICADO,
+              fechaIngreso: '2025-01-02',
+              diasPrueba: 90,
+            } as any,
+            asignacionVigente: {
+              cargoId: 'cargo-1',
+              cargo: { nombre: 'Contador', areaId: 'area-1', area: { id: 'area-1', nombre: 'Finanzas' } },
+            } as any,
+          },
+        ],
+        total: 41,
+      });
 
-      const lista = await service.listarResumen('TODOS');
-      expect(lista).toHaveLength(3);
+      const filtros = { q: 'ana', estado: 'RATIFICADO' as const, page: 3, pageSize: 20 };
+      const pagina = await service.listarPadron(filtros);
+
+      expect(mockFuncionarioRepo.buscarPadron).toHaveBeenCalledWith(filtros);
+      expect(pagina).toEqual({
+        data: [
+          {
+            id: '1',
+            ci: '123',
+            ciExpedido: 'LP',
+            nombreCompleto: 'Ana Rojas',
+            estado: EstadoFuncionario.RATIFICADO,
+            fechaIngreso: '2025-01-02',
+            diasPrueba: 90,
+            areaId: 'area-1',
+            areaNombre: 'Finanzas',
+            cargoId: 'cargo-1',
+            cargoNombre: 'Contador',
+          },
+        ],
+        page: 3,
+        pageSize: 20,
+        total: 41,
+      });
     });
 
-    it('devuelve únicamente funcionarios dados de baja cuando se filtra por BAJA', async () => {
-      mockFuncionarioRepo.findAll.mockResolvedValue([
-        { id: '1', nombres: 'A', apellidos: 'A', ci: '1', estado: EstadoFuncionario.EN_PRUEBA } as any,
-        { id: '2', nombres: 'B', apellidos: 'B', ci: '2', estado: EstadoFuncionario.RATIFICADO } as any,
-        { id: '3', nombres: 'C', apellidos: 'C', ci: '3', estado: EstadoFuncionario.BAJA } as any,
+    it('deja área y cargo en null si el funcionario no tiene asignación vigente', async () => {
+      mockFuncionarioRepo.buscarPadron.mockResolvedValue({
+        items: [{ funcionario: { id: '1', nombres: 'A', apellidos: 'B' } as any, asignacionVigente: null }],
+        total: 1,
+      });
+
+      const pagina = await service.listarPadron({ page: 1, pageSize: 20 });
+
+      expect(pagina.data[0]).toMatchObject({ areaId: null, areaNombre: null, cargoId: null, cargoNombre: null });
+    });
+  });
+
+  describe('HU-09: Ficha del funcionario (CA-03, CA-04)', () => {
+    const funcionario = { id: 'func-1', ci: '123', nombres: 'Ana', apellidos: 'Rojas' } as any;
+
+    it('incluye el historial de asignaciones', async () => {
+      mockFuncionarioRepo.findWithAsignacionVigente.mockResolvedValue({ funcionario, asignacionVigente: null });
+      mockFuncionarioRepo.findHistorial.mockResolvedValue([
+        { id: 'a2', cargoId: 'c2', vigenteDesde: '2026-03-01', vigenteHasta: null, motivo: 'ASCENSO' } as any,
+        { id: 'a1', cargoId: 'c1', vigenteDesde: '2025-01-02', vigenteHasta: '2026-02-28', motivo: 'INGRESO' } as any,
       ]);
 
-      const lista = await service.listarResumen('BAJA');
-      expect(lista).toHaveLength(1);
-      expect(lista[0].id).toBe('3');
-      expect(lista[0].estado).toBe(EstadoFuncionario.BAJA);
+      const ficha = await service.obtenerFicha('func-1');
+
+      expect(mockFuncionarioRepo.findHistorial).toHaveBeenCalledWith('func-1');
+      expect(ficha.historialAsignaciones.map((a) => a.id)).toEqual(['a2', 'a1']);
     });
 
-    it('por defecto excluye las bajas si no se pasa parámetro', async () => {
-      mockFuncionarioRepo.findAll.mockResolvedValue([
-        { id: '1', nombres: 'A', apellidos: 'A', ci: '1', estado: EstadoFuncionario.EN_PRUEBA } as any,
-        { id: '2', nombres: 'B', apellidos: 'B', ci: '2', estado: EstadoFuncionario.RATIFICADO } as any,
-        { id: '3', nombres: 'C', apellidos: 'C', ci: '3', estado: EstadoFuncionario.BAJA } as any,
-      ]);
+    it('un FUNCIONARIO puede ver su propia ficha', async () => {
+      mockFuncionarioRepo.findWithAsignacionVigente.mockResolvedValue({ funcionario, asignacionVigente: null });
 
-      const lista = await service.listarResumen();
-      expect(lista).toHaveLength(2);
-      expect(lista.find((f) => f.estado === EstadoFuncionario.BAJA)).toBeUndefined();
+      const ficha = await service.obtenerFicha('func-1', { rol: RolUsuario.FUNCIONARIO, funcionarioId: 'func-1' });
+
+      expect(ficha.id).toBe('func-1');
+    });
+
+    it('un FUNCIONARIO recibe 403 si pide la ficha de otro', async () => {
+      await expect(
+        service.obtenerFicha('func-1', { rol: RolUsuario.FUNCIONARIO, funcionarioId: 'otro' }),
+      ).rejects.toMatchObject({ code: 'FORBIDDEN', status: 403 });
+      expect(mockFuncionarioRepo.findWithAsignacionVigente).not.toHaveBeenCalled();
+    });
+
+    it('RRHH puede ver cualquier ficha', async () => {
+      mockFuncionarioRepo.findWithAsignacionVigente.mockResolvedValue({ funcionario, asignacionVigente: null });
+
+      await expect(
+        service.obtenerFicha('func-1', { rol: RolUsuario.RRHH, funcionarioId: null }),
+      ).resolves.toBeDefined();
+    });
+  });
+
+  describe('HU-09: Contrato interno (CA-05)', () => {
+    it('lista los contratos paginados con la asignación vigente', async () => {
+      mockFuncionarioRepo.buscarParaContrato.mockResolvedValue({
+        items: [
+          {
+            funcionario: { id: '1', ci: '123', nombres: 'Ana', apellidos: 'Rojas' } as any,
+            asignacionVigente: {
+              remuneracion: 7000,
+              cargo: { nombre: 'Contador', area: { nombre: 'Finanzas' } },
+            } as any,
+          },
+        ],
+        total: 1,
+      });
+
+      const filtros = { activosDesde: '2026-11-01', activosHasta: '2026-11-30', page: 1, pageSize: 100 };
+      const pagina = await service.listarContratosInterno(filtros);
+
+      expect(mockFuncionarioRepo.buscarParaContrato).toHaveBeenCalledWith(filtros);
+      expect(pagina.total).toBe(1);
+      expect(pagina.data[0]).toMatchObject({
+        documentoIdentidad: '123',
+        area: 'Finanzas',
+        cargo: 'Contador',
+        remuneracion: { monto: 7000, moneda: 'BOB' },
+      });
+    });
+  });
+
+  describe('HU-10: Datos de contacto (CA-05, CA-07)', () => {
+    it('actualiza solo los campos enviados y normaliza el correo', async () => {
+      const funcionario = {
+        id: 'func-1',
+        estado: EstadoFuncionario.RATIFICADO,
+        correo: 'viejo@arca.bo',
+        telefono: '700',
+        direccion: 'Calle 1',
+      } as any;
+      mockFuncionarioRepo.findById.mockResolvedValue(funcionario);
+      mockFuncionarioRepo.findWithAsignacionVigente.mockResolvedValue({ funcionario, asignacionVigente: null });
+
+      await service.actualizarContacto('func-1', { correo: 'Nuevo@ARCA.bo', direccion: null });
+
+      expect(mockFuncionarioRepo.save).toHaveBeenCalledWith(
+        expect.objectContaining({ correo: 'nuevo@arca.bo', telefono: '700', direccion: null }),
+      );
+    });
+
+    it('rechaza modificar a un funcionario de baja', async () => {
+      mockFuncionarioRepo.findById.mockResolvedValue({ id: 'func-1', estado: EstadoFuncionario.BAJA } as any);
+
+      await expect(service.actualizarContacto('func-1', { telefono: '700' })).rejects.toMatchObject({
+        code: 'VALIDATION_ERROR',
+      });
+      expect(mockFuncionarioRepo.save).not.toHaveBeenCalled();
+    });
+
+    it('responde 404 si el funcionario no existe', async () => {
+      mockFuncionarioRepo.findById.mockResolvedValue(null);
+
+      await expect(service.actualizarContacto('x', { telefono: '700' })).rejects.toMatchObject({
+        code: 'NOT_FOUND',
+      });
     });
   });
 });

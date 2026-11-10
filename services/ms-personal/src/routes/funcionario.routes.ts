@@ -1,8 +1,16 @@
 import { Router } from 'express';
 import { requireRole, RolUsuario } from '@arca/shared';
 import { FuncionarioController } from '../controllers/funcionario.controller';
-import { validateBody } from '../middlewares/validate.middleware';
-import { registrarFuncionarioSchema, ratificarFuncionarioSchema, darDeBajaSchema } from '../schemas/funcionario.schema';
+import { validateBody, validateParams, validateQuery } from '../middlewares/validate.middleware';
+import {
+  actualizarContactoSchema,
+  cambiarAsignacionSchema,
+  darDeBajaSchema,
+  funcionarioIdParamsSchema,
+  listarPadronQuerySchema,
+  ratificarFuncionarioSchema,
+  registrarFuncionarioSchema,
+} from '../schemas/funcionario.schema';
 
 export const funcionarioRouter = Router();
 const controller = new FuncionarioController();
@@ -23,8 +31,13 @@ funcionarioRouter.post(
   controller.registrar,
 );
 
-// Listado de funcionarios para selectores y consultas (admite ?estado=)
-funcionarioRouter.get('/', requireRole(RolUsuario.ADMIN, RolUsuario.RRHH, RolUsuario.DIRECCION), controller.listar);
+// HU-09: Padrón paginado (?q=&areaId=&cargoId=&estado=&page=&pageSize=)
+funcionarioRouter.get(
+  '/',
+  requireRole(RolUsuario.ADMIN, RolUsuario.RRHH, RolUsuario.DIRECCION),
+  validateQuery(listarPadronQuerySchema),
+  controller.listar,
+);
 
 // HU-11: Ratificar funcionario
 funcionarioRouter.post(
@@ -42,9 +55,28 @@ funcionarioRouter.post(
   controller.darDeBaja,
 );
 
-// Consulta de ficha (CA-08)
+// HU-10: Cambio de área, cargo o remuneración con historial
+funcionarioRouter.post(
+  '/:id/asignaciones',
+  requireRole(RolUsuario.ADMIN, RolUsuario.RRHH),
+  validateParams(funcionarioIdParamsSchema),
+  validateBody(cambiarAsignacionSchema),
+  controller.cambiarAsignacion,
+);
+
+// HU-10: CA-07 Datos de contacto
+funcionarioRouter.patch(
+  '/:id/contacto',
+  requireRole(RolUsuario.ADMIN, RolUsuario.RRHH),
+  validateParams(funcionarioIdParamsSchema),
+  validateBody(actualizarContactoSchema),
+  controller.actualizarContacto,
+);
+
+// HU-09: Ficha del funcionario; un FUNCIONARIO solo ve la suya (CA-04)
 funcionarioRouter.get(
   '/:id',
   requireRole(RolUsuario.ADMIN, RolUsuario.RRHH, RolUsuario.DIRECCION, RolUsuario.FUNCIONARIO),
+  validateParams(funcionarioIdParamsSchema),
   controller.obtenerFicha,
 );
