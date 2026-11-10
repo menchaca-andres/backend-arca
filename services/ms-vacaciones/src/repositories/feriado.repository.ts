@@ -3,7 +3,9 @@ import { Feriado } from '../entities/feriado.entity';
 import { listarFeriados } from '../domain/feriados';
 
 export class FeriadoRepository {
-  private readonly repo = AppDataSource.getRepository(Feriado);
+  private get repo() {
+    return AppDataSource.getRepository(Feriado);
+  }
 
   findById(fecha: string) {
     return this.repo.findOneBy({ fecha });
