@@ -44,13 +44,13 @@ Para la presentación es ideal tener preparadas las credenciales de los diferent
    - Clic en el botón **"Nuevo Usuario"**.
    - Ingresar correo: `nuevo.analista@arca.bo`.
    - Seleccionar rol: `FUNCIONARIO`.
-   - **Regla de negocio visible:** Al elegir `FUNCIONARIO`, la interfaz despliega un selector obligatorio para vincular la cuenta a un funcionario real del padrón. Seleccionar a cualquiera disponible.
+   - **Regla de negocio e integración inter-servicio:** Al elegir `FUNCIONARIO`, la interfaz despliega un selector obligatorio para vincular la cuenta a un funcionario real de `ms-personal`. El backend valida esta relación vía cliente HTTP interno sin acoplar schemas de base de datos.
    - Clic en **"Crear Usuario"**.
-   - **Resultado:** Se abre un modal de seguridad mostrando la **contraseña temporal autogenerada** (ej. `k9#mP2$xL1`) con botón para copiar al portapapeles.
+   - **Resultado:** Se genera una contraseña temporal criptográficamente segura con hash `bcrypt` (costo 10) y se presenta en pantalla una sola vez con botón para copiar al portapapeles.
 3. **Modificación de Rol y Desactivación:**
    - En cualquier usuario, clic en el botón **"Rol"**: cambiar el rol de `FUNCIONARIO` a `RRHH` y guardar.
-   - Clic en el botón **"Desactivar"**: la cuenta pasa a estado inactivo (badge gris/neutral).
-   - *Protección visible:* Intentar desactivar al propio usuario `admin@arca.bo`; el botón aparece deshabilitado ("Un administrador no puede desactivarse a sí mismo").
+   - Clic en el botón **"Desactivar"**: la cuenta pasa a estado inactivo (badge neutral).
+   - **Regla de auto-protección:** Intentar desactivar al propio usuario `admin@arca.bo`; el botón aparece deshabilitado (*"Un administrador no puede desactivarse a sí mismo"*).
 
 ---
 
@@ -61,19 +61,19 @@ Para la presentación es ideal tener preparadas las credenciales de los diferent
 
 #### Qué demostrar en la UI:
 1. **Navegación Segmentada:**
-   - Mostrar el nuevo control segmentado estilo Apple entre **"Áreas"** y **"Cargos"**.
+   - Mostrar el control segmentado estilo Apple entre **"Áreas"** y **"Cargos"**.
 2. **Gestión de Áreas:**
    - En la pestaña "Áreas", clic en **"Nueva Área"**.
    - Código: `TI`, Nombre: `Tecnología e Innovación`. Clic en Guardar.
    - Mostrar cómo aparece inmediatamente en la tabla con su badge de estado.
-3. **Gestión de Cargos con Escala Salarial:**
+3. **Gestión de Cargos con Escala Salarial Estricta:**
    - Cambiar a la pestaña "Cargos" y hacer clic en **"Nuevo Cargo"**.
    - Área: Seleccionar `Tecnología e Innovación`.
    - Nombre del cargo: `Ingeniero de Software Senior`.
    - Salario Mínimo: `8000`.
    - Salario Máximo: `15000`.
-   - Guardar y mostrar cómo la tabla refleja la escala salarial en formato moneda boliviana (`Bs 8.000,00 – Bs 15.000,00`).
-   - Clic en el botón **"Desactivar"** de un cargo para ver la transición de estado sin borrar el histórico.
+   - **Regla de negocio:** La escala salarial (`salario_min <= salario_max`) actúa como restricción (*CHECK constraint*) en base de datos para gobernar las contrataciones de la HU-08.
+   - Clic en el botón **"Desactivar"** de un cargo para ver la transición de estado sin borrar el histórico (baja lógica).
 
 ---
 
@@ -86,7 +86,7 @@ Para la presentación es ideal tener preparadas las credenciales de los diferent
 1. **Apertura del Modal de Registro:**
    - Clic en el botón principal **"Nuevo Funcionario"**.
 2. **Carga de Datos Personales:**
-   - CI: `7492015` | Expedido: `LP (La Paz)`
+   - CI: `7492015` | Expedido: `LP (La Paz)` (validación de departamentos bolivianos).
    - Nombres: `Mariana` | Apellidos: `Ríos Mercado`
    - Fecha de Nacimiento: `1994-06-12` | Sexo: `Femenino`
    - Correo: `mariana.rios@arca.bo` | Teléfono: `70654321`
@@ -94,11 +94,11 @@ Para la presentación es ideal tener preparadas las credenciales de los diferent
 3. **Asignación Laboral y Validación Salarial en Vivo:**
    - Área: `Tecnología e Innovación`.
    - Cargo: `Ingeniero de Software Senior`.
-   - **Validación visual:** La UI indica automáticamente la escala del cargo (`Bs 8.000 – Bs 15.000`). Si intentás colocar `5000`, la interfaz o el backend alertan que está fuera de rango. Colocar `9500`.
+   - **Validación de banda salarial:** La UI y el backend verifican que la remuneración esté dentro de la escala (`Bs 8.000 – Bs 15.000`). Si se ingresa un monto fuera de rango, el sistema bloquea el registro. Ingresar `9500`.
    - Fecha de Ingreso: Fecha actual.
-   - Días de prueba: `90` (valor establecido por ley laboral).
+   - Días de prueba: `90` días de ley laboral.
 4. **Resultado:**
-   - Al guardar, el funcionario aparece inmediatamente en el padrón con el badge ámbar **`EN_PRUEBA`**.
+   - Al guardar, el funcionario queda registrado en la base de datos con estado **`EN_PRUEBA`** (badge ámbar) y genera su primera asignación laboral con motivo `INGRESO`.
 
 ---
 
@@ -110,13 +110,12 @@ Para la presentación es ideal tener preparadas las credenciales de los diferent
 #### Qué demostrar en la UI:
 1. **Búsqueda con Debounce en Servidor:**
    - En la caja de búsqueda, escribir `Ríos` o el CI `7492015`.
-   - Explicar que la búsqueda espera a que el usuario termine de escribir y consulta al backend de forma eficiente.
+   - La búsqueda espera a que el usuario termine de escribir (300 ms de *debounce*) y consulta directamente al backend vía parámetros `?q=...` sin sobrecargar la red.
 2. **Filtros Combinados:**
-   - Selector de Estado: Cambiar a **"Solo en periodo de prueba"** (muestra a Mariana y en prueba).
-   - Cambiar a **"Solo personal ratificado"** o **"Personal dado de baja"**.
-   - Filtrar adicionalmente por Área ("Tecnología e Innovación") y Cargo.
+   - Selector de Estado: Filtrar por **"Solo en periodo de prueba"**, **"Solo personal ratificado"** o **"Personal dado de baja"**.
+   - Filtros adicionales por catálogo: Área y Cargo.
 3. **Paginación Controlada:**
-   - Mostrar el pie de tabla: *"Mostrando 1–20 de N funcionarios"*, con navegación de páginas "Anterior" y "Siguiente".
+   - Paginación server-side fija de **20 en 20 registros** (`limit=20&offset=...`) con controles de navegación "Anterior" y "Siguiente".
 
 ---
 
@@ -127,17 +126,18 @@ Para la presentación es ideal tener preparadas las credenciales de los diferent
 
 #### Qué demostrar en la UI:
 1. **Ficha Integral:**
-   - En el funcionario recién creado (Mariana Ríos), clic en **"Ver Ficha"**.
-   - Mostrar la tarjeta superior con datos consolidados, fecha de ingreso, días de prueba y contacto.
-2. **Historial Laboral con Vigencia:**
-   - En la sección inferior de la ficha, mostrar la tabla de asignaciones: tiene el registro inicial con motivo `INGRESO`, fecha de vigencia, cargo y salario.
+   - Clic en **"Ver Ficha"** en el funcionario Mariana Ríos.
+   - Mostrar datos consolidados: personales, contacto y asignación vigente.
+2. **Historial Laboral Inmutable:**
+   - Mostrar la tabla de asignaciones: contiene el registro inicial con motivo `INGRESO`, fecha de vigencia, cargo y salario.
+   - **Regla de auditoría:** Nunca se hace `UPDATE` destructivo del sueldo anterior; cada cambio crea una nueva fila histórica con su respectiva fecha de vigencia.
 3. **Acción "Cambiar asignación":**
-   - En el pie del modal, hacer clic en **"Cambiar asignación"**.
-   - Motivo: Seleccionar `ASCENSO` o `INCREMENTO`.
-   - Ajustar remuneración a `11000`. Clic en Guardar.
-   - **Impacto:** Al volver a la ficha, se observa el nuevo registro en el historial laboral, manteniendo la trazabilidad inmutable de cuánto ganaba antes y cuánto gana ahora.
+   - Clic en **"Cambiar asignación"**.
+   - Motivo: `ASCENSO` o `INCREMENTO`.
+   - Nueva remuneración: `11000`. Clic en Guardar.
+   - **Impacto:** Al volver a la ficha, se visualiza la línea de tiempo completa, preservando cuánto ganaba antes y cuánto gana a partir de la nueva vigencia.
 4. **Acción "Editar contacto":**
-   - Actualizar teléfono a `71234567` y guardar.
+   - Actualizar teléfono o dirección sin afectar los datos contractuales.
 
 ---
 
@@ -149,14 +149,13 @@ Para la presentación es ideal tener preparadas las credenciales de los diferent
 #### Qué demostrar en la UI:
 1. **Aviso Preventivo de Vencimiento:**
    - En la parte superior de `/personal`, mostrar el panel de alerta: *"Atención: X funcionario(s) cumplen su período de prueba en los próximos 7 días"*.
-   - Explicar que RRHH no necesita calcular manualmente los 90 días; el sistema le avisa proactivamente.
+   - El sistema calcula: $\text{fechaFinPrueba} = \text{fechaIngreso} + \text{diasPrueba}$ y alerta si está dentro de la ventana preventiva.
 2. **Acción de Ratificar:**
-   - En la fila del funcionario en prueba (ej. Mariana Ríos o Daniela Mendoza), hacer clic en el botón limpio **"Ratificar"**.
-   - Se abre el modal confirmando la fecha de evaluación.
-   - Confirmar la ratificación.
-3. **Resultado:**
-   - El estado del funcionario cambia a **`RATIFICADO`** (badge verde).
-   - Explicar la consecuencia de negocio: **a partir de este momento, el funcionario consolida estabilidad laboral y se habilita su cómputo formal de derechos (vacaciones)**.
+   - Clic en el botón **"Ratificar"**.
+   - Se abre el modal confirmando la fecha de evaluación superada.
+3. **Consecuencia Legal y de Negocio:**
+   - El estado cambia a **`RATIFICADO`** (badge verde).
+   - **Efecto multiplicador:** Este cambio desbloquea formalmente la estabilidad laboral y permite que `ms-vacaciones` comience a computar el derecho al goce del saldo vacacional.
 
 ---
 
@@ -167,31 +166,35 @@ Para la presentación es ideal tener preparadas las credenciales de los diferent
 
 #### Qué demostrar en la UI:
 1. **Desvinculación Formal:**
-   - En un funcionario de prueba o de demostración, hacer clic en el botón **"Baja"** (o desde dentro de su ficha).
+   - En un funcionario de prueba o demo, clic en el botón **"Baja"**.
 2. **Datos de Salida Obligatorios:**
-   - Fecha de baja: Fecha actual.
-   - Motivo de baja: Seleccionar o escribir `Renuncia voluntaria` o `Término de contrato`.
-   - Clic en **"Confirmar Baja"**.
-3. **Bloqueo Inmutable:**
-   - El funcionario ahora aparece con badge rojo **`BAJA`**.
-   - Abrir su ficha: los botones de "Cambiar asignación", "Editar contacto" y "Ratificar" desaparecen o quedan bloqueados.
-   - Explicar al evaluador: el sistema garantiza que un empleado cesado no sufra alteraciones post-mortem en sus condiciones laborales.
+   - Fecha de baja y motivo obligatorio (`Renuncia voluntaria`, `Término de contrato`, etc.).
+3. **Bloqueo Inmutable (Terminal State):**
+   - El estado pasa a **`BAJA`** (badge rojo).
+   - Al abrir su ficha, quedan deshabilitados o removidos los botones de cambio de asignación, edición y ratificación.
+   - El empleado queda bloqueado para solicitar vacaciones o recibir nuevas novedades en boletas, preservando su historial íntegro para auditorías e impuestos.
 
 ---
 
-### HU-13: Consulta y Cálculo de Saldo de Vacaciones
+### HU-13: Consulta y Cálculo Inteligente de Saldo de Vacaciones
 * **Microservicio:** `ms-vacaciones`
 * **Ruta Frontend:** `/vacaciones`
-* **Actor:** Entrar como `funcionario@arca.bo` (o como `rrhh@arca.bo` seleccionando al funcionario)
+* **Actor:** `funcionario@arca.bo` o `rrhh@arca.bo`
 
-#### Qué demostrar en la UI:
-1. **Tarjeta de Saldo en Días Hábiles:**
-   - Mostrar la tarjeta superior del dashboard: **Saldo disponible** (ej. `15 días hábiles`).
-   - Mostrar la barra de progreso hacia la siguiente gestión completada.
-2. **Regla de Negocio Explicada al Jurado:**
-   - El saldo se computa **exclusivamente en días hábiles** (lunes a viernes).
-   - No se descuentan fines de semana ni feriados nacionales bolivianos (cargados en la tabla de feriados del sistema).
-   - Solo los funcionarios con estado `RATIFICADO` tienen derecho al goce del saldo.
+#### Qué demostrar en la UI y Reglas de Negocio Exactas:
+1. **¿Cómo se calcula la Antigüedad y los Días Ganados?**
+   - La antigüedad se mide en **gestiones (años completos cumplidos)** desde la `fechaIngreso` hasta la fecha actual (aniversario laboral):
+     $$\text{Días Ganados} = \text{Gestiones Cumplidas} \times 15\text{ días hábiles}$$
+   - Según el supuesto de negocio `S-08`, cada año cumplido otorga **15 días hábiles fijos**.
+2. **Las 3 Condiciones Obligatorias de Elegibilidad:**
+   - **Estar RATIFICADO:** Un empleado `EN_PRUEBA` no puede gozar de vacaciones.
+   - **No estar de BAJA.**
+   - **Tener al menos 1 gestión completada ($\ge 1\text{ año}$):** Si tiene menos de 365 días en la empresa, el sistema informa: *"Debe cumplir al menos un año desde su fecha de ingreso"*.
+3. **Fórmula del Saldo Disponible en Pantalla:**
+   $$\text{Días Disponibles} = \text{Días Ganados} - \text{Días Usados (Aprobadas)} - \text{Días Reservados (Pendientes)}$$
+4. **Cálculo Exclusivo en Días Hábiles:**
+   - El sistema descuenta solo días laborables (lunes a viernes).
+   - Se excluyen automáticamente fines de semana y **feriados nacionales bolivianos** cargados en la base de datos de feriados.
 
 ---
 
@@ -201,16 +204,15 @@ Para la presentación es ideal tener preparadas las credenciales de los diferent
 * **Actor:** `funcionario@arca.bo` o `rrhh@arca.bo`
 
 #### Qué demostrar en la UI:
-1. **Simulación en Tiempo Real:**
+1. **Simulación Dinámica de Días:**
    - Clic en **"Solicitar Vacaciones"**.
-   - Fecha de inicio: Seleccionar un **Lunes** (ej. `16/11/2026`).
-   - Fecha de fin: Seleccionar el **Viernes** de esa misma semana (ej. `20/11/2026`).
-   - **Resultado en pantalla:** El sistema calcula automáticamente: *"Días hábiles calculados: 5 días"*.
-2. **Comprobación de Feriado / Fin de Semana:**
-   - Si seleccionás de un viernes a un lunes (4 días calendario), el sistema indicará únicamente 2 días hábiles.
-3. **Envío y Tabla de Solicitudes:**
-   - Clic en **"Enviar Solicitud"**.
-   - La solicitud se agrega de inmediato a la tabla inferior en estado **`PENDIENTE`** o **`APROBADA`**, descontando o reservando los días del saldo.
+   - Elegir rango de fechas (ej. Lunes 16/11/2026 a Viernes 20/11/2026).
+   - **Resultado en tiempo real:** La interfaz consulta al backend y calcula: *"Días hábiles calculados: 5 días"*.
+   - Si el rango cruza un feriado de ley o un fin de semana, el sistema descuenta únicamente los días hábiles reales.
+2. **Control de Saldo Suficiente:**
+   - Si el empleado intenta solicitar más días de los disponibles, el sistema bloquea el envío impidiendo saldos negativos.
+3. **Envío y Registro:**
+   - La solicitud ingresa a la bitácora con estado **`PENDIENTE`** o **`APROBADA`**, actualizando de inmediato los días reservados del saldo.
 
 ---
 
@@ -219,22 +221,30 @@ Para la presentación es ideal tener preparadas las credenciales de los diferent
 * **Ruta Frontend:** `/contratos`
 * **Actor:** `rrhh@arca.bo`
 
-#### Qué demostrar en la UI:
+#### Qué demostrar en la UI y Mejoras de UX Apple:
 1. **Catálogo de Plantillas con Segmented Control:**
-   - Mostrar la pestaña "Plantillas de Contrato" con el control segmentado estilo Apple.
-   - Observar los tipos disponibles (`INDEFINIDO`, `PLAZO_FIJO`) y el indicador de **Versión Activa** (`v1`).
-2. **Editor con Variables Handlebars:**
-   - Clic en el botón **"Editar"** de la plantilla de Contrato Indefinido.
-   - Mostrar el área de texto donde se parametriza el documento utilizando sintaxis de plantilla:
-     - `{{funcionario.nombres}}`
-     - `{{funcionario.ci}}`
-     - `{{asignacion.remuneracion}}`
-     - `{{funcionario.dias_prueba}}`
-3. **Versionado Inmutable:**
-   - Agregar una cláusula o modificar una frase en el texto (ej. *"Lugar de trabajo: Ciudad de La Paz"*).
-   - Clic en **"Guardar Nueva Versión"**.
-   - **Efecto clave:** La versión activa se incrementa a `v2`.
-   - Clic en el botón **"Historial"**: se despliega el historial completo demostrando que la versión `v1` anterior NO se destruyó ni sobreescribió, cumpliendo con la inmutabilidad documental.
+   - Mostrar pestañas "Plantillas de Contrato" y "Contratos Emitidos".
+   - Tipos de contrato: `INDEFINIDO` y `PLAZO_FIJO`, indicando la **Versión Activa** (`v1`).
+2. **Editor Espacioso (Modal XL - 960px):**
+   - Clic en **"Editar"** en la plantilla de Contrato Indefinido.
+   - El modal se abre en formato extra-ancho (`size="xl"`) diseñado para redacción de documentos legales sin sensación de encierro.
+3. **Campos Dinámicos con Etiquetas Humanas (Human-Friendly):**
+   - En lugar de obligar al usuario a escribir etiquetas técnicas de código como `{{funcionario.fecha_ingreso}}`, el panel presenta botones legibles:
+     - **`+ Fecha de Ingreso ★`**
+     - **`+ Remuneración (Sueldo) ★`**
+     - **`+ Días de Prueba ★`**
+     - **`+ Nombre Completo`**
+     - **`+ Cédula de Identidad`**
+     - **`+ Cargo`**, **`+ Área`**, **`+ Sueldo en Literal`**
+   - Al hacer clic en cualquier botón, el sistema inserta la variable Handlebars en la posición exacta del cursor.
+4. **Previsualización de Documento y Selector de Vistas:**
+   - Clic en **"Vista Previa"**: el backend compila la plantilla con datos de muestra reales.
+   - El resultado se renderiza en una **hoja de contrato legal** (fondo blanco, tipografía serif, interlineado cómodo `1.7`).
+   - El usuario puede alternar con el control segmentado entre **"Vista Dividida"**, **"Solo Vista Previa"** (ancho completo) y **"Solo Editor"**.
+5. **Versionado Inmutable:**
+   - Modificar una cláusula y guardar.
+   - La plantilla avanza a versión `v2`.
+   - Clic en **"Historial"**: muestra todas las versiones anteriores (`v1`, `v2`) demostrando que las versiones previas permanecen inmutables para contratos emitidos en el pasado.
 
 ---
 
@@ -243,30 +253,27 @@ Para la presentación es ideal tener preparadas las credenciales de los diferent
 * **Ruta Frontend:** `/boletas`
 * **Actor:** `rrhh@arca.bo`
 
-#### Qué demostrar en la UI:
-1. **Catálogo de Conceptos Paramétricos:**
-   - En la pestaña **"Conceptos de Planilla"**, mostrar la tabla de fórmulas salariales:
-     - `HABER_BASICO` (Haber, cálculo automático por sistema).
-     - `APORTE_LABORAL` (Descuento, 12.71% sobre Total Ganado).
+#### Qué demostrar en la UI y Regla de Negocio Clave:
+1. **Diferencia Fundamental: Automáticos vs Novedades:**
+   - **Conceptos Automáticos (`automatico: true`):**
+     - Son fórmulas fijas de ley (ej: **Aporte Laboral AFP 12.71% sobre Total Ganado**, o el Haber Básico).
+     - **Se calculan 100% solos:** El motor de liquidación mensual los aplica a todos los empleados de la empresa sin que RRHH tenga que cargarlos a mano.
+     - **Por regla de negocio, NO aparecen en el selector de novedades** para evitar duplicidades o cobros dobles accidentales.
+   - **Novedades del Período (`automatico: false`):**
+     - Son incidencias **eventuales, variables o extraordinarias** de un mes puntual (ej: bonos por meta, sanciones por atraso, anticipos).
+     - Se registran indicando el funcionario destinatario y el **monto monetario puntual en Bolivianos (Bs. > 0)**.
+2. **Catálogo de Conceptos:**
+   - En la pestaña "Conceptos de Planilla", mostrar los conceptos base: `HABER_BASICO` (`SISTEMA`) y `APORTE_LABORAL` (`PORCENTAJE` 12.71%).
    - Clic en **"Nuevo Concepto"**:
-     - Código: `BONO_PRODUCCION`
-     - Nombre: `Bono por Desempeño y Producción`
-     - Tipo: `HABER`
-     - Forma de cálculo: `MONTO_FIJO`
-     - Automático: Desmarcado (es un concepto variable aplicable por novedad).
-     - Guardar.
-2. **Carga de Novedades del Período:**
+     - Código: `BONO_PRODUCCION`, Nombre: `Bono por Desempeño`, Tipo: `HABER`, Forma: `MONTO_FIJO`, Automático: `NO`. Guardar.
+3. **Carga de Novedades del Período:**
    - Cambiar a la pestaña **"Novedades del Período"**.
-   - Filtrar período: Año `2026`, Mes `10` (Octubre).
+   - Período: Año `2026`, Mes `10` (Octubre).
    - Clic en **"Registrar Novedad"**:
-     - Seleccionar al funcionario (ej. Carlos Mamani o Mariana Ríos).
-     - Concepto: `BONO_PRODUCCION`.
-     - Monto en Bs: `750.00`.
-     - Descripción: `Cumplimiento de objetivos del Sprint 2`.
-     - Clic en Guardar.
-3. **Resultado:**
-   - La novedad aparece listada en la tabla con su monto destacado en verde/teal.
-   - Explicar al jurado: **esta novedad queda lista para alimentar el motor de cálculo de liquidación y emisión de boletas**.
+     - Seleccionar al funcionario y el concepto `BONO_PRODUCCION`.
+     - Ingresar el monto en Bolivianos: `Bs 750.00`.
+     - Glosa: `Cumplimiento de objetivos del período`. Guardar.
+   - Mostrar cómo queda registrado en la tabla listo para alimentar el cálculo de planilla.
 
 ---
 
