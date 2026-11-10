@@ -12,6 +12,7 @@ import { createHealthRouter } from './routes/health.routes';
 import { areaRouter } from './routes/area.routes';
 import { cargoRouter } from './routes/cargo.routes';
 import { funcionarioRouter } from './routes/funcionario.routes';
+import { funcionarioInternalRouter } from './routes/funcionario.internal.routes';
 
 const SERVICE_NAME = 'ms-personal';
 
@@ -38,6 +39,7 @@ export function createApp(internalRoutes: Router = Router()) {
   app.use('/areas', areaRouter);
   app.use('/cargos', cargoRouter);
   app.use('/funcionarios', funcionarioRouter);
+  app.use('/internal', funcionarioInternalRouter);
   app.use('/internal', internalRoutes);
   app.use((_req, _res, next) => {
     next(new AppError('NOT_FOUND', 'Ruta no encontrada'));

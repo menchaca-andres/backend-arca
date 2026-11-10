@@ -1,4 +1,5 @@
 import { AppError, EstadoFuncionario, MotivoAsignacion } from '@arca/shared';
+import type { FuncionarioContrato } from '@arca/shared';
 import { AppDataSource } from '../data-source';
 import { Funcionario } from '../entities/funcionario.entity';
 import { AsignacionLaboral } from '../entities/asignacion-laboral.entity';
@@ -62,14 +63,12 @@ export class FuncionarioService {
   constructor(
     private readonly funcionarioRepo: FuncionarioRepository = new FuncionarioRepository(),
     private readonly cargoRepo: CargoRepository = new CargoRepository(),
-    private readonly runTransaction: <T>(runInTransaction: (entityManager: EntityManager) => Promise<T>) => Promise<T> = (fn) =>
-      AppDataSource.transaction(fn),
+    private readonly runTransaction: <T>(
+      runInTransaction: (entityManager: EntityManager) => Promise<T>,
+    ) => Promise<T> = (fn) => AppDataSource.transaction(fn),
   ) {}
 
-  async registrar(
-    input: RegistrarFuncionarioInput,
-    userId: string,
-  ): Promise<FichaFuncionarioResponse> {
+  async registrar(input: RegistrarFuncionarioInput, userId: string): Promise<FichaFuncionarioResponse> {
     // CA-02: El CI es único. Si ya existe, se rechaza con mensaje explícito
     const ciExistente = await this.funcionarioRepo.findByCi(input.ci);
     if (ciExistente) {
@@ -207,6 +206,28 @@ export class FuncionarioService {
     };
   }
 
+  async obtenerContratoInterno(id: string): Promise<FuncionarioContrato> {
+    const data = await this.funcionarioRepo.findWithAsignacionVigente(id);
+    if (!data) throw AppError.notFound('Funcionario no encontrado');
+
+    const { funcionario, asignacionVigente } = data;
+    return {
+      id: funcionario.id,
+      usuarioId: null,
+      nombres: funcionario.nombres,
+      apellidos: funcionario.apellidos,
+      documentoIdentidad: funcionario.ci,
+      fechaIngreso: funcionario.fechaIngreso,
+      diasPrueba: funcionario.diasPrueba,
+      fechaRatificacion: funcionario.fechaRatificacion,
+      fechaBaja: funcionario.fechaBaja,
+      area: asignacionVigente?.cargo?.area?.nombre ?? '',
+      cargo: asignacionVigente?.cargo?.nombre ?? '',
+      remuneracion: { monto: asignacionVigente?.remuneracion ?? 0, moneda: 'BOB' },
+      estado: funcionario.estado,
+    };
+  }
+
   async listarResumen(): Promise<FuncionarioResumen[]> {
     const funcionarios = await this.funcionarioRepo.findAll();
     return funcionarios
@@ -220,4 +241,3 @@ export class FuncionarioService {
       }));
   }
 }
-
