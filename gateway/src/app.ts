@@ -1,110 +1,188 @@
-import express from 'express';
+import 'dotenv/config';
+import express, { type Request, type RequestHandler, type Response } from 'express';
 import cors from 'cors';
-import { createProxyMiddleware } from 'http-proxy-middleware';
-import type { Request } from 'express';
-import { AppError, HEADERS, errorHandler, healthHandler, logger, notFoundHandler, requestId } from '@arca/shared';
-import { AppDataSource } from './data-source';
+import { randomUUID } from 'node:crypto';
+import { ServerResponse } from 'node:http';
+import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
+import { AppError, createLogger, errorHandler } from '@arca/shared';
 import { jwtAuth } from './middlewares/auth.middleware';
+import { createHealthRouter } from './routes/health.routes';
 
-const SERVICE_URLS = {
-  auth: process.env.AUTH_SERVICE_URL ?? 'http://localhost:3001',
-  personal: process.env.PERSONAL_SERVICE_URL ?? 'http://localhost:3002',
-  vacaciones: process.env.VACACIONES_SERVICE_URL ?? 'http://localhost:3003',
-  contratos: process.env.CONTRATOS_SERVICE_URL ?? 'http://localhost:3004',
-  boletas: process.env.BOLETAS_SERVICE_URL ?? 'http://localhost:3005',
-} as const;
+const IDENTITY_HEADERS = ['x-user-id', 'x-user-rol', 'x-user-role', 'x-funcionario-id'];
 
-// El gateway monta el proxy en /api y Express quita ese prefijo antes de reenviar.
-// Por eso el servicio recibe /auth/login, /funcionarios, /vacaciones, etc.
-const ROUTES: ReadonlyArray<{ pattern: RegExp; target: string }> = [
-  { pattern: /^\/api\/auth(\/|$)/, target: SERVICE_URLS.auth },
-  { pattern: /^\/api\/usuarios(\/|$)/, target: SERVICE_URLS.auth },
-  { pattern: /^\/api\/funcionarios(\/|$)/, target: SERVICE_URLS.personal },
-  { pattern: /^\/api\/areas(\/|$)/, target: SERVICE_URLS.personal },
-  { pattern: /^\/api\/cargos(\/|$)/, target: SERVICE_URLS.personal },
-  { pattern: /^\/api\/vacaciones(\/|$)/, target: SERVICE_URLS.vacaciones },
-  { pattern: /^\/api\/contratos(\/|$)/, target: SERVICE_URLS.contratos },
-  { pattern: /^\/api\/plantillas(\/|$)/, target: SERVICE_URLS.contratos },
-  { pattern: /^\/api\/boletas(\/|$)/, target: SERVICE_URLS.boletas },
-  { pattern: /^\/api\/periodos(\/|$)/, target: SERVICE_URLS.boletas },
-  { pattern: /^\/api\/conceptos(\/|$)/, target: SERVICE_URLS.boletas },
-];
+const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-function targetFor(url: string | undefined): string | undefined {
-  if (!url) return undefined;
-  return ROUTES.find((route) => route.pattern.test(url))?.target;
-}
-
-function corsOrigin(): boolean | string[] {
-  const raw = process.env.CORS_ORIGIN?.trim();
-  if (!raw || raw === '*') return true;
-  return raw
-    .split(',')
-    .map((origin) => origin.trim())
-    .filter(Boolean);
-}
-
-export const app = express();
-
-app.disable('x-powered-by');
-app.use(requestId);
-app.use(cors({ origin: corsOrigin() }));
-
-// La identidad solo la puede inyectar el gateway; se descarta la del cliente.
-app.use((req, _res, next) => {
-  delete req.headers[HEADERS.userId];
-  delete req.headers[HEADERS.userRole];
-  delete req.headers[HEADERS.funcionarioId];
-  next();
-});
-
-app.use(jwtAuth());
-
-app.get('/health', healthHandler({ service: 'gateway', dataSource: AppDataSource }));
-
-// Una ruta /api que no pertenece a ningún servicio devuelve 404 con el formato común.
-app.use('/api', (req, _res, next) => {
-  if (!targetFor(req.originalUrl)) {
-    next(AppError.notFound(`No hay un servicio configurado para ${req.method} ${req.originalUrl}`));
-    return;
+const blockInternalAccess: RequestHandler = (req, _res, next) => {
+  let path = req.originalUrl.split('?')[0];
+  for (let attempt = 0; attempt < 5; attempt++) {
+    let decoded: string;
+    try {
+      decoded = decodeURIComponent(path);
+    } catch {
+      next(new AppError('VALIDATION_ERROR', 'Ruta invalida'));
+      return;
+    }
+    if (decoded === path) {
+      const segments = decoded
+        .replace(/\\/g, '/')
+        .split(/[/?#]/)
+        .map((segment) => segment.split(';')[0].toLowerCase());
+      if (segments.includes('internal')) {
+        next(new AppError('FORBIDDEN', 'Las rutas internas no estan disponibles desde el gateway'));
+        return;
+      }
+      next();
+      return;
+    }
+    path = decoded;
   }
-  next();
-});
+  next(new AppError('VALIDATION_ERROR', 'La ruta contiene demasiados niveles de codificacion'));
+};
 
-app.use(
-  '/api',
-  createProxyMiddleware({
-    target: SERVICE_URLS.personal,
-    changeOrigin: true,
-    xfwd: true,
-    proxyTimeout: 10_000,
-    timeout: 10_000,
-    router: (req) => targetFor((req as Request).originalUrl) ?? SERVICE_URLS.personal,
-    on: {
-      proxyReq: (proxyReq, _req, res) => {
-        const response = res as express.Response;
-        const id = typeof response.locals?.requestId === 'string' ? response.locals.requestId : undefined;
-        if (id) proxyReq.setHeader('x-request-id', id);
-      },
-      error: (error, req, res) => {
-        logger.error('Error en el proxy del gateway', {
-          path: (req as Request).originalUrl,
-          error,
-        });
+export function createApp() {
+  const app = express();
+  const logger = createLogger('gateway');
+  app.disable('x-powered-by');
+  const configuredOrigins = process.env.CORS_ORIGIN?.trim();
+  app.use(
+    cors({
+      origin:
+        !configuredOrigins || configuredOrigins === '*'
+          ? true
+          : configuredOrigins
+              .split(',')
+              .map((origin) => origin.trim())
+              .filter(Boolean),
+    }),
+  );
+  app.use((req, res, next) => {
+    const incoming = req.get('X-Request-Id');
+    const requestId = incoming && uuidPattern.test(incoming) ? incoming : randomUUID();
+    req.headers['x-request-id'] = requestId;
+    res.locals.requestId = requestId;
+    res.setHeader('X-Request-Id', requestId);
+    res.once('finish', () => {
+      const context = { method: req.method, statusCode: res.statusCode, requestId };
+      if (res.statusCode >= 500) logger.warn('http.response', context);
+      else logger.info('http.response', context);
+    });
+    next();
+  });
+  // Bloquear antes de los proxies y del procesamiento del body.
+  app.use(blockInternalAccess);
+  // La identidad solo la pone el gateway: se descarta la que mande el cliente y se toma del JWT.
+  app.use((req, _res, next) => {
+    for (const header of IDENTITY_HEADERS) delete req.headers[header];
+    next();
+  });
+  app.use(jwtAuth());
+  app.use(express.json());
+  app.use('/health', createHealthRouter('gateway'));
 
-        const response = res as express.Response;
-        if (response && 'writeHead' in response && !response.headersSent) {
-          response.status(503).json({
-            code: 'SERVICE_UNAVAILABLE',
-            message: 'El servicio no está disponible',
-            details: null,
-          });
-        }
-      },
+  const routes: Array<{ prefix: string; target: string; forwardedPrefix?: string }> = [
+    {
+      prefix: '/api/v1/auth',
+      target: process.env.AUTH_SERVICE_URL ?? 'http://ms-auth:3001',
+      forwardedPrefix: '/auth',
     },
-  }),
-);
+    { prefix: '/api/v1/personal', target: process.env.PERSONAL_SERVICE_URL ?? 'http://ms-personal:3002' },
+    { prefix: '/api/v1/vacaciones', target: process.env.VACACIONES_SERVICE_URL ?? 'http://ms-vacaciones:3003' },
+    { prefix: '/api/v1/contratos', target: process.env.CONTRATOS_SERVICE_URL ?? 'http://ms-contratos:3004' },
+    { prefix: '/api/v1/boletas', target: process.env.BOLETAS_SERVICE_URL ?? 'http://ms-boletas:3005' },
+    { prefix: '/api/auth', target: process.env.AUTH_SERVICE_URL ?? 'http://ms-auth:3001', forwardedPrefix: '/auth' },
+    {
+      prefix: '/api/usuarios',
+      target: process.env.AUTH_SERVICE_URL ?? 'http://ms-auth:3001',
+      forwardedPrefix: '/usuarios',
+    },
+    {
+      prefix: '/api/funcionarios',
+      target: process.env.PERSONAL_SERVICE_URL ?? 'http://ms-personal:3002',
+      forwardedPrefix: '/funcionarios',
+    },
+    {
+      prefix: '/api/areas',
+      target: process.env.PERSONAL_SERVICE_URL ?? 'http://ms-personal:3002',
+      forwardedPrefix: '/areas',
+    },
+    {
+      prefix: '/api/cargos',
+      target: process.env.PERSONAL_SERVICE_URL ?? 'http://ms-personal:3002',
+      forwardedPrefix: '/cargos',
+    },
+    {
+      prefix: '/api/vacaciones',
+      target: process.env.VACACIONES_SERVICE_URL ?? 'http://ms-vacaciones:3003',
+      forwardedPrefix: '/vacaciones',
+    },
+    {
+      prefix: '/api/contratos',
+      target: process.env.CONTRATOS_SERVICE_URL ?? 'http://ms-contratos:3004',
+      forwardedPrefix: '/contratos',
+    },
+    {
+      prefix: '/api/plantillas',
+      target: process.env.CONTRATOS_SERVICE_URL ?? 'http://ms-contratos:3004',
+      forwardedPrefix: '/plantillas',
+    },
+    {
+      prefix: '/api/boletas',
+      target: process.env.BOLETAS_SERVICE_URL ?? 'http://ms-boletas:3005',
+      forwardedPrefix: '/boletas',
+    },
+    {
+      prefix: '/api/periodos',
+      target: process.env.BOLETAS_SERVICE_URL ?? 'http://ms-boletas:3005',
+      forwardedPrefix: '/periodos',
+    },
+    {
+      prefix: '/api/conceptos',
+      target: process.env.BOLETAS_SERVICE_URL ?? 'http://ms-boletas:3005',
+      forwardedPrefix: '/conceptos',
+    },
+  ];
+  for (const { prefix, target, forwardedPrefix } of routes) {
+    app.use(
+      prefix,
+      createProxyMiddleware<Request, Response>({
+        target,
+        changeOrigin: true,
+        xfwd: true,
+        proxyTimeout: 3000,
+        // Permitir responder el 503 antes de cerrar el socket del cliente.
+        timeout: 5000,
+        pathRewrite: (_path, req) => {
+          const suffix = req.originalUrl.slice(prefix.length);
+          return forwardedPrefix ? forwardedPrefix + suffix : !suffix || suffix.startsWith('?') ? `/${suffix}` : suffix;
+        },
+        on: {
+          proxyReq: (proxyReq, req) => {
+            proxyReq.setHeader('X-Request-Id', String(req.headers['x-request-id']));
+            fixRequestBody(proxyReq, req);
+          },
+          error: (_error, req, res) => {
+            logger.warn('proxy.unavailable', { prefix, requestId: req.headers['x-request-id'] });
+            if (!(res instanceof ServerResponse)) {
+              res.destroy();
+              return;
+            }
+            if (res.headersSent) {
+              res.destroy();
+              return;
+            }
+            const error = new AppError('SERVICE_UNAVAILABLE', 'El servicio de destino no esta disponible');
+            res.writeHead(error.statusCode, { 'Content-Type': 'application/json; charset=utf-8' });
+            res.end(JSON.stringify(error.toResponse()));
+          },
+        },
+      }),
+    );
+  }
+  app.use((_req, _res, next) => {
+    next(new AppError('NOT_FOUND', 'Ruta no encontrada'));
+  });
+  app.use(errorHandler);
+  return app;
+}
 
-app.use(express.json());
-app.use(notFoundHandler);
-app.use(errorHandler);
+export const app = createApp();

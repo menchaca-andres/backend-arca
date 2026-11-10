@@ -4,7 +4,7 @@ const { Client } = require('pg');
 const SCHEMAS = ['autenticacion', 'personal', 'vacaciones', 'contratos', 'boletas', 'auditoria'];
 
 async function main() {
-  const connectionString = process.env.DATABASE_URL ?? 'postgres://postgres:dev@localhost:5433/arca';
+  const connectionString = process.env.DATABASE_URL ?? 'postgres://postgres:postgres@localhost:5433/arca';
   const client = new Client({ connectionString });
 
   await client.connect();

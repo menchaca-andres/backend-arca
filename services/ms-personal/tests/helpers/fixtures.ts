@@ -5,6 +5,7 @@ import { AsignacionLaboral } from '../../src/entities/asignacion-laboral.entity'
 import { Cargo } from '../../src/entities/cargo.entity';
 import { Funcionario } from '../../src/entities/funcionario.entity';
 import { AreaRepository } from '../../src/repositories/area.repository';
+import { AsignacionLaboralRepository } from '../../src/repositories/asignacion-laboral.repository';
 import { CargoRepository } from '../../src/repositories/cargo.repository';
 import { FuncionarioRepository } from '../../src/repositories/funcionario.repository';
 import { limpiar, unico } from './db';
@@ -46,7 +47,11 @@ export async function crearArea() {
 
 export async function crearCargo() {
   const area = await crearArea();
-  const cargo = await new CargoRepository().save(nuevoCargo(area.id));
+  return crearCargoEnArea(area.id);
+}
+
+export async function crearCargoEnArea(areaId: string) {
+  const cargo = await new CargoRepository().save(nuevoCargo(areaId));
   limpiar(Cargo, { id: cargo.id });
   return cargo;
 }
@@ -55,4 +60,10 @@ export async function crearFuncionario() {
   const funcionario = await new FuncionarioRepository().save(nuevoFuncionario());
   limpiar(Funcionario, { id: funcionario.id });
   return funcionario;
+}
+
+export async function crearAsignacion(funcionarioId: string, cargoId: string, datos: Partial<AsignacionLaboral> = {}) {
+  const asignacion = await new AsignacionLaboralRepository().save(nuevaAsignacion(funcionarioId, cargoId, datos));
+  limpiar(AsignacionLaboral, { id: asignacion.id });
+  return asignacion;
 }

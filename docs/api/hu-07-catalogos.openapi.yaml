@@ -1,0 +1,255 @@
+openapi: 3.0.3
+info:
+  title: API pública – Áreas y Cargos (HU-07)
+  version: 0.1.0
+  description: |
+    Catálogos maestros de áreas y cargos expuestos por el API Gateway.
+    Las mismas rutas están disponibles sin el prefijo v1 (`/api/areas`, `/api/cargos`)
+    para mantener compatibilidad con el frontend existente.
+    Solo ADMIN y RRHH pueden operar estos catálogos.
+servers:
+  - url: http://localhost:8080
+    description: API Gateway (desarrollo)
+security:
+  - BearerAuth: []
+paths:
+  /api/v1/personal/areas:
+    get:
+      tags: [personal]
+      summary: Lista áreas
+      parameters:
+        - in: query
+          name: incluirInactivos
+          schema: { type: boolean, default: false }
+          description: Si es true, incluye áreas inactivas (catálogo administrativo).
+      responses:
+        '200':
+          description: Áreas ordenadas por código
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Area' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [personal]
+      summary: Crea un área
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AreaInput' }
+      responses:
+        '201':
+          description: Área creada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Area' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /api/v1/personal/areas/{id}:
+    patch:
+      tags: [personal]
+      summary: Edita o activa/desactiva un área
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AreaUpdate' }
+      responses:
+        '200':
+          description: Área actualizada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Area' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /api/v1/personal/cargos:
+    get:
+      tags: [personal]
+      summary: Lista cargos
+      parameters:
+        - in: query
+          name: incluirInactivos
+          schema: { type: boolean, default: false }
+          description: Si es true, incluye cargos inactivos y de áreas inactivas.
+        - in: query
+          name: areaId
+          schema: { type: string, format: uuid }
+          description: Filtra los cargos por área.
+      responses:
+        '200':
+          description: Cargos ordenados por área y nombre
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Cargo' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [personal]
+      summary: Crea un cargo dentro de un área activa
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CargoInput' }
+      responses:
+        '201':
+          description: Cargo creado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Cargo' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+  /api/v1/personal/cargos/{id}:
+    patch:
+      tags: [personal]
+      summary: Edita, activa o desactiva un cargo
+      description: El área del cargo no se puede cambiar.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CargoUpdate' }
+      responses:
+        '200':
+          description: Cargo actualizado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Cargo' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Area:
+      type: object
+      required: [id, codigo, nombre, activo]
+      properties:
+        id: { type: string, format: uuid }
+        codigo: { type: string, maxLength: 20, example: ADM }
+        nombre: { type: string, maxLength: 100, example: Administración }
+        activo: { type: boolean }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    AreaInput:
+      type: object
+      additionalProperties: false
+      required: [codigo, nombre]
+      properties:
+        codigo:
+          type: string
+          minLength: 1
+          maxLength: 20
+          description: Se normaliza a mayúsculas.
+          example: adm
+        nombre: { type: string, minLength: 1, maxLength: 100, example: Administración }
+    AreaUpdate:
+      type: object
+      additionalProperties: false
+      properties:
+        codigo: { type: string, minLength: 1, maxLength: 20 }
+        nombre: { type: string, minLength: 1, maxLength: 100 }
+        activo:
+          type: boolean
+          description: No se puede desactivar un área con asignaciones vigentes.
+    Cargo:
+      type: object
+      required: [id, areaId, nombre, salarioMin, salarioMax, activo]
+      properties:
+        id: { type: string, format: uuid }
+        areaId: { type: string, format: uuid }
+        area: { $ref: '#/components/schemas/Area' }
+        nombre: { type: string, maxLength: 100, example: Analista de Sistemas }
+        salarioMin: { type: number, format: double, minimum: 0.01, example: 6500 }
+        salarioMax: { type: number, format: double, minimum: 0.01, example: 12000 }
+        activo: { type: boolean }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    CargoInput:
+      type: object
+      additionalProperties: false
+      required: [areaId, nombre, salarioMin, salarioMax]
+      properties:
+        areaId: { type: string, format: uuid }
+        nombre: { type: string, minLength: 1, maxLength: 100 }
+        salarioMin: { type: number, format: double, minimum: 0.01 }
+        salarioMax: { type: number, format: double, minimum: 0.01 }
+    CargoUpdate:
+      type: object
+      additionalProperties: false
+      properties:
+        nombre: { type: string, minLength: 1, maxLength: 100 }
+        salarioMin: { type: number, format: double, minimum: 0.01 }
+        salarioMax: { type: number, format: double, minimum: 0.01 }
+        activo:
+          type: boolean
+          description: No se puede desactivar un cargo con asignaciones vigentes.
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code: { type: string, example: CONFLICT }
+        message: { type: string }
+        details:
+          nullable: true
+          oneOf:
+            - type: object
+              additionalProperties: true
+            - type: array
+              items: {}
+  responses:
+    ValidationError:
+      description: Datos inválidos (code VALIDATION_ERROR)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Unauthorized:
+      description: Sin token o token inválido (code UNAUTHORIZED)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Forbidden:
+      description: El rol no tiene permiso (code FORBIDDEN)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NotFound:
+      description: Área o cargo inexistente (code NOT_FOUND)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Conflict:
+      description: Duplicado o desactivación bloqueada por asignaciones vigentes (code CONFLICT)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }

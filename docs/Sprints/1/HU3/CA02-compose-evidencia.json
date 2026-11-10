@@ -1,0 +1,194 @@
+{
+  "checkedAt": "2026-11-02T23:43:46.772Z",
+  "criterion": "CA-02",
+  "composeFiles": [
+    "docker-compose.yml",
+    "docker-compose.supabase.yml"
+  ],
+  "build": {
+    "frontendContext": "../frontend-arca",
+    "dockerfile": "Dockerfile",
+    "exitCode": 0,
+    "frontendCommit": "4154c9f686ed565029087be111b1b7a68823ebe5",
+    "frontendRepositoryUnmodified": true
+  },
+  "startup": {
+    "command": "docker compose --env-file .env.supabase.runtime -f docker-compose.yml -f docker-compose.supabase.yml up -d --no-build --wait --wait-timeout 120",
+    "exitCode": 0,
+    "serviceCount": 9,
+    "services": [
+      {
+        "service": "db",
+        "container": "backend-arca-db-1",
+        "running": true,
+        "health": "healthy",
+        "ports": [
+          {
+            "port": "5432/tcp",
+            "bindings": [
+              {
+                "HostIp": "0.0.0.0",
+                "HostPort": "5433"
+              },
+              {
+                "HostIp": "::",
+                "HostPort": "5433"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "service": "frontend",
+        "container": "backend-arca-frontend-1",
+        "running": true,
+        "health": "healthy",
+        "ports": [
+          {
+            "port": "80/tcp",
+            "bindings": [
+              {
+                "HostIp": "127.0.0.1",
+                "HostPort": "5174"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "service": "gateway",
+        "container": "backend-arca-gateway-1",
+        "running": true,
+        "health": "healthy",
+        "ports": [
+          {
+            "port": "8080/tcp",
+            "bindings": [
+              {
+                "HostIp": "0.0.0.0",
+                "HostPort": "8080"
+              },
+              {
+                "HostIp": "::",
+                "HostPort": "8080"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "service": "gotenberg",
+        "container": "backend-arca-gotenberg-1",
+        "running": true,
+        "health": "healthy",
+        "ports": [
+          {
+            "port": "3000/tcp",
+            "bindings": null
+          }
+        ]
+      },
+      {
+        "service": "ms-auth",
+        "container": "backend-arca-ms-auth-1",
+        "running": true,
+        "health": "healthy",
+        "ports": [
+          {
+            "port": "3001/tcp",
+            "bindings": null
+          }
+        ]
+      },
+      {
+        "service": "ms-boletas",
+        "container": "backend-arca-ms-boletas-1",
+        "running": true,
+        "health": "healthy",
+        "ports": [
+          {
+            "port": "3005/tcp",
+            "bindings": null
+          }
+        ]
+      },
+      {
+        "service": "ms-contratos",
+        "container": "backend-arca-ms-contratos-1",
+        "running": true,
+        "health": "healthy",
+        "ports": [
+          {
+            "port": "3004/tcp",
+            "bindings": null
+          }
+        ]
+      },
+      {
+        "service": "ms-personal",
+        "container": "backend-arca-ms-personal-1",
+        "running": true,
+        "health": "healthy",
+        "ports": [
+          {
+            "port": "3002/tcp",
+            "bindings": null
+          }
+        ]
+      },
+      {
+        "service": "ms-vacaciones",
+        "container": "backend-arca-ms-vacaciones-1",
+        "running": true,
+        "health": "healthy",
+        "ports": [
+          {
+            "port": "3003/tcp",
+            "bindings": null
+          }
+        ]
+      }
+    ]
+  },
+  "frontend": {
+    "url": "http://localhost:5174/",
+    "status": 200,
+    "assets": [
+      {
+        "path": "/assets/index-CxviVM9_.js",
+        "status": 200
+      },
+      {
+        "path": "/assets/index-Ch9eZn3x.css",
+        "status": 200
+      }
+    ],
+    "browserHeading": "ARCA – Gestión Humana",
+    "screenshot": "CA02-frontend.png"
+  },
+  "gatewayConnectivity": {
+    "fromFrontendContainer": {
+      "url": "http://gateway:8080/health",
+      "exitCode": 0,
+      "body": {
+        "service": "gateway",
+        "status": "OK"
+      }
+    },
+    "cors": {
+      "origin": "http://localhost:5174",
+      "status": 200,
+      "allowOrigin": "*",
+      "body": {
+        "service": "gateway",
+        "status": "OK"
+      }
+    }
+  },
+  "scope": "Arranque y conectividad de infraestructura. El frontend es una plantilla; App.tsx no invoca ApiService.health ni implementa flujos de negocio. No se afirma una prueba E2E de negocio.",
+  "smokeTest": {
+    "command": "bash scripts/smoke-test.sh",
+    "exitCode": 0,
+    "output": "OK: http://localhost:8080/health respondio 200 OK."
+  }
+}

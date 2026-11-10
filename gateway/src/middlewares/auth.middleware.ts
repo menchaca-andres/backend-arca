@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import { AppError, HEADERS, requireEnv } from '@arca/shared';
 import type { JwtPayload as ArcaJwtPayload } from '@arca/shared';
 
-const RUTA_PUBLICA = '/api/auth/login';
+const RUTAS_PUBLICAS = ['/api/auth/login', '/api/v1/auth/login'];
 
 /**
  * Valida el JWT en todas las rutas /api salvo el login (HU-05 CA-06) y deja
@@ -16,7 +16,7 @@ export function jwtAuth(): RequestHandler {
   return (req, _res, next) => {
     const path = req.path.replace(/\/+$/, '');
 
-    if (!path.startsWith('/api') || path === RUTA_PUBLICA) {
+    if (!path.startsWith('/api') || RUTAS_PUBLICAS.includes(path)) {
       next();
       return;
     }

@@ -1,15 +1,41 @@
 import { AppDataSource } from '../data-source';
 import { Cargo } from '../entities/cargo.entity';
 
+export interface CargoListOptions {
+  includeInactive?: boolean;
+  areaId?: string;
+}
+
 export class CargoRepository {
   private repo = AppDataSource.getRepository(Cargo);
 
   findById(id: string) {
-    return this.repo.findOneBy({ id });
+    return this.repo.findOne({ where: { id }, relations: { area: true } });
   }
 
-  findAll() {
-    return this.repo.find();
+  findAll(options: CargoListOptions = {}) {
+    const query = this.repo
+      .createQueryBuilder('cargo')
+      .innerJoinAndSelect('cargo.area', 'area')
+      .orderBy('area.codigo', 'ASC')
+      .addOrderBy('cargo.nombre', 'ASC');
+
+    if (!options.includeInactive) {
+      query.andWhere('cargo.activo = true').andWhere('area.activo = true');
+    }
+    if (options.areaId) {
+      query.andWhere('cargo.areaId = :areaId', { areaId: options.areaId });
+    }
+
+    return query.getMany();
+  }
+
+  findByAreaAndNombre(areaId: string, nombre: string) {
+    return this.repo
+      .createQueryBuilder('cargo')
+      .where('cargo.areaId = :areaId', { areaId })
+      .andWhere('LOWER(cargo.nombre) = LOWER(:nombre)', { nombre })
+      .getOne();
   }
 
   save(entity: Cargo) {

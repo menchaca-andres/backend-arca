@@ -6,6 +6,7 @@ RUN npm ci --workspace=@arca/shared --workspace=ms-boletas --include-workspace-r
 RUN npm run build --workspace=@arca/shared --workspace=ms-boletas
 
 FROM node:22-alpine AS runner
+RUN apk add --no-cache curl
 WORKDIR /app
 ENV NODE_ENV=production
 COPY . .

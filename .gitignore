@@ -147,3 +147,10 @@ vite.config.ts.timestamp-*
 
 # Turbo Repo
 .turbo
+
+# Credenciales de Supabase: nunca se suben, aunque no empiecen con punto
+*supabase*.runtime
+*supabase*.crt
+*.crt
+*.pem
+env.supabase*

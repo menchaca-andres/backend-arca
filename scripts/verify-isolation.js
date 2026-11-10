@@ -5,21 +5,30 @@
 const { Client } = require('pg');
 
 const CASES = [
-  { role: 'arca_auth', env: 'ARCA_AUTH_URL', own: 'autenticacion.usuario', forbidden: 'personal.funcionario' },
-  { role: 'arca_personal', env: 'ARCA_PERSONAL_URL', own: 'personal.funcionario', forbidden: 'autenticacion.usuario' },
-  { role: 'arca_vacaciones', env: 'ARCA_VACACIONES_URL', own: 'vacaciones.feriado', forbidden: 'contratos.contrato' },
-  { role: 'arca_contratos', env: 'ARCA_CONTRATOS_URL', own: 'contratos.contrato', forbidden: 'boletas.boleta' },
+  { role: 'auth', env: 'ARCA_AUTH_URL', own: 'autenticacion.usuario', forbidden: 'personal.funcionario' },
+  { role: 'personal', env: 'ARCA_PERSONAL_URL', own: 'personal.funcionario', forbidden: 'autenticacion.usuario' },
+  { role: 'vacaciones', env: 'ARCA_VACACIONES_URL', own: 'vacaciones.feriado', forbidden: 'contratos.contrato' },
+  { role: 'contratos', env: 'ARCA_CONTRATOS_URL', own: 'contratos.contrato', forbidden: 'boletas.boleta' },
   {
-    role: 'arca_boletas',
+    role: 'boletas',
     env: 'ARCA_BOLETAS_URL',
     own: 'boletas.concepto',
     forbidden: 'vacaciones.solicitud_vacacion',
   },
-  { role: 'arca_auditoria', env: 'ARCA_AUDITORIA_URL', own: 'auditoria.evento', forbidden: 'personal.funcionario' },
+  { role: 'auditoria', env: 'ARCA_AUDITORIA_URL', own: 'auditoria.evento', forbidden: 'personal.funcionario' },
 ];
 
+const LOCAL_URLS = {
+  ARCA_AUTH_URL: 'postgres://user_auth:arca_local_auth_2026@localhost:5433/arca',
+  ARCA_PERSONAL_URL: 'postgres://user_personal:arca_local_personal_2026@localhost:5433/arca',
+  ARCA_VACACIONES_URL: 'postgres://user_vacaciones:arca_local_vacaciones_2026@localhost:5433/arca',
+  ARCA_CONTRATOS_URL: 'postgres://user_contratos:arca_local_contratos_2026@localhost:5433/arca',
+  ARCA_BOLETAS_URL: 'postgres://user_boletas:arca_local_boletas_2026@localhost:5433/arca',
+  ARCA_AUDITORIA_URL: 'postgres://user_gateway:arca_local_gateway_2026@localhost:5433/arca',
+};
+
 async function checkCase(testCase) {
-  const url = process.env[testCase.env];
+  const url = process.env[testCase.env] ?? LOCAL_URLS[testCase.env];
   if (!url) {
     console.log(`[skip] ${testCase.role}: falta ${testCase.env}`);
     return true;

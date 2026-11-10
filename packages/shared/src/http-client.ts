@@ -1,184 +1,93 @@
-import { AppError } from './errors';
-import { logger } from './logger';
+import { AppError, type ErrorCode, errorStatus } from './errors';
 
-type QueryValue = string | number | boolean | undefined;
+export const HTTP_TIMEOUT_MS = 3000;
+export const HTTP_RETRIES = 1;
 
-export interface InternalClientOptions {
+export interface HttpClientOptions {
   baseUrl: string;
-  apiKey: string;
+  internalApiKey: string;
   timeoutMs?: number;
-  /** Reintentos solo para GET (las escrituras no se reintentan solas). */
-  retries?: number;
 }
 
-interface ErrorPayload {
-  code?: unknown;
-  message?: unknown;
-  details?: unknown;
+export interface HttpRequestOptions {
+  method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+  body?: unknown;
+  headers?: Record<string, string>;
 }
 
-/**
- * Cliente HTTP para las rutas /internal/* entre microservicios.
- * - Envía X-Internal-Key.
- * - Timeout configurable (3 s por defecto).
- * - Un reintento por defecto, solo en GET.
- * - Traduce errores al formato común del proyecto.
- */
-export class InternalClient {
-  private readonly baseUrl: string;
-  private readonly apiKey: string;
+// El cliente se limita al origen configurado para no filtrar la clave a otros hosts.
+// El reintento tambien aplica a escrituras: quien las invoque debe garantizar idempotencia.
+export class HttpClient {
+  private readonly baseUrl: URL;
   private readonly timeoutMs: number;
-  private readonly retries: number;
 
-  constructor(options: InternalClientOptions) {
-    if (!options.baseUrl) throw new Error('InternalClient: baseUrl es obligatorio');
-    if (!options.apiKey) throw new Error('InternalClient: apiKey es obligatorio');
-
-    this.baseUrl = options.baseUrl.replace(/\/+$/, '');
-    this.apiKey = options.apiKey;
-    this.timeoutMs = options.timeoutMs ?? 3_000;
-    this.retries = options.retries ?? 1;
+  constructor(private readonly options: HttpClientOptions) {
+    this.baseUrl = new URL(options.baseUrl);
+    if (!['http:', 'https:'].includes(this.baseUrl.protocol) || this.baseUrl.username || this.baseUrl.password) {
+      throw new Error('baseUrl debe ser una URL HTTP sin credenciales');
+    }
+    if (!options.internalApiKey.trim()) throw new Error('INTERNAL_API_KEY debe estar configurada');
+    this.timeoutMs = options.timeoutMs ?? HTTP_TIMEOUT_MS;
+    if (!Number.isFinite(this.timeoutMs) || this.timeoutMs <= 0) throw new Error('timeoutMs debe ser positivo');
   }
 
-  get<T>(path: string, query?: Record<string, QueryValue>): Promise<T> {
-    return this.request<T>('GET', path, undefined, query);
-  }
+  async request<T>(path: string, options: HttpRequestOptions = {}): Promise<T> {
+    const url = new URL(path, this.baseUrl);
+    if (url.origin !== this.baseUrl.origin || url.username || url.password) {
+      throw new Error('La ruta debe pertenecer al origen configurado');
+    }
+    const headers = new Headers(options.headers);
+    headers.set('X-Internal-Key', this.options.internalApiKey);
+    headers.set('Accept', 'application/json');
+    const body = options.body === undefined ? undefined : JSON.stringify(options.body);
+    if (body !== undefined) headers.set('Content-Type', 'application/json');
 
-  post<T>(path: string, body: unknown): Promise<T> {
-    return this.request<T>('POST', path, body);
-  }
-
-  patch<T>(path: string, body: unknown): Promise<T> {
-    return this.request<T>('PATCH', path, body);
-  }
-
-  private async request<T>(
-    method: 'GET' | 'POST' | 'PATCH',
-    path: string,
-    body?: unknown,
-    query?: Record<string, QueryValue>,
-  ): Promise<T> {
-    const maxAttempts = method === 'GET' ? this.retries + 1 : 1;
-    let lastError: unknown;
-
-    for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    for (let attempt = 0; attempt <= HTTP_RETRIES; attempt++) {
+      const controller = new AbortController();
+      // El timeout incluye la lectura del cuerpo, no solo recibir las cabeceras.
+      const timer = setTimeout(() => controller.abort(), this.timeoutMs);
       try {
-        return await this.execute<T>(method, path, body, query);
+        const response = await fetch(url, {
+          method: options.method ?? 'GET',
+          headers,
+          body,
+          signal: controller.signal,
+          redirect: 'error',
+        });
+        if ([502, 503, 504].includes(response.status)) {
+          await response.body?.cancel();
+          if (attempt < HTTP_RETRIES) continue;
+          throw new AppError('SERVICE_UNAVAILABLE', 'El servicio remoto no esta disponible');
+        }
+        const text = await response.text();
+        let data: unknown;
+        try {
+          data = text ? JSON.parse(text) : undefined;
+        } catch {
+          throw new AppError('SERVICE_UNAVAILABLE', 'Respuesta invalida del servicio remoto');
+        }
+        if (!response.ok) {
+          // Conservar solo codigos comunes cuyo estado coincida. Nunca reflejar texto remoto.
+          const code = typeof data === 'object' && data !== null && 'code' in data ? data.code : undefined;
+          if (
+            typeof code === 'string' &&
+            Object.hasOwn(errorStatus, code) &&
+            errorStatus[code as ErrorCode] === response.status
+          ) {
+            throw new AppError(code as ErrorCode, 'El servicio remoto rechazo la solicitud');
+          }
+          throw new AppError('SERVICE_UNAVAILABLE', 'Respuesta inesperada del servicio remoto');
+        }
+        return data as T;
       } catch (error) {
-        lastError = error;
-        const retriable = error instanceof AppError ? error.status >= 500 : true;
-
-        if (attempt === maxAttempts || !retriable) throw error;
-
-        logger.warn('Reintentando llamada interna', {
-          method,
-          path,
-          attempt,
-          error: error instanceof Error ? error.message : String(error),
-        });
-        await new Promise((resolve) => setTimeout(resolve, 200 * attempt));
+        if (error instanceof AppError) throw error;
+        if (attempt === HTTP_RETRIES) {
+          throw new AppError('SERVICE_UNAVAILABLE', 'El servicio remoto no esta disponible');
+        }
+      } finally {
+        clearTimeout(timer);
       }
     }
-
-    throw lastError;
-  }
-
-  private async execute<T>(
-    method: 'GET' | 'POST' | 'PATCH',
-    path: string,
-    body?: unknown,
-    query?: Record<string, QueryValue>,
-  ): Promise<T> {
-    const url = this.buildUrl(path, query);
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), this.timeoutMs);
-
-    try {
-      const response = await fetch(url, {
-        method,
-        headers: this.headers(body !== undefined),
-        body: body === undefined ? undefined : JSON.stringify(body),
-        signal: controller.signal,
-      });
-
-      if (!response.ok) {
-        const payload = (await response.json().catch(() => null)) as ErrorPayload | null;
-        const { code, message, details } = this.parseError(payload, response.status);
-        throw new AppError(code, message, response.status, details);
-      }
-
-      if (response.status === 204) return undefined as T;
-      return (await response.json()) as T;
-    } catch (error) {
-      if (error instanceof AppError) throw error;
-
-      if (error instanceof Error && error.name === 'AbortError') {
-        throw AppError.serviceUnavailable(`El servicio interno no respondió en ${this.timeoutMs} ms`, {
-          method,
-          path,
-        });
-      }
-
-      throw AppError.serviceUnavailable('No se pudo contactar al servicio interno', {
-        method,
-        path,
-        cause: error instanceof Error ? error.message : String(error),
-      });
-    } finally {
-      clearTimeout(timer);
-    }
-  }
-
-  private buildUrl(path: string, query?: Record<string, QueryValue>): string {
-    const normalizedPath = path.startsWith('/') ? path : `/${path}`;
-    const url = new URL(`${this.baseUrl}${normalizedPath}`);
-
-    for (const [key, value] of Object.entries(query ?? {})) {
-      if (value !== undefined) url.searchParams.set(key, String(value));
-    }
-
-    return url.toString();
-  }
-
-  private headers(hasBody: boolean): Record<string, string> {
-    const headers: Record<string, string> = {
-      Accept: 'application/json',
-      'X-Internal-Key': this.apiKey,
-    };
-    if (hasBody) headers['Content-Type'] = 'application/json';
-    return headers;
-  }
-
-  private parseError(
-    payload: ErrorPayload | null,
-    status: number,
-  ): {
-    code: string;
-    message: string;
-    details: unknown;
-  } {
-    if (payload && typeof payload === 'object') {
-      return {
-        code: typeof payload.code === 'string' ? payload.code : this.fallbackCode(status),
-        message: typeof payload.message === 'string' ? payload.message : 'Error del servicio interno',
-        details: payload.details ?? null,
-      };
-    }
-
-    return {
-      code: this.fallbackCode(status),
-      message: 'Error del servicio interno',
-      details: null,
-    };
-  }
-
-  private fallbackCode(status: number): string {
-    if (status === 400) return 'VALIDATION_ERROR';
-    if (status === 401) return 'UNAUTHORIZED';
-    if (status === 403) return 'FORBIDDEN';
-    if (status === 404) return 'NOT_FOUND';
-    if (status === 409) return 'CONFLICT';
-    if (status >= 500) return 'SERVICE_UNAVAILABLE';
-    return 'INTERNAL_ERROR';
+    throw new AppError('SERVICE_UNAVAILABLE', 'El servicio remoto no esta disponible');
   }
 }
