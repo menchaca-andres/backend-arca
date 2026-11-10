@@ -4,8 +4,13 @@ import { Funcionario } from '../entities/funcionario.entity';
 import { AsignacionLaboral } from '../entities/asignacion-laboral.entity';
 
 export class FuncionarioRepository {
-  private repo = AppDataSource.getRepository(Funcionario);
-  private asignacionRepo = AppDataSource.getRepository(AsignacionLaboral);
+  private get repo() {
+    return AppDataSource.getRepository(Funcionario);
+  }
+
+  private get asignacionRepo() {
+    return AppDataSource.getRepository(AsignacionLaboral);
+  }
 
   findById(id: string) {
     return this.repo.findOneBy({ id });

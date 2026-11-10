@@ -1,0 +1,230 @@
+openapi: 3.0.3
+info:
+  title: API ms-personal – HU-11 Ratificar funcionario y HU-12 Dar de baja funcionario
+  version: 1.0.0
+  description: |
+    Contratos para ratificación y desvinculación laboral de funcionarios en ARCA Ltda.
+    - HU-11: Ratificación al concluir el periodo de prueba.
+    - HU-12: Baja lógica, cierre de asignación vigente y desactivación de cuenta de usuario en ms-auth.
+servers:
+  - url: http://localhost:8080/api/v1/personal
+    description: A través del API Gateway
+  - url: http://ms-personal:3002
+    description: Acceso directo interno (Docker)
+
+paths:
+  /funcionarios/{id}/ratificacion:
+    post:
+      tags: [ms-personal - HU-11]
+      summary: Ratificar a un funcionario que superó su periodo de prueba
+      description: |
+        Solo se puede ratificar a un funcionario en estado EN_PRUEBA cuando hayan concluido sus días de prueba (CA-01, CA-02).
+        Al ratificar pasa a RATIFICADO y se registra fechaRatificacion (CA-03).
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fechaRatificacion:
+                  type: string
+                  format: date
+                  example: "2026-11-09"
+                  description: "Opcional. Por defecto la fecha actual."
+      responses:
+        "200":
+          description: Funcionario ratificado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FichaFuncionario"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /funcionarios/prueba-por-vencer:
+    get:
+      tags: [ms-personal - HU-11]
+      summary: Lista funcionarios cuyo periodo de prueba termina en los próximos 7 días (CA-04)
+      description: |
+        Retorna la lista de funcionarios en estado EN_PRUEBA cuyo periodo de prueba concluye en los próximos 7 días,
+        o que ya ha concluido y están pendientes de ratificación.
+      parameters:
+        - name: dias
+          in: query
+          required: false
+          schema: { type: integer, default: 7 }
+        - name: fecha
+          in: query
+          required: false
+          schema: { type: string, format: date }
+          description: "Fecha de referencia para el cálculo (por defecto hoy)."
+      responses:
+        "200":
+          description: Lista de funcionarios con periodo de prueba por vencer
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PruebaPorVencerItem"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /funcionarios/{id}/baja:
+    post:
+      tags: [ms-personal - HU-12]
+      summary: Dar de baja a un funcionario indicando fecha y motivo
+      description: |
+        Aplica baja lógica (estado BAJA), cierra la asignación laboral vigente y desactiva la cuenta de usuario en ms-auth (CA-01 al CA-05).
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [fechaBaja, motivoBaja]
+              properties:
+                fechaBaja:
+                  type: string
+                  format: date
+                  example: "2026-11-09"
+                motivoBaja:
+                  type: string
+                  enum: [RENUNCIA, DESPIDO, FIN_CONTRATO, NO_RATIFICADO, OTRO]
+                  example: "RENUNCIA"
+                detalleBaja:
+                  type: string
+                  maxLength: 300
+                  description: "Obligatorio si motivoBaja es OTRO; opcional en los demás casos."
+      responses:
+        "200":
+          description: Funcionario dado de baja exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FichaFuncionario"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /funcionarios:
+    get:
+      tags: [ms-personal]
+      summary: Listado de padrón de funcionarios con filtro de estado (CA-07)
+      parameters:
+        - name: estado
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [EN_PRUEBA, RATIFICADO, BAJA, TODOS]
+            description: "Permite filtrar por estado. Con BAJA muestra funcionarios desvinculados."
+      responses:
+        "200":
+          description: Lista resumen de funcionarios
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FuncionarioResumen"
+
+components:
+  schemas:
+    FichaFuncionario:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        ci: { type: string }
+        ciExpedido: { type: string }
+        nombres: { type: string }
+        apellidos: { type: string }
+        estado: { type: string, enum: [EN_PRUEBA, RATIFICADO, BAJA] }
+        fechaIngreso: { type: string, format: date }
+        diasPrueba: { type: integer }
+        fechaRatificacion: { type: string, format: date, nullable: true }
+        fechaBaja: { type: string, format: date, nullable: true }
+        motivoBaja: { type: string, nullable: true }
+        detalleBaja: { type: string, nullable: true }
+        asignacionVigente:
+          type: object
+          nullable: true
+          properties:
+            id: { type: string, format: uuid }
+            cargoNombre: { type: string }
+            areaNombre: { type: string }
+            remuneracion: { type: number }
+            vigenteDesde: { type: string, format: date }
+            vigenteHasta: { type: string, format: date, nullable: true }
+            motivo: { type: string }
+
+    FuncionarioResumen:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        ci: { type: string }
+        ciExpedido: { type: string }
+        nombreCompleto: { type: string }
+        estado: { type: string, enum: [EN_PRUEBA, RATIFICADO, BAJA] }
+
+    PruebaPorVencerItem:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        ci: { type: string }
+        ciExpedido: { type: string }
+        nombreCompleto: { type: string }
+        estado: { type: string }
+        fechaIngreso: { type: string, format: date }
+        diasPrueba: { type: integer }
+        fechaFinPrueba: { type: string, format: date }
+        diasRestantes: { type: integer }
+        listoParaRatificar: { type: boolean }
+
+  responses:
+    ValidationError:
+      description: Error de validación de entrada
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code: { type: string, example: "VALIDATION_ERROR" }
+              message: { type: string }
+              details: { type: object }
+    Forbidden:
+      description: Acceso no autorizado para el rol
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code: { type: string, example: "FORBIDDEN" }
+              message: { type: string }
+    NotFound:
+      description: Recurso no encontrado
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code: { type: string, example: "NOT_FOUND" }
+              message: { type: string }
