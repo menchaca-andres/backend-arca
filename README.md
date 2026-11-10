@@ -1,5 +1,7 @@
 # backend-arca
 
+HU-20: [conceptos y novedades de planilla](docs/HU-20-IMPLEMENTACION.md), [OpenAPI](docs/api/hu-20-conceptos.openapi.yaml). El frontend hermano incorpora `/boletas/conceptos` y `/boletas/novedades` para RRHH. La semilla de ms-boletas forma parte de db:seed e init local; no ejecutarla sobre la base compartida sin revisar su impacto.
+
 Backend del Sistema de Gestión Humana de ARCA Ltda. Implementado con Node.js, TypeScript, Express, TypeORM y PostgreSQL.
 
 ## Arquitectura

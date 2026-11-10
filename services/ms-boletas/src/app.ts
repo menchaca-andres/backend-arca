@@ -9,6 +9,7 @@ import {
   requireInternalKey as internalKeyMiddleware,
 } from '@arca/shared';
 import { createHealthRouter } from './routes/health.routes';
+import { createConfiguracionRouter } from './routes/configuracion.routes';
 
 const SERVICE_NAME = 'ms-boletas';
 
@@ -33,6 +34,7 @@ export function createApp(internalRoutes: Router = Router()) {
   app.use(express.json());
   app.use('/health', createHealthRouter(SERVICE_NAME));
   app.use('/internal', internalRoutes);
+  app.use(createConfiguracionRouter());
   app.use((_req, _res, next) => {
     next(new AppError('NOT_FOUND', 'Ruta no encontrada'));
   });

@@ -1,0 +1,17 @@
+# Revision local de HU-20; volumen y contenedores propios por nombre de proyecto.
+name: arca-hu20-review
+services:
+  db:
+    ports: !override
+      - "127.0.0.1:54120:5432"
+  gateway:
+    ports: !override
+      - "127.0.0.1:58120:8080"
+    environment:
+      CORS_ORIGIN: http://127.0.0.1:55120,http://localhost:55120
+  frontend:
+    build:
+      args:
+        VITE_API_URL: http://127.0.0.1:58120
+    ports: !override
+      - "127.0.0.1:55120:80"
