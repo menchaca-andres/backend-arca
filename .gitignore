@@ -154,3 +154,7 @@ vite.config.ts.timestamp-*
 *.crt
 *.pem
 env.supabase*
+
+# Transcripts locales de pruebas y arranque (no publicar)
+docs/HU-20-validacion-local.txt
+docs/HU-20-arranque-completo.txt

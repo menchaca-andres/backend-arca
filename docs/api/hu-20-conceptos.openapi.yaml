@@ -1,0 +1,1143 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "ARCA HU-20 Conceptos y novedades",
+    "version": "1.0.0",
+    "description": "Acceso exclusivo RRHH. El gateway valida JWT; no se aceptan cabeceras de identidad del navegador. Monto fijo >0 con base null; porcentaje 0..100 con base obligatoria. Haber básico es SISTEMA y está protegido. No implementa HU-21 ni emite boletas."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080/api/v1/boletas"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "paths": {
+    "/conceptos": {
+      "get": {
+        "summary": "Listar activos por defecto",
+        "responses": {
+          "200": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Concepto"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "incluirInactivos",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ],
+              "default": "false"
+            }
+          }
+        ]
+      },
+      "post": {
+        "summary": "Crear concepto de RRHH (sin campos de sistema)",
+        "responses": {
+          "201": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Concepto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CrearConcepto"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/conceptos/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      ],
+      "patch": {
+        "summary": "Reemplazar configuración editable; código inmutable; histórico de boletas conservado",
+        "responses": {
+          "200": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Concepto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EditarConcepto"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Eliminar solo sin referencias; si está usado debe desactivarse",
+        "responses": {
+          "204": {
+            "description": "Sin contenido"
+          },
+          "400": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/conceptos/{id}/estado": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      ],
+      "patch": {
+        "summary": "Activar o desactivar concepto que no sea de sistema",
+        "responses": {
+          "200": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Concepto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Estado"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/novedades": {
+      "get": {
+        "summary": "Consultar novedades de año y mes, opcionalmente por funcionario",
+        "responses": {
+          "200": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Novedad"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "anio",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1900,
+              "maximum": 9999
+            }
+          },
+          {
+            "name": "mes",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 12
+            }
+          },
+          {
+            "name": "funcionarioId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
+      },
+      "post": {
+        "summary": "Registrar importe individual para concepto activo y no automático",
+        "responses": {
+          "201": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Novedad"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Correcto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CrearNovedad"
+              }
+            }
+          }
+        },
+        "description": "Valida funcionario por API interna de Personal. Abre el registro de período BORRADOR si falta, sin cálculo de planilla. Rechaza período EMITIDO y duplicados por año/mes/funcionario/concepto. Autor proviene del JWT validado por gateway."
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "required": [
+          "code",
+          "message",
+          "details"
+        ],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "details": {
+            "nullable": true
+          }
+        }
+      },
+      "CrearConcepto": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "codigo",
+          "nombre",
+          "tipo",
+          "formaCalculo",
+          "valor",
+          "base",
+          "automatico",
+          "orden"
+        ],
+        "properties": {
+          "codigo": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 20,
+            "pattern": "^[A-Za-z0-9_-]+$"
+          },
+          "nombre": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "HABER",
+              "DESCUENTO"
+            ]
+          },
+          "formaCalculo": {
+            "type": "string",
+            "enum": [
+              "MONTO_FIJO",
+              "PORCENTAJE"
+            ]
+          },
+          "valor": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 99999999.9999,
+            "multipleOf": 0.0001
+          },
+          "base": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "HABER_BASICO",
+              "TOTAL_GANADO",
+              null
+            ]
+          },
+          "automatico": {
+            "type": "boolean"
+          },
+          "orden": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 32767
+          }
+        },
+        "oneOf": [
+          {
+            "properties": {
+              "formaCalculo": {
+                "enum": [
+                  "PORCENTAJE"
+                ]
+              },
+              "valor": {
+                "minimum": 0,
+                "maximum": 100
+              },
+              "base": {
+                "type": "string",
+                "nullable": false,
+                "enum": [
+                  "HABER_BASICO",
+                  "TOTAL_GANADO"
+                ]
+              }
+            }
+          },
+          {
+            "properties": {
+              "formaCalculo": {
+                "enum": [
+                  "MONTO_FIJO"
+                ]
+              },
+              "valor": {
+                "minimum": 0,
+                "exclusiveMinimum": true
+              },
+              "base": {
+                "type": "string",
+                "nullable": true,
+                "enum": [
+                  null
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "EditarConcepto": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "nombre",
+          "tipo",
+          "formaCalculo",
+          "valor",
+          "base",
+          "automatico",
+          "orden"
+        ],
+        "properties": {
+          "nombre": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "HABER",
+              "DESCUENTO"
+            ]
+          },
+          "formaCalculo": {
+            "type": "string",
+            "enum": [
+              "MONTO_FIJO",
+              "PORCENTAJE"
+            ]
+          },
+          "valor": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 99999999.9999,
+            "multipleOf": 0.0001
+          },
+          "base": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "HABER_BASICO",
+              "TOTAL_GANADO",
+              null
+            ]
+          },
+          "automatico": {
+            "type": "boolean"
+          },
+          "orden": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 32767
+          }
+        },
+        "oneOf": [
+          {
+            "properties": {
+              "formaCalculo": {
+                "enum": [
+                  "PORCENTAJE"
+                ]
+              },
+              "valor": {
+                "minimum": 0,
+                "maximum": 100
+              },
+              "base": {
+                "type": "string",
+                "nullable": false,
+                "enum": [
+                  "HABER_BASICO",
+                  "TOTAL_GANADO"
+                ]
+              }
+            }
+          },
+          {
+            "properties": {
+              "formaCalculo": {
+                "enum": [
+                  "MONTO_FIJO"
+                ]
+              },
+              "valor": {
+                "minimum": 0,
+                "exclusiveMinimum": true
+              },
+              "base": {
+                "type": "string",
+                "nullable": true,
+                "enum": [
+                  null
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "Estado": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "activo"
+        ],
+        "properties": {
+          "activo": {
+            "type": "boolean"
+          }
+        }
+      },
+      "Concepto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "codigo": {
+            "type": "string"
+          },
+          "nombre": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "HABER",
+              "DESCUENTO"
+            ]
+          },
+          "formaCalculo": {
+            "type": "string",
+            "enum": [
+              "SISTEMA",
+              "MONTO_FIJO",
+              "PORCENTAJE"
+            ]
+          },
+          "valor": {
+            "type": "number",
+            "nullable": true
+          },
+          "base": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              "HABER_BASICO",
+              "TOTAL_GANADO",
+              null
+            ]
+          },
+          "automatico": {
+            "type": "boolean"
+          },
+          "orden": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 32767
+          },
+          "esSistema": {
+            "type": "boolean"
+          },
+          "activo": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "CrearNovedad": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "anio",
+          "mes",
+          "funcionarioId",
+          "conceptoId",
+          "monto"
+        ],
+        "properties": {
+          "anio": {
+            "type": "integer",
+            "minimum": 1900,
+            "maximum": 9999
+          },
+          "mes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 12
+          },
+          "funcionarioId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "conceptoId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "monto": {
+            "type": "number",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "maximum": 9999999999.99,
+            "multipleOf": 0.01
+          },
+          "descripcion": {
+            "type": "string",
+            "maxLength": 200,
+            "nullable": true
+          }
+        }
+      },
+      "Novedad": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "anio": {
+            "type": "integer",
+            "minimum": 1900,
+            "maximum": 9999
+          },
+          "mes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 12
+          },
+          "funcionarioId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "conceptoId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "monto": {
+            "type": "number",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "maximum": 9999999999.99,
+            "multipleOf": 0.01
+          },
+          "descripcion": {
+            "type": "string",
+            "maxLength": 200,
+            "nullable": true
+          },
+          "registradoPor": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "concepto": {
+            "$ref": "#/components/schemas/Concepto"
+          }
+        }
+      }
+    }
+  }
+}

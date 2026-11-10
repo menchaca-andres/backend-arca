@@ -11,7 +11,8 @@
     "migration:generate": "typeorm-ts-node-commonjs migration:generate src/migrations/InitialSchema -d src/data-source.ts",
     "migration:run": "typeorm-ts-node-commonjs migration:run -d src/data-source.ts",
     "migration:revert": "typeorm-ts-node-commonjs migration:revert -d src/data-source.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "seed:dev": "ts-node src/seeds/conceptos.seed.ts"
   },
   "dependencies": {
     "@arca/shared": "*",
