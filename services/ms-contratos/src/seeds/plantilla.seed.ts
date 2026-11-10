@@ -43,4 +43,3 @@ export async function sembrarPlantillaIndefinida(): Promise<Plantilla> {
 
   return plantilla;
 }
-

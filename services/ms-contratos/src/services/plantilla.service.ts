@@ -7,11 +7,7 @@ import { PlantillaRepository } from '../repositories/plantilla.repository';
 import { PlantillaVersionRepository } from '../repositories/plantilla-version.repository';
 import { validarVariablesPlantilla } from '../domain/template-variables';
 import { renderTemplate } from '../domain/template-renderer';
-import type {
-  ActualizarPlantillaInput,
-  CrearPlantillaInput,
-  PreviewPlantillaInput,
-} from '../schemas/plantilla.schema';
+import type { ActualizarPlantillaInput, CrearPlantillaInput, PreviewPlantillaInput } from '../schemas/plantilla.schema';
 
 export interface PlantillaResponse {
   id: string;
@@ -97,11 +93,7 @@ export class PlantillaService {
     });
   }
 
-  async actualizar(
-    id: string,
-    input: ActualizarPlantillaInput,
-    userId: string,
-  ): Promise<PlantillaResponse> {
+  async actualizar(id: string, input: ActualizarPlantillaInput, userId: string): Promise<PlantillaResponse> {
     const plantilla = await this.plantillaRepo.findById(id);
     if (!plantilla) {
       throw AppError.notFound('Plantilla no encontrada');
@@ -256,4 +248,3 @@ export class PlantillaService {
     }
   }
 }
-

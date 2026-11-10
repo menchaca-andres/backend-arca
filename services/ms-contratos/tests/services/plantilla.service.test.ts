@@ -185,4 +185,3 @@ describe('PlantillaService (HU-17)', () => {
     });
   });
 });
-

@@ -11,18 +11,7 @@ const DECENAS_10 = [
   'DIECIOCHO',
   'DIECINUEVE',
 ];
-const DECENAS = [
-  '',
-  '',
-  'VEINTE',
-  'TREINTA',
-  'CUARENTA',
-  'CINCUENTA',
-  'SESENTA',
-  'SETENTA',
-  'OCHENTA',
-  'NOVENTA',
-];
+const DECENAS = ['', '', 'VEINTE', 'TREINTA', 'CUARENTA', 'CINCUENTA', 'SESENTA', 'SETENTA', 'OCHENTA', 'NOVENTA'];
 const CENTENAS = [
   '',
   'CIENTO',
@@ -81,7 +70,7 @@ export function numeroALiteralBolivianos(monto: number): string {
   const miles = Math.floor((entero % 1000000) / 1000);
   const cientos = entero % 1000;
 
-  let partes: string[] = [];
+  const partes: string[] = [];
 
   if (millones > 0) {
     if (millones === 1) partes.push('UN MILLON');
@@ -99,4 +88,3 @@ export function numeroALiteralBolivianos(monto: number): string {
 
   return `${partes.join(' ').trim()} ${centavos}/100 BOLIVIANOS`;
 }
-

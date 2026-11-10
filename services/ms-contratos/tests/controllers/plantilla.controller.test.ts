@@ -67,4 +67,3 @@ describe('PlantillaController (HU-17)', () => {
     expect(mockRes.json).toHaveBeenCalledWith({ contenidoRenderizado: 'Hola mundo', variables: [] });
   });
 });
-
