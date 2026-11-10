@@ -12,10 +12,11 @@ import { createHealthRouter } from './routes/health.routes';
 import { areaRouter } from './routes/area.routes';
 import { cargoRouter } from './routes/cargo.routes';
 import { funcionarioRouter } from './routes/funcionario.routes';
+import { internalRouter } from './routes/internal.routes';
 
 const SERVICE_NAME = 'ms-personal';
 
-export function createApp(internalRoutes: Router = Router()) {
+export function createApp(customInternalRoutes?: Router) {
   const app = express();
   const logger = createLogger(SERVICE_NAME);
   const protectInternal = internalKeyMiddleware(process.env.INTERNAL_API_KEY ?? '');
@@ -35,10 +36,18 @@ export function createApp(internalRoutes: Router = Router()) {
   app.use('/internal', protectInternal);
   app.use(express.json());
   app.use('/health', createHealthRouter(SERVICE_NAME));
+
+  // Rutas internas protegidas con clave
+  const internal = Router();
+  internal.use(internalRouter);
+  if (customInternalRoutes) {
+    internal.use(customInternalRoutes);
+  }
+  app.use('/internal', internal);
+
   app.use('/areas', areaRouter);
   app.use('/cargos', cargoRouter);
   app.use('/funcionarios', funcionarioRouter);
-  app.use('/internal', internalRoutes);
   app.use((_req, _res, next) => {
     next(new AppError('NOT_FOUND', 'Ruta no encontrada'));
   });
