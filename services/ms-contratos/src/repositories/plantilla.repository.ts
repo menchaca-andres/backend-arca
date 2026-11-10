@@ -8,8 +8,18 @@ export class PlantillaRepository {
     return this.repo.findOneBy({ id });
   }
 
-  findAll() {
-    return this.repo.find();
+  findByCodigo(codigo: string) {
+    return this.repo.findOneBy({ codigo: codigo.trim().toUpperCase() });
+  }
+
+  findAll(options?: { activo?: boolean }) {
+    if (options?.activo !== undefined) {
+      return this.repo.find({
+        where: { activo: options.activo },
+        order: { codigo: 'ASC' },
+      });
+    }
+    return this.repo.find({ order: { codigo: 'ASC' } });
   }
 
   save(entity: Plantilla) {

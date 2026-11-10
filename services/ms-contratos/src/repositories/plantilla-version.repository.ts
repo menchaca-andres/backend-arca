@@ -8,8 +8,25 @@ export class PlantillaVersionRepository {
     return this.repo.findOneBy({ id });
   }
 
-  findAll() {
-    return this.repo.find();
+  findActiveByPlantillaId(plantillaId: string) {
+    return this.repo.findOne({
+      where: { plantillaId, activa: true },
+    });
+  }
+
+  findAllByPlantillaId(plantillaId: string) {
+    return this.repo.find({
+      where: { plantillaId },
+      order: { version: 'DESC' },
+    });
+  }
+
+  async getLatestVersionNumber(plantillaId: string): Promise<number> {
+    const latest = await this.repo.findOne({
+      where: { plantillaId },
+      order: { version: 'DESC' },
+    });
+    return latest ? latest.version : 0;
   }
 
   save(entity: PlantillaVersion) {
