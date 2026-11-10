@@ -57,15 +57,12 @@ describe('Rutas de cargos', () => {
     const area = await crearArea();
     const cargo = await crearCargoEnArea(area.id);
 
-    const res = await request(app)
-      .post('/cargos')
-      .set(comoRrhh)
-      .send({
-        areaId: area.id,
-        nombre: cargo.nombre.toLowerCase(),
-        salarioMin: 3000,
-        salarioMax: 6000,
-      });
+    const res = await request(app).post('/cargos').set(comoRrhh).send({
+      areaId: area.id,
+      nombre: cargo.nombre.toLowerCase(),
+      salarioMin: 3000,
+      salarioMax: 6000,
+    });
 
     expect(res.status).toBe(409);
     expect(res.body.code).toBe('CONFLICT');
@@ -123,10 +120,7 @@ describe('Rutas de cargos', () => {
       .patch(`/cargos/${cargo.id}`)
       .set(comoRrhh)
       .send({ salarioMin: 3500, salarioMax: 7000 });
-    const bandaInvalida = await request(app)
-      .patch(`/cargos/${cargo.id}`)
-      .set(comoRrhh)
-      .send({ salarioMin: 8000 });
+    const bandaInvalida = await request(app).patch(`/cargos/${cargo.id}`).set(comoRrhh).send({ salarioMin: 8000 });
 
     expect(editado.status).toBe(200);
     expect(editado.body).toMatchObject({ salarioMin: 3500, salarioMax: 7000 });

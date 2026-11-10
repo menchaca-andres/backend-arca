@@ -4,13 +4,7 @@ import { app } from '../../src/app';
 import { Area } from '../../src/entities/area.entity';
 import { AreaRepository } from '../../src/repositories/area.repository';
 import { limpiar, unico, usarBase } from '../helpers/db';
-import {
-  crearArea,
-  crearAsignacion,
-  crearCargoEnArea,
-  crearFuncionario,
-  nuevaArea,
-} from '../helpers/fixtures';
+import { crearArea, crearAsignacion, crearCargoEnArea, crearFuncionario, nuevaArea } from '../helpers/fixtures';
 
 const comoRrhh = { 'x-user-rol': RolUsuario.RRHH };
 
@@ -20,10 +14,7 @@ describe('Rutas de áreas', () => {
 
   it('POST /areas crea el área y normaliza el código', async () => {
     const codigo = unico();
-    const res = await request(app)
-      .post('/areas')
-      .set(comoRrhh)
-      .send({ codigo: codigo.toLowerCase(), nombre: unico() });
+    const res = await request(app).post('/areas').set(comoRrhh).send({ codigo: codigo.toLowerCase(), nombre: unico() });
 
     expect(res.status).toBe(201);
     expect(res.body).toMatchObject({ codigo, activo: true });
@@ -103,9 +94,7 @@ describe('Rutas de áreas', () => {
 
   it('rechaza IDs inválidos y roles sin permiso', async () => {
     const idInvalido = await request(app).patch('/areas/no-es-uuid').set(comoRrhh).send({ nombre: unico() });
-    const sinPermiso = await request(app)
-      .get('/areas')
-      .set('x-user-rol', RolUsuario.FUNCIONARIO);
+    const sinPermiso = await request(app).get('/areas').set('x-user-rol', RolUsuario.FUNCIONARIO);
 
     expect(idInvalido.status).toBe(400);
     expect(sinPermiso.status).toBe(403);

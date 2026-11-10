@@ -6,10 +6,7 @@ export interface DesactivarUsuarioResult {
 }
 
 export interface IAuthClient {
-  desactivarUsuarioPorFuncionario(
-    funcionarioId: string,
-    motivo?: string,
-  ): Promise<DesactivarUsuarioResult>;
+  desactivarUsuarioPorFuncionario(funcionarioId: string, motivo?: string): Promise<DesactivarUsuarioResult>;
 }
 
 export class AuthClient implements IAuthClient {

@@ -94,4 +94,3 @@ describe('UsuarioController (HU-06)', () => {
     expect(mockRes.json).toHaveBeenCalledWith(fakeResult);
   });
 });
-

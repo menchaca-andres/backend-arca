@@ -62,14 +62,8 @@ export async function crearFuncionario() {
   return funcionario;
 }
 
-export async function crearAsignacion(
-  funcionarioId: string,
-  cargoId: string,
-  datos: Partial<AsignacionLaboral> = {},
-) {
-  const asignacion = await new AsignacionLaboralRepository().save(
-    nuevaAsignacion(funcionarioId, cargoId, datos),
-  );
+export async function crearAsignacion(funcionarioId: string, cargoId: string, datos: Partial<AsignacionLaboral> = {}) {
+  const asignacion = await new AsignacionLaboralRepository().save(nuevaAsignacion(funcionarioId, cargoId, datos));
   limpiar(AsignacionLaboral, { id: asignacion.id });
   return asignacion;
 }

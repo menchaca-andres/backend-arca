@@ -28,4 +28,3 @@ internalUsuarioRouter.patch(
   validateBody(internalEstadoUsuarioSchema),
   controller.cambiarEstadoInterno,
 );
-
