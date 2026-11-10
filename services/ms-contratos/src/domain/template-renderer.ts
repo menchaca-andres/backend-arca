@@ -72,12 +72,8 @@ export const SAMPLE_CONTEXT = {
  * Renderiza una plantilla con Handlebars.
  * Si no se proporciona contexto, utiliza los datos de ejemplo predeterminados (SAMPLE_CONTEXT).
  */
-export function renderTemplate(
-  templateString: string,
-  customContext?: Record<string, unknown>,
-): string {
+export function renderTemplate(templateString: string, customContext?: Record<string, unknown>): string {
   const context = customContext ?? SAMPLE_CONTEXT;
   const compiled = Handlebars.compile(templateString, { noEscape: true });
   return compiled(context);
 }
-

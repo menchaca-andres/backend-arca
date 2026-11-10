@@ -1,9 +1,4 @@
-import {
-  extraerVariables,
-  validarVariablesPlantilla,
-  VARIABLES_OBLIGATORIAS,
-  VARIABLES_PERMITIDAS,
-} from '../../src/domain/template-variables';
+import { extraerVariables, validarVariablesPlantilla } from '../../src/domain/template-variables';
 
 describe('Domain: Template Variables Validator (CA-02, CA-04)', () => {
   const plantillaValida = `
@@ -85,4 +80,3 @@ describe('Domain: Template Variables Validator (CA-02, CA-04)', () => {
     expect(r3.faltantesObligatorias).toContain('funcionario.dias_prueba');
   });
 });
-

@@ -78,9 +78,7 @@ export function validarVariablesPlantilla(contenido: string): TemplateValidation
   }
 
   if (faltantesObligatorias.length > 0) {
-    errores.push(
-      `Faltan variables obligatorias del Kata: ${faltantesObligatorias.map((v) => `{{${v}}}`).join(', ')}.`,
-    );
+    errores.push(`Faltan variables obligatorias del Kata: ${faltantesObligatorias.map((v) => `{{${v}}}`).join(', ')}.`);
   }
 
   return {
@@ -91,4 +89,3 @@ export function validarVariablesPlantilla(contenido: string): TemplateValidation
     errores,
   };
 }
-

@@ -1,9 +1,4 @@
-import {
-  formatearFechaLarga,
-  formatearMontoBs,
-  renderTemplate,
-  SAMPLE_CONTEXT,
-} from '../../src/domain/template-renderer';
+import { formatearFechaLarga, formatearMontoBs, renderTemplate } from '../../src/domain/template-renderer';
 import { numeroALiteralBolivianos } from '../../src/domain/numero-literal';
 
 describe('Domain: Template Renderer & Helpers (CA-07)', () => {
@@ -44,4 +39,3 @@ describe('Domain: Template Renderer & Helpers (CA-07)', () => {
     expect(resultado).toBe('Funcionario: MARIA LOPEZ - Ingreso: 1 de mayo de 2026');
   });
 });
-
