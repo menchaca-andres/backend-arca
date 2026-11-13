@@ -21,6 +21,14 @@ export const rangoFechasSchema = z
     path: ['hasta'],
   });
 
+export const rechazarSolicitudSchema = z.object({
+  motivo: z
+    .string()
+    .trim()
+    .min(5, 'El motivo de rechazo debe tener al menos 5 caracteres')
+    .max(300, 'El motivo de rechazo no puede superar los 300 caracteres'),
+});
+
 export const idFuncionarioSchema = z.object({ idFuncionario: uuid });
 export const idSolicitudSchema = z.object({ id: uuid });
 export const feriadoAnioSchema = z.object({
@@ -28,3 +36,4 @@ export const feriadoAnioSchema = z.object({
 });
 
 export type SolicitudVacacionInput = z.infer<typeof solicitudVacacionSchema>;
+export type RechazarSolicitudInput = z.infer<typeof rechazarSolicitudSchema>;
