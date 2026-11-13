@@ -1,0 +1,137 @@
+openapi: 3.0.3
+info:
+  title: API de Vacaciones - Resolución de solicitudes
+  version: 1.0.0
+  description: Bandeja de pendientes y aprobación/rechazo de solicitudes de vacaciones por RRHH (HU-15).
+servers:
+  - url: /api/v1/vacaciones
+security:
+  - bearerAuth: []
+paths:
+  /solicitudes/pendientes:
+    get:
+      summary: Bandeja de solicitudes PENDIENTE (CA-01)
+      description: Solo RRHH. Ordenadas de la más antigua a la más nueva, con el saldo actual de cada funcionario.
+      responses:
+        '200':
+          description: Solicitudes pendientes con saldo
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SolicitudPendiente'
+        '401':
+          description: Identidad ausente
+        '403':
+          description: El usuario no es RRHH
+  /solicitudes/{id}/aprobar:
+    post:
+      summary: Aprobar una solicitud pendiente (CA-02, CA-04, CA-05, CA-06, CA-07)
+      description: |
+        Cambia el estado a APROBADA; los días pasan de reservados a usados.
+        Antes de aprobar se revalida elegibilidad y saldo (lo ganado menos lo usado).
+        Guarda quién resolvió y cuándo.
+      parameters:
+        - $ref: '#/components/parameters/IdSolicitud'
+      responses:
+        '200':
+          description: Solicitud aprobada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SolicitudResuelta'
+        '400':
+          description: El funcionario ya no es elegible o el saldo actual no alcanza
+        '403':
+          description: No es RRHH, o intenta resolver su propia solicitud
+        '404':
+          description: Solicitud inexistente
+        '409':
+          description: La solicitud ya fue resuelta
+  /solicitudes/{id}/rechazar:
+    post:
+      summary: Rechazar una solicitud pendiente (CA-03, CA-04, CA-05, CA-07)
+      description: Exige un motivo; cambia el estado a RECHAZADA y libera los días reservados.
+      parameters:
+        - $ref: '#/components/parameters/IdSolicitud'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [motivo]
+              properties:
+                motivo:
+                  type: string
+                  minLength: 5
+                  maxLength: 300
+      responses:
+        '200':
+          description: Solicitud rechazada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SolicitudResuelta'
+        '400':
+          description: Motivo ausente o inválido
+        '403':
+          description: No es RRHH, o intenta resolver su propia solicitud
+        '404':
+          description: Solicitud inexistente
+        '409':
+          description: La solicitud ya fue resuelta
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    IdSolicitud:
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+        format: uuid
+  schemas:
+    SolicitudResuelta:
+      type: object
+      required: [id, funcionarioId, estado, resueltoPor, fechaResolucion]
+      properties:
+        id: { type: string, format: uuid }
+        funcionarioId: { type: string, format: uuid }
+        funcionarioNombre: { type: string }
+        fechaInicio: { type: string, format: date }
+        fechaFin: { type: string, format: date }
+        diasHabiles: { type: integer, minimum: 1 }
+        estado: { type: string, enum: [APROBADA, RECHAZADA] }
+        motivoRechazo: { type: string, nullable: true }
+        resueltoPor: { type: string, format: uuid }
+        fechaResolucion: { type: string, format: date-time }
+    SolicitudPendiente:
+      type: object
+      required: [id, funcionarioId, funcionarioNombre, fechaInicio, fechaFin, diasHabiles, estado, saldo]
+      properties:
+        id: { type: string, format: uuid }
+        funcionarioId: { type: string, format: uuid }
+        funcionarioNombre: { type: string }
+        fechaInicio: { type: string, format: date }
+        fechaFin: { type: string, format: date }
+        diasHabiles: { type: integer, minimum: 1 }
+        estado: { type: string, enum: [PENDIENTE] }
+        createdAt: { type: string, format: date-time }
+        saldo:
+          nullable: true
+          description: Null si ms-personal no pudo responder para ese funcionario.
+          type: object
+          properties:
+            diasGanados: { type: integer }
+            diasUsados: { type: integer }
+            diasReservados: { type: integer }
+            diasDisponibles: { type: integer }
+            elegible: { type: boolean }
+            motivo: { type: string, nullable: true }
+
