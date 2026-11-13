@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from 'express';
 import { AppError, getIdentity } from '@arca/shared';
-import type { VacacionesService } from '../services/vacaciones.service';
-import type { SolicitudVacacionInput } from '../schemas/vacaciones.schema';
+import type { ResolutorSolicitud, VacacionesService } from '../services/vacaciones.service';
+import type { RechazarSolicitudInput, SolicitudVacacionInput } from '../schemas/vacaciones.schema';
 
 export class VacacionesController {
   constructor(private readonly service: VacacionesService) {}
@@ -65,4 +65,37 @@ export class VacacionesController {
       next(error);
     }
   };
+
+  listarPendientes = async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      res.json(await this.service.listarPendientes());
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  aprobarSolicitud = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { id } = res.locals.params as { id: string };
+      res.json(await this.service.aprobarSolicitud(id, this.resolutor(req)));
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  rechazarSolicitud = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { id } = res.locals.params as { id: string };
+      const { motivo } = req.body as RechazarSolicitudInput;
+      res.json(await this.service.rechazarSolicitud(id, motivo, this.resolutor(req)));
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  private resolutor(req: Request): ResolutorSolicitud {
+    const { userId, funcionarioId } = getIdentity(req);
+    if (!userId) throw AppError.unauthorized('Falta la identidad del usuario');
+    return { userId, funcionarioId: funcionarioId ?? null };
+  }
 }
