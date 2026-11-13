@@ -4,7 +4,9 @@ import { VacacionesController } from '../controllers/vacaciones.controller';
 import {
   feriadoAnioSchema,
   idFuncionarioSchema,
+  idSolicitudSchema,
   rangoFechasSchema,
+  rechazarSolicitudSchema,
   solicitudVacacionSchema,
 } from '../schemas/vacaciones.schema';
 import { VacacionesService } from '../services/vacaciones.service';
@@ -46,6 +48,23 @@ export function createVacacionesRouter(service = new VacacionesService()) {
     validateBody(solicitudVacacionSchema),
     crearSolicitudAutorizada,
     controller.crearSolicitud,
+  );
+
+  // HU-15: bandeja y resolución de solicitudes (solo RRHH).
+  // '/solicitudes/pendientes' se declara antes de cualquier ruta con :id.
+  router.get('/solicitudes/pendientes', requireRole(RolUsuario.RRHH), controller.listarPendientes);
+  router.post(
+    '/solicitudes/:id/aprobar',
+    requireRole(RolUsuario.RRHH),
+    validateParams(idSolicitudSchema),
+    controller.aprobarSolicitud,
+  );
+  router.post(
+    '/solicitudes/:id/rechazar',
+    requireRole(RolUsuario.RRHH),
+    validateParams(idSolicitudSchema),
+    validateBody(rechazarSolicitudSchema),
+    controller.rechazarSolicitud,
   );
   return router;
 }
