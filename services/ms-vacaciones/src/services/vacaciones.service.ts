@@ -13,9 +13,16 @@ import type { SolicitudVacacionInput } from '../schemas/vacaciones.schema';
 
 interface SolicitudRepository {
   findAll(): Promise<SolicitudVacacion[]>;
+  findById(id: string): Promise<SolicitudVacacion | null>;
+  findPendientes(): Promise<SolicitudVacacion[]>;
   findByFuncionario(id: string): Promise<SolicitudVacacion[]>;
   findOverlapping(id: string, desde: string, hasta: string): Promise<SolicitudVacacion | null>;
   save(solicitud: SolicitudVacacion): Promise<SolicitudVacacion>;
+}
+
+export interface ResolutorSolicitud {
+  userId: string;
+  funcionarioId: string | null;
 }
 
 interface FeriadoRepositoryContract {
@@ -131,6 +138,79 @@ export class VacacionesService {
       fechaResolucion: null,
     });
     return this.solicitudRepo.save(solicitud);
+  }
+
+  async listarPendientes() {
+    const pendientes = await this.solicitudRepo.findPendientes();
+    return Promise.all(
+      pendientes.map(async (solicitud) => {
+        let saldo: Awaited<ReturnType<VacacionesService['obtenerSaldo']>> | null = null;
+        try {
+          saldo = await this.obtenerSaldo(solicitud.funcionarioId);
+        } catch {
+          // Si ms-personal no responde o el funcionario ya no existe, la bandeja sigue funcionando.
+          saldo = null;
+        }
+        return { ...solicitud, saldo };
+      }),
+    );
+  }
+
+  async aprobarSolicitud(id: string, resolutor: ResolutorSolicitud): Promise<SolicitudVacacion> {
+    const solicitud = await this.obtenerResoluble(id, resolutor);
+
+    // CA-06: la elegibilidad y el saldo pudieron cambiar desde que se solicitó (p. ej. una baja).
+    const funcionario = await this.obtenerFuncionario(solicitud.funcionarioId);
+    const elegibilidad = evaluarElegibilidad(funcionario, this.clock());
+    if (!elegibilidad.elegible) {
+      throw AppError.badRequest(`El funcionario ya no es elegible: ${elegibilidad.motivo}`, {
+        motivo: elegibilidad.motivo,
+      });
+    }
+
+    // Los días de esta solicitud ya figuran como reservados; se compara contra lo ganado menos lo usado.
+    const saldo = await this.obtenerSaldo(solicitud.funcionarioId);
+    const disponibleParaAprobar = saldo.diasGanados - saldo.diasUsados;
+    if (solicitud.diasHabiles > disponibleParaAprobar) {
+      throw AppError.badRequest('Los días solicitados superan el saldo disponible actual', {
+        diasSolicitados: solicitud.diasHabiles,
+        diasDisponibles: disponibleParaAprobar,
+      });
+    }
+
+    solicitud.estado = EstadoSolicitud.APROBADA;
+    solicitud.motivoRechazo = null;
+    solicitud.resueltoPor = resolutor.userId;
+    solicitud.fechaResolucion = new Date();
+    return this.solicitudRepo.save(solicitud);
+  }
+
+  async rechazarSolicitud(
+    id: string,
+    motivo: string,
+    resolutor: ResolutorSolicitud,
+  ): Promise<SolicitudVacacion> {
+    const solicitud = await this.obtenerResoluble(id, resolutor);
+
+    solicitud.estado = EstadoSolicitud.RECHAZADA;
+    solicitud.motivoRechazo = motivo.trim();
+    solicitud.resueltoPor = resolutor.userId;
+    solicitud.fechaResolucion = new Date();
+    return this.solicitudRepo.save(solicitud);
+  }
+
+  private async obtenerResoluble(id: string, resolutor: ResolutorSolicitud): Promise<SolicitudVacacion> {
+    const solicitud = await this.solicitudRepo.findById(id);
+    if (!solicitud) throw AppError.notFound('Solicitud de vacaciones no encontrada');
+
+    if (resolutor.funcionarioId && resolutor.funcionarioId === solicitud.funcionarioId) {
+      throw AppError.forbidden('No puedes resolver tu propia solicitud de vacaciones');
+    if (solicitud.estado !== EstadoSolicitud.PENDIENTE) {
+      throw AppError.conflict(`La solicitud ya fue resuelta (${solicitud.estado})`, {
+        estado: solicitud.estado,
+      });
+    }
+    return solicitud;
   }
 
   private async obtenerFuncionario(id: string): Promise<DatosFuncionarioVacaciones> {
