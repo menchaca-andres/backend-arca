@@ -1,3 +1,4 @@
+import { EstadoSolicitud } from '@arca/shared';
 import { AppDataSource } from '../data-source';
 import { SolicitudVacacion } from '../entities/solicitud-vacacion.entity';
 
@@ -12,6 +13,14 @@ export class SolicitudVacacionRepository {
 
   findAll() {
     return this.repo.find({ order: { createdAt: 'DESC' } });
+  }
+
+  /** HU-15 CA-01: bandeja de pendientes, de la más antigua a la más nueva. */
+  findPendientes() {
+    return this.repo.find({
+      where: { estado: EstadoSolicitud.PENDIENTE },
+      order: { createdAt: 'ASC' },
+    });
   }
 
   findByFuncionario(funcionarioId: string) {
