@@ -20,6 +20,9 @@ function crearApp(
   const solicitudes = opciones.solicitudes ?? [];
   const repository = {
     findAll: async () => solicitudes,
+    findById: async (id: string) => solicitudes.find((solicitud) => solicitud.id === id) ?? null,
+    findPendientes: async () =>
+      solicitudes.filter((solicitud) => solicitud.estado === EstadoSolicitud.PENDIENTE),
     findByFuncionario: async (id: string) => solicitudes.filter((solicitud) => solicitud.funcionarioId === id),
     findOverlapping: async () => opciones.cruce ?? null,
     save: async (solicitud: SolicitudVacacion) => {
