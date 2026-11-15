@@ -273,6 +273,26 @@ Para la presentación es ideal tener preparadas las credenciales de los diferent
 
 ---
 
+### HU-19: Consultar y Descargar Contratos
+* **Microservicio:** `ms-contratos`
+* **Ruta Frontend:** `/contratos` -> Pestaña "Contratos Emitidos"
+* **Actor:** `rrhh@arca.bo`, `admin@arca.bo` o `funcionario@arca.bo`
+
+#### Qué demostrar en la UI y Reglas de Negocio Clave:
+1. **Filtros Avanzados para RRHH (CA-01):**
+   - Barra de búsqueda y filtrado en vivo por funcionario, estado (`VIGENTE`, `REEMPLAZADO`), plantilla origen y rango de fechas de emisión.
+2. **Acceso Restringido y Seguro para Funcionarios (CA-02):**
+   - Al ingresar con rol `FUNCIONARIO`, el sistema bloquea el acceso a datos globales y presenta únicamente sus contratos propios. Cualquier intento de consulta o descarga cruzada devuelve `403 Forbidden`.
+3. **Descarga Rápida con Verificación Criptográfica de Integridad (CA-03):**
+   - La descarga entrega directamente el binario PDF persistido sin regenerarlo.
+   - El microservicio computa el hash SHA-256 en tiempo de lectura y valida que coincida exactamente con la huella registrada en base de datos antes de enviar el archivo.
+4. **Ficha de Contrato e Historial de Versiones (CA-04):**
+   - Clic en **"Ver Detalle / Historial"** de un contrato:
+   - Se abre un modal espacioso con la información del funcionario, cargo, área, fecha de emisión y texto renderizado.
+   - Presenta la línea de tiempo o tabla con el **historial de versiones** del funcionario ($v1 \to v2$), mostrando cuáles fueron reemplazados y cuál es el vigente, con descarga directa de cada versión.
+
+---
+
 ### HU-20: Conceptos de Planilla y Novedades del Período
 * **Microservicio:** `ms-boletas`
 * **Ruta Frontend:** `/boletas`
@@ -317,7 +337,8 @@ Para la presentación es ideal tener preparadas las credenciales de los diferent
 | **9** | Vacaciones | **HU-14** | Solicitar vacaciones lun-vie demostrando cálculo exacto de días hábiles. |
 | **10** | Contratos | **HU-17** | Editar plantilla Handlebars, guardar y mostrar salto de versión v1 a v2. |
 | **11** | Contratos | **HU-18** | Generar contrato con preview en vivo de datos de ms-personal, correlativo CT-AAAA-NNNN y PDF con Gotenberg. |
-| **12** | Boletas | **HU-20** | Crear concepto salarial y registrar novedad de Bs 750 para el período. |
+| **12** | Contratos | **HU-19** | Filtrar contratos, auditar historial de versiones v1/v2 y descargar PDF verificado con SHA-256. |
+| **13** | Boletas | **HU-20** | Crear concepto salarial y registrar novedad de Bs 750 para el período. |
 
 ---
 
