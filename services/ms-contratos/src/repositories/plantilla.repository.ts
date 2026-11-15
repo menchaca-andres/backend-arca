@@ -2,7 +2,9 @@ import { AppDataSource } from '../data-source';
 import { Plantilla } from '../entities/plantilla.entity';
 
 export class PlantillaRepository {
-  private repo = AppDataSource.getRepository(Plantilla);
+  private get repo() {
+    return AppDataSource.getRepository(Plantilla);
+  }
 
   findById(id: string) {
     return this.repo.findOneBy({ id });
