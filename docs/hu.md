@@ -322,6 +322,38 @@ Para la presentación es ideal tener preparadas las credenciales de los diferent
 
 ---
 
+### HU-21: Calcular la Planilla del Período
+* **Microservicio:** `ms-boletas`
+* **Ruta Frontend:** `/boletas` -> Pestaña "Planilla del Período"
+* **Actor:** `rrhh@arca.bo` o `admin@arca.bo`
+
+#### Qué demostrar en la UI y Reglas de Negocio Clave:
+1. **Apertura de Período Único (CA-01):**
+   - RRHH abre un período indicando año y mes (ej. `10/2026`). El sistema rechaza si ya existe ese período.
+   - Nace en estado **`BORRADOR`** listo para procesar.
+2. **Padrón Activo vía Integración Interna (CA-02):**
+   - El motor de cálculo consulta internamente a `ms-personal` (`/internal/funcionarios?activosDesde=&activosHasta=`) e incluye a todo funcionario que estuvo activo al menos un día en el mes.
+3. **Prorrateo de Días Trabajados en Base 30 (CA-03):**
+   - Si el empleado ingresó a mitad de mes (ej. día 16), trabaja 15 días:
+     $$\text{Días Trabajados} = 30 - \text{Día Ingreso} + 1 = 15$$
+   - Si fue dado de baja a mitad de mes (ej. día 15), trabaja 15 días:
+     $$\text{Días Trabajados} = \text{Día Baja} = 15$$
+   - Si estuvo todo el mes, computa 30 días exactos.
+4. **Aplicación Ordenada de Conceptos y Novedades (CA-04, CA-05):**
+   - **Haber básico proporcional:** $\text{Haber Básico} = \text{Remuneración} \times \frac{\text{Días Trabajados}}{30}$.
+   - Aplica otros haberes (bonos automáticos o novedades de período).
+   - Calcula descuentos de ley (ej. **Aporte Laboral AFP 12.71% sobre Total Ganado**).
+   - Genera el detalle línea por línea (concepto, base, %, monto a 2 decimales).
+5. **Control de Líquido Pagable Negativo (CA-06):**
+   - Si los descuentos superan al total ganado, el líquido pagable es negativo; la boleta se marca con **alerta visual roja** y queda bloqueada para emisión en la HU-22.
+6. **Recálculo Ilimitado en Borrador (CA-07):**
+   - Clic en **"Recalcular Planilla"**: mientras el período esté en `BORRADOR`, el sistema borra el cálculo anterior y reconstruye la planilla completa con las novedades y asignaciones vigentes actualizadas.
+7. **Consolidado de Totales y Alertas (CA-08):**
+   - Tarjetas de resumen en vivo: **Total Ganado**, **Total Descuentos**, **Líquido Consolidado** y conteo de alertas.
+   - Tabla con cada funcionario, días trabajados, desglose y detalle expandible de conceptos.
+
+---
+
 ## 3. Resumen Rápido para la Presentación (Cheat Sheet)
 
 | Orden | Módulo | Historia | Acción Clave en Pantalla |
@@ -339,6 +371,7 @@ Para la presentación es ideal tener preparadas las credenciales de los diferent
 | **11** | Contratos | **HU-18** | Generar contrato con preview en vivo de datos de ms-personal, correlativo CT-AAAA-NNNN y PDF con Gotenberg. |
 | **12** | Contratos | **HU-19** | Filtrar contratos, auditar historial de versiones v1/v2 y descargar PDF verificado con SHA-256. |
 | **13** | Boletas | **HU-20** | Crear concepto salarial y registrar novedad de Bs 750 para el período. |
+| **14** | Boletas | **HU-21** | Abrir período, calcular planilla de ley con base 30 y detectar alertas de líquido negativo. |
 
 ---
 
