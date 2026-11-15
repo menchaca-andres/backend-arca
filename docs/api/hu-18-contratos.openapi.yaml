@@ -1,0 +1,223 @@
+openapi: 3.0.3
+info:
+  title: API de Contratos - Generación de Contratos Laborales
+  version: 1.0.0
+  description: Generación formal de contratos laborales de funcionarios a partir de plantillas y datos de ms-personal (HU-18).
+servers:
+  - url: /api/v1/contratos
+security:
+  - bearerAuth: []
+paths:
+  /preview:
+    post:
+      summary: Vista previa de contrato con datos reales (CA-01, CA-02)
+      description: |
+        Genera la vista previa en vivo del contrato renderizado con los datos reales del funcionario
+        obtenidos directamente de ms-personal (asignación laboral activa).
+        No persiste ningún cambio en la base de datos.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PreviewContratoInput'
+      responses:
+        '200':
+          description: Vista previa generada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VistaPreviaResponse'
+        '400':
+          description: Funcionario dado de baja o datos incompletos
+        '401':
+          description: Identidad ausente
+        '403':
+          description: Requiere rol RRHH o ADMIN
+        '404':
+          description: Funcionario o plantilla no encontrada
+
+  /:
+    post:
+      summary: Generar contrato de funcionario (CA-01 a CA-08)
+      description: |
+        Genera formalmente el contrato laboral de un funcionario:
+        - Obtiene datos reales de ms-personal (CA-01).
+        - Valida que el funcionario no esté en estado BAJA (CA-03).
+        - Genera correlativo secuencial CT-AAAA-NNNN (CA-07).
+        - Compila PDF formal mediante Gotenberg con encabezado ARCA, paginación y firmas (CA-05).
+        - Calcula hash SHA-256 de 64 caracteres del PDF binario (CA-04).
+        - Si el funcionario tenía contrato VIGENTE previo, incrementa versión (vN+1) y marca el anterior como REEMPLAZADO atómicamente (CA-06).
+        - Contrato resultante es inmutable (CA-08).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerarContratoInput'
+      responses:
+        '201':
+          description: Contrato generado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContratoResponse'
+        '400':
+          description: Funcionario dado de baja o sin asignación laboral activa
+        '401':
+          description: Identidad ausente
+        '403':
+          description: Requiere rol RRHH o ADMIN
+        '404':
+          description: Funcionario o plantilla no encontrada
+
+  /{id}:
+    get:
+      summary: Obtener contrato por ID
+      description: Recupera metadatos, snapshot de datos y contenido renderizado de un contrato.
+      parameters:
+        - $ref: '#/components/parameters/IdContrato'
+      responses:
+        '200':
+          description: Contrato encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContratoResponse'
+        '401':
+          description: Identidad ausente
+        '404':
+          description: Contrato no encontrado
+
+  /{id}/pdf:
+    get:
+      summary: Descargar PDF de contrato (CA-05)
+      description: Descarga el archivo binario PDF compilado del contrato.
+      parameters:
+        - $ref: '#/components/parameters/IdContrato'
+      responses:
+        '200':
+          description: Archivo PDF del contrato
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Identidad ausente
+        '404':
+          description: Contrato o archivo PDF no encontrado
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    IdContrato:
+      name: id
+      in: path
+      required: true
+      description: UUID del contrato
+      schema:
+        type: string
+        format: uuid
+
+  schemas:
+    PreviewContratoInput:
+      type: object
+      required:
+        - funcionarioId
+      properties:
+        funcionarioId:
+          type: string
+          format: uuid
+          description: ID del funcionario en ms-personal
+        plantillaId:
+          type: string
+          format: uuid
+          description: ID opcional de la plantilla. Si se omite, se usa la plantilla por defecto activa.
+
+    GenerarContratoInput:
+      type: object
+      required:
+        - funcionarioId
+      properties:
+        funcionarioId:
+          type: string
+          format: uuid
+          description: ID del funcionario en ms-personal
+        plantillaId:
+          type: string
+          format: uuid
+          description: ID opcional de la plantilla. Si se omite, se usa la plantilla por defecto activa.
+
+    VistaPreviaResponse:
+      type: object
+      properties:
+        plantilla:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            nombre:
+              type: string
+            tipo:
+              type: string
+            version:
+              type: integer
+        funcionario:
+          type: object
+          description: Snapshot de datos del funcionario
+        contexto:
+          type: object
+          description: Variables resueltas para la plantilla
+        contenidoRenderizado:
+          type: string
+          description: Texto renderizado con Handlebars
+        fechaEstimadaEmision:
+          type: string
+          format: date-time
+
+    ContratoResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        numero:
+          type: string
+          example: CT-2026-0001
+        plantillaVersionId:
+          type: string
+          format: uuid
+        funcionarioId:
+          type: string
+          format: uuid
+        version:
+          type: integer
+          example: 1
+        estado:
+          type: string
+          enum: [VIGENTE, REEMPLAZADO, ANULADO]
+        datos:
+          type: object
+          description: Snapshot de datos utilizado para la emisión
+        contenidoRenderizado:
+          type: string
+        hashSha256:
+          type: string
+          description: Hash SHA-256 de 64 caracteres del PDF
+          example: 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08
+        generadoPor:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
