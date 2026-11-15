@@ -2,7 +2,9 @@ import { AppDataSource } from '../data-source';
 import { Novedad } from '../entities/novedad.entity';
 
 export class NovedadRepository {
-  private repo = AppDataSource.getRepository(Novedad);
+  private get repo() {
+    return AppDataSource.getRepository ? AppDataSource.getRepository(Novedad) : ({} as any);
+  }
 
   findById(id: string): Promise<Novedad | null> {
     return this.repo.findOne({

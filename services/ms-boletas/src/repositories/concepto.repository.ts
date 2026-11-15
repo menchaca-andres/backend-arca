@@ -2,7 +2,9 @@ import { AppDataSource } from '../data-source';
 import { Concepto } from '../entities/concepto.entity';
 
 export class ConceptoRepository {
-  private repo = AppDataSource.getRepository(Concepto);
+  private get repo() {
+    return AppDataSource.getRepository ? AppDataSource.getRepository(Concepto) : ({} as any);
+  }
 
   findById(id: string): Promise<Concepto | null> {
     return this.repo.findOneBy({ id });
