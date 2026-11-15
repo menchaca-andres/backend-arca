@@ -1,6 +1,14 @@
 import crypto from 'node:crypto';
 import type { EntityManager } from 'typeorm';
-import { AppError, EstadoContrato, EstadoFuncionario, TipoContrato, type FuncionarioContrato } from '@arca/shared';
+import {
+  AppError,
+  EstadoContrato,
+  EstadoFuncionario,
+  RolUsuario,
+  TipoContrato,
+  type FuncionarioContrato,
+  type Identity,
+} from '@arca/shared';
 import { AppDataSource } from '../data-source';
 import { GotenbergClient, type PdfClient } from '../clients/gotenberg.client';
 import { HttpPersonalClient, type PersonalClient } from '../clients/personal.client';
@@ -15,10 +23,14 @@ import { Contrato } from '../entities/contrato.entity';
 import { PlantillaVersion } from '../entities/plantilla-version.entity';
 import { Plantilla } from '../entities/plantilla.entity';
 import { ContratoPdfRepository } from '../repositories/contrato-pdf.repository';
-import { ContratoRepository } from '../repositories/contrato.repository';
+import { ContratoRepository, type FiltrosContrato } from '../repositories/contrato.repository';
 import { CorrelativoRepository } from '../repositories/correlativo.repository';
 import { PlantillaVersionRepository } from '../repositories/plantilla-version.repository';
 import { PlantillaRepository } from '../repositories/plantilla.repository';
+
+export interface DetalleContratoResponse extends Contrato {
+  historialVersiones: Contrato[];
+}
 
 export interface VistaPreviaContrato {
   funcionario: {
@@ -181,23 +193,82 @@ export class ContratoService {
     });
   }
 
-  async obtenerPorId(id: string): Promise<Contrato> {
+  /**
+   * HU-19 CA-02 y CA-04:
+   * Obtiene un contrato por su ID, verifica permisos de rol (un FUNCIONARIO solo puede ver los suyos)
+   * y adjunta el historial de versiones del mismo funcionario.
+   */
+  async obtenerPorId(id: string, identity?: Identity | null): Promise<DetalleContratoResponse> {
     const contrato = await this.contratoRepo.findById(id);
     if (!contrato) throw AppError.notFound('Contrato no encontrado');
-    return contrato;
+
+    // CA-02: Un FUNCIONARIO solo ve y descarga sus propios contratos
+    if (identity?.rol === RolUsuario.FUNCIONARIO) {
+      if (!identity.funcionarioId || contrato.funcionarioId !== identity.funcionarioId) {
+        throw AppError.forbidden('No tiene permiso para acceder a este contrato');
+      }
+    }
+
+    // CA-04: La ficha del contrato muestra su historial de versiones
+    const historial = await this.contratoRepo.findByFuncionario(contrato.funcionarioId);
+    historial.sort((a, b) => b.version - a.version);
+    const historialVersiones = historial.map((h) => ({
+      id: h.id,
+      numero: h.numero,
+      funcionarioId: h.funcionarioId,
+      plantillaVersionId: h.plantillaVersionId,
+      version: h.version,
+      estado: h.estado,
+      datos: h.datos,
+      contenidoRenderizado: h.contenidoRenderizado,
+      hashSha256: h.hashSha256,
+      generadoPor: h.generadoPor,
+      createdAt: h.createdAt,
+    })) as Contrato[];
+
+    return {
+      ...contrato,
+      historialVersiones,
+    };
   }
 
-  async obtenerPdf(id: string): Promise<{ buffer: Buffer; contrato: Contrato }> {
-    const contrato = await this.obtenerPorId(id);
+  /**
+   * HU-19 CA-02 y CA-03:
+   * La descarga entrega el PDF guardado, sin volver a generarlo, y verifica que su hash SHA-256 coincida.
+   */
+  async obtenerPdf(id: string, identity?: Identity | null): Promise<{ buffer: Buffer; contrato: Contrato }> {
+    const contrato = await this.obtenerPorId(id, identity);
     const pdf = await this.contratoPdfRepo.findByIdWithContent(id);
     if (!pdf || !pdf.contenido) {
       throw AppError.notFound('El archivo PDF del contrato no está disponible');
     }
+
+    // CA-03: Verificación criptográfica de integridad SHA-256
+    const hashCalculado = crypto.createHash('sha256').update(pdf.contenido).digest('hex');
+    if (hashCalculado !== contrato.hashSha256) {
+      throw AppError.internal('Error de integridad: el hash SHA-256 del PDF no coincide con el registro original');
+    }
+
     return { buffer: pdf.contenido, contrato };
   }
 
-  async listar(): Promise<Contrato[]> {
-    return this.contratoRepo.findAll();
+  /**
+   * HU-19 CA-01 y CA-02:
+   * RRHH lista contratos con filtros (funcionario, plantilla, estado, fechas).
+   * Un FUNCIONARIO solo ve sus propios contratos.
+   */
+  async listar(filtros: FiltrosContrato = {}, identity?: Identity | null): Promise<Contrato[]> {
+    const filtrosEfectivos: FiltrosContrato = { ...filtros };
+
+    // CA-02: Forzar filtro por funcionario si el rol es FUNCIONARIO
+    if (identity?.rol === RolUsuario.FUNCIONARIO) {
+      if (!identity.funcionarioId) {
+        throw AppError.forbidden('El usuario no tiene un funcionario asociado');
+      }
+      filtrosEfectivos.funcionarioId = identity.funcionarioId;
+    }
+
+    return this.contratoRepo.findConFiltros(filtrosEfectivos);
   }
 
   async listarPorFuncionario(funcionarioId: string): Promise<Contrato[]> {

@@ -1,8 +1,9 @@
 import { Router } from 'express';
 import { requireRole, RolUsuario } from '@arca/shared';
 import { ContratoController } from '../controllers/contrato.controller';
-import { validateBody, validateParams } from '../middlewares/validate.middleware';
+import { validateBody, validateParams, validateQuery } from '../middlewares/validate.middleware';
 import {
+  filtrosContratoSchema,
   generarContratoSchema,
   idContratoSchema,
   previewContratoSchema,
@@ -29,10 +30,11 @@ export function createContratoRouter(service = new ContratoService()) {
     controller.generar,
   );
 
-  // Listar contratos emitidos (HU-18 / HU-19)
+  // HU-19 CA-01 y CA-02: Listar contratos emitidos con filtros y restricción de rol
   router.get(
     '/',
     requireRole(RolUsuario.ADMIN, RolUsuario.RRHH, RolUsuario.DIRECCION, RolUsuario.FUNCIONARIO),
+    validateQuery(filtrosContratoSchema),
     controller.listar,
   );
 

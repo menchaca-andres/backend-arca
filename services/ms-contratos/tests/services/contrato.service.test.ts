@@ -81,6 +81,13 @@ function setupTestEnvironment(opciones: { funcionario?: FuncionarioContrato; con
     findVigenteByFuncionario: async (fId: string) =>
       contratos.find((c) => c.funcionarioId === fId && c.estado === EstadoContrato.VIGENTE) ?? null,
     findAll: async () => contratos,
+    findConFiltros: async (filtros: any = {}) => {
+      let res = [...contratos];
+      if (filtros.funcionarioId) res = res.filter((c) => c.funcionarioId === filtros.funcionarioId);
+      if (filtros.plantillaId) res = res.filter((c) => c.plantillaVersion?.plantillaId === filtros.plantillaId);
+      if (filtros.estado) res = res.filter((c) => c.estado === filtros.estado);
+      return res;
+    },
     save: async (entity: Contrato) => {
       if (!entity.id) entity.id = randomUUID();
       const idx = contratos.findIndex((c) => c.id === entity.id);
@@ -300,5 +307,99 @@ describe('HU-18 Generar contrato de un funcionario', () => {
     expect(Array.isArray(res.body)).toBe(true);
     expect(res.body.length).toBe(1);
     expect(res.body[0].numero).toMatch(/^CT-\d{4}-\d{4}$/);
+  });
+
+  describe('HU-19 Consultar y descargar contratos', () => {
+    it('CA-01: RRHH lista contratos con filtros', async () => {
+      const { app, service } = setupTestEnvironment();
+      await service.generar(ID_FUNCIONARIO, ID_PLANTILLA, ID_RRHH);
+
+      const res = await request(app)
+        .get(`/?funcionarioId=${ID_FUNCIONARIO}&estado=VIGENTE`)
+        .set('x-user-rol', 'RRHH')
+        .set('x-user-id', ID_RRHH)
+        .expect(200);
+
+      expect(Array.isArray(res.body)).toBe(true);
+      expect(res.body.length).toBe(1);
+      expect(res.body[0].funcionarioId).toBe(ID_FUNCIONARIO);
+    });
+
+    it('CA-02: FUNCIONARIO solo puede ver y descargar sus propios contratos (403 si accede a otro)', async () => {
+      const { app, service } = setupTestEnvironment();
+      const contrato = await service.generar(ID_FUNCIONARIO, ID_PLANTILLA, ID_RRHH);
+
+      // Con su propio funcionarioId asociado -> 200 OK
+      const resPropio = await request(app)
+        .get(`/${contrato.id}`)
+        .set('x-user-rol', 'FUNCIONARIO')
+        .set('x-user-id', 'user-1')
+        .set('x-funcionario-id', ID_FUNCIONARIO)
+        .expect(200);
+
+      expect(resPropio.body.id).toBe(contrato.id);
+
+      // Con funcionarioId de otro usuario -> 403 Forbidden
+      const OTRO_ID = '99999999-9999-4999-8999-999999999999';
+      await request(app)
+        .get(`/${contrato.id}`)
+        .set('x-user-rol', 'FUNCIONARIO')
+        .set('x-user-id', 'user-2')
+        .set('x-funcionario-id', OTRO_ID)
+        .expect(403);
+
+      // Descarga de PDF de otro funcionario -> 403 Forbidden
+      await request(app)
+        .get(`/${contrato.id}/pdf`)
+        .set('x-user-rol', 'FUNCIONARIO')
+        .set('x-user-id', 'user-2')
+        .set('x-funcionario-id', OTRO_ID)
+        .expect(403);
+    });
+
+    it('CA-03: La descarga entrega el PDF guardado y verifica que el hash SHA-256 coincida', async () => {
+      const { app, service } = setupTestEnvironment();
+      const contrato = await service.generar(ID_FUNCIONARIO, ID_PLANTILLA, ID_RRHH);
+
+      // Descarga normal con hash íntegro -> 200 OK
+      const res = await request(app)
+        .get(`/${contrato.id}/pdf`)
+        .set('x-user-rol', 'RRHH')
+        .set('x-user-id', ID_RRHH)
+        .expect(200);
+
+      expect(res.body).toBeInstanceOf(Buffer);
+
+      // Si el hash fue alterado o corrompido en el registro -> 500 Error de integridad
+      contrato.hashSha256 = '0000000000000000000000000000000000000000000000000000000000000000';
+      await request(app)
+        .get(`/${contrato.id}/pdf`)
+        .set('x-user-rol', 'RRHH')
+        .set('x-user-id', ID_RRHH)
+        .expect(500);
+    });
+
+    it('CA-04: La ficha del contrato muestra su historial de versiones', async () => {
+      const { app, service } = setupTestEnvironment();
+      // Generar v1
+      await service.generar(ID_FUNCIONARIO, ID_PLANTILLA, ID_RRHH);
+      // Generar v2 (reemplaza v1)
+      const v2 = await service.generar(ID_FUNCIONARIO, ID_PLANTILLA, ID_RRHH);
+
+      const res = await request(app)
+        .get(`/${v2.id}`)
+        .set('x-user-rol', 'RRHH')
+        .set('x-user-id', ID_RRHH)
+        .expect(200);
+
+      expect(res.body.id).toBe(v2.id);
+      expect(res.body.version).toBe(2);
+      expect(res.body.estado).toBe('VIGENTE');
+      expect(Array.isArray(res.body.historialVersiones)).toBe(true);
+      expect(res.body.historialVersiones.length).toBe(2);
+      expect(res.body.historialVersiones[0].version).toBe(2);
+      expect(res.body.historialVersiones[1].version).toBe(1);
+      expect(res.body.historialVersiones[1].estado).toBe('REEMPLAZADO');
+    });
   });
 });

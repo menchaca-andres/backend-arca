@@ -1,7 +1,11 @@
 import type { NextFunction, Request, Response } from 'express';
 import { AppError, getIdentity } from '@arca/shared';
 import { ContratoService } from '../services/contrato.service';
-import type { GenerarContratoInput, PreviewContratoInput } from '../schemas/contrato.schema';
+import type {
+  FiltrosContratoInput,
+  GenerarContratoInput,
+  PreviewContratoInput,
+} from '../schemas/contrato.schema';
 
 export class ContratoController {
   constructor(private readonly service = new ContratoService()) {}
@@ -29,9 +33,11 @@ export class ContratoController {
     }
   };
 
-  listar = async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
+  listar = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const contratos = await this.service.listar();
+      const identity = getIdentity(req);
+      const filtros = (res.locals.query ?? req.query) as unknown as FiltrosContratoInput;
+      const contratos = await this.service.listar(filtros, identity);
       res.json(contratos);
     } catch (error) {
       next(error);
@@ -40,8 +46,9 @@ export class ContratoController {
 
   obtenerPorId = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
+      const identity = getIdentity(req);
       const id = req.params.id as string;
-      const contrato = await this.service.obtenerPorId(id);
+      const contrato = await this.service.obtenerPorId(id, identity);
       res.json(contrato);
     } catch (error) {
       next(error);
@@ -50,8 +57,9 @@ export class ContratoController {
 
   descargarPdf = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
+      const identity = getIdentity(req);
       const id = req.params.id as string;
-      const { buffer, contrato } = await this.service.obtenerPdf(id);
+      const { buffer, contrato } = await this.service.obtenerPdf(id, identity);
 
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader(
