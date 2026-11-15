@@ -3,6 +3,8 @@ import { AppError, getIdentity, requireRole, requireSelfOrRole, RolUsuario } fro
 import { VacacionesController } from '../controllers/vacaciones.controller';
 import {
   feriadoAnioSchema,
+  filtroCalendarioSchema,
+  filtroHistorialSchema,
   idFuncionarioSchema,
   idSolicitudSchema,
   rangoFechasSchema,
@@ -65,6 +67,21 @@ export function createVacacionesRouter(service = new VacacionesService()) {
     validateParams(idSolicitudSchema),
     validateBody(rechazarSolicitudSchema),
     controller.rechazarSolicitud,
+  );
+
+  // HU-16: historial (kardex) por funcionario y calendario mensual de vacaciones aprobadas.
+  router.get(
+    '/historial/:idFuncionario',
+    requireSelfOrRole([RolUsuario.ADMIN, RolUsuario.RRHH, RolUsuario.DIRECCION], (req) => req.params.idFuncionario),
+    validateParams(idFuncionarioSchema),
+    validateQuery(filtroHistorialSchema),
+    controller.obtenerHistorial,
+  );
+  router.get(
+    '/calendario',
+    requireRole(RolUsuario.ADMIN, RolUsuario.RRHH, RolUsuario.DIRECCION),
+    validateQuery(filtroCalendarioSchema),
+    controller.obtenerCalendario,
   );
   return router;
 }
