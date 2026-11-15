@@ -2,6 +2,7 @@ import { AppError, EstadoSolicitud } from '@arca/shared';
 import { HttpPersonalClient, type PersonalClient } from '../clients/personal.client';
 import {
   calcularPeriodoVacacional,
+  construirKardex,
   evaluarElegibilidad,
   type DatosFuncionarioVacaciones,
 } from '../domain/calculo-vacaciones';
@@ -9,7 +10,7 @@ import { contarDiasHabiles } from '../domain/feriados';
 import { SolicitudVacacion } from '../entities/solicitud-vacacion.entity';
 import { FeriadoRepository } from '../repositories/feriado.repository';
 import { SolicitudVacacionRepository } from '../repositories/solicitud-vacacion.repository';
-import type { SolicitudVacacionInput } from '../schemas/vacaciones.schema';
+import type { FiltroHistorialInput, SolicitudVacacionInput } from '../schemas/vacaciones.schema';
 
 interface SolicitudRepository {
   findAll(): Promise<SolicitudVacacion[]>;
@@ -17,6 +18,7 @@ interface SolicitudRepository {
   findPendientes(): Promise<SolicitudVacacion[]>;
   findByFuncionario(id: string): Promise<SolicitudVacacion[]>;
   findOverlapping(id: string, desde: string, hasta: string): Promise<SolicitudVacacion | null>;
+  findAprobadasRango(desde: string, hasta: string): Promise<SolicitudVacacion[]>;
   save(solicitud: SolicitudVacacion): Promise<SolicitudVacacion>;
 }
 
@@ -199,12 +201,53 @@ export class VacacionesService {
     return this.solicitudRepo.save(solicitud);
   }
 
+  /**
+   * HU-16 CA-01, CA-02, CA-03:
+   * Kardex detallado por gestión con días ganados, solicitudes y resolución.
+   */
+  async obtenerHistorial(funcionarioId: string, filtros?: FiltroHistorialInput) {
+    const funcionario = await this.obtenerFuncionario(funcionarioId);
+    const solicitudes = await this.solicitudRepo.findByFuncionario(funcionarioId);
+    const hoy = this.clock();
+
+    return construirKardex(funcionario, hoy, solicitudes, filtros);
+  }
+
+  /**
+   * HU-16 CA-04:
+   * Calendario mensual de vacaciones aprobadas de todo el personal + feriados.
+   */
+  async obtenerCalendario(mesFiltro?: string) {
+    const mes = mesFiltro ?? this.clock().slice(0, 7);
+    const [anioStr, mesStr] = mes.split('-');
+    const anio = Number(anioStr);
+    const mesNum = Number(mesStr);
+
+    const desde = `${mes}-01`;
+    const ultimoDia = new Date(Date.UTC(anio, mesNum, 0)).getUTCDate();
+    const hasta = `${mes}-${String(ultimoDia).padStart(2, '0')}`;
+
+    const solicitudes = await this.solicitudRepo.findAprobadasRango(desde, hasta);
+    const feriadosAnio = await this.feriadoRepo.findByYear(anio);
+    const feriados = feriadosAnio.filter((f) => f.fecha.startsWith(mes));
+
+    return {
+      mes,
+      desde,
+      hasta,
+      totalAprobadas: solicitudes.length,
+      solicitudes,
+      feriados,
+    };
+  }
+
   private async obtenerResoluble(id: string, resolutor: ResolutorSolicitud): Promise<SolicitudVacacion> {
     const solicitud = await this.solicitudRepo.findById(id);
     if (!solicitud) throw AppError.notFound('Solicitud de vacaciones no encontrada');
 
     if (resolutor.funcionarioId && resolutor.funcionarioId === solicitud.funcionarioId) {
       throw AppError.forbidden('No puedes resolver tu propia solicitud de vacaciones');
+    }
     if (solicitud.estado !== EstadoSolicitud.PENDIENTE) {
       throw AppError.conflict(`La solicitud ya fue resuelta (${solicitud.estado})`, {
         estado: solicitud.estado,
