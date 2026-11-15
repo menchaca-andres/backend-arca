@@ -35,5 +35,19 @@ export const feriadoAnioSchema = z.object({
   anio: z.coerce.number().int().min(1900).max(9999),
 });
 
+export const filtroHistorialSchema = z.object({
+  estado: z.enum(['PENDIENTE', 'APROBADA', 'RECHAZADA']).optional(),
+  anio: z.coerce.number().int().min(1900).max(9999).optional(),
+});
+
+export const filtroCalendarioSchema = z.object({
+  mes: z
+    .string()
+    .regex(/^\d{4}-(0[1-9]|1[0-2])$/, 'El mes debe tener el formato YYYY-MM')
+    .optional(),
+});
+
 export type SolicitudVacacionInput = z.infer<typeof solicitudVacacionSchema>;
 export type RechazarSolicitudInput = z.infer<typeof rechazarSolicitudSchema>;
+export type FiltroHistorialInput = z.infer<typeof filtroHistorialSchema>;
+export type FiltroCalendarioInput = z.infer<typeof filtroCalendarioSchema>;
