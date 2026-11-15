@@ -1,0 +1,253 @@
+openapi: 3.0.3
+info:
+  title: API de Boletas y Planillas - Cálculo de Planilla del Período
+  version: 1.0.0
+  description: Apertura de períodos, cálculo automático de planilla con prorrateo de días trabajados, conceptos de ley, novedades y detección de líquido negativo (HU-21).
+servers:
+  - url: /api/periodos
+security:
+  - bearerAuth: []
+paths:
+  /:
+    get:
+      summary: Listar períodos registrados con resumen estadístico (CA-08)
+      description: Retorna la lista de períodos ordenados descendentemente con totales consolidados (ganado, descuentos, líquido) y alertas.
+      responses:
+        '200':
+          description: Lista de períodos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PeriodoResumen'
+    post:
+      summary: Abrir un nuevo período (CA-01)
+      description: Abre un nuevo período mensual en estado BORRADOR. No permite períodos duplicados para el mismo mes y año.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AbrirPeriodoInput'
+      responses:
+        '201':
+          description: Período creado exitosamente en estado BORRADOR
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Periodo'
+        '409':
+          description: El período ya se encuentra registrado
+
+  /{id}:
+    get:
+      summary: Obtener detalle del período y planilla calculada (CA-08)
+      description: Retorna los datos del período, el resumen consolidado y el listado de boletas con su detalle línea por línea.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Detalle del período y boletas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DetallePlanillaResponse'
+        '404':
+          description: Período no encontrado
+
+  /{id}/calculo:
+    post:
+      summary: Calcular o recalcular la planilla del período (CA-02 a CA-07)
+      description: |
+        - Verifica que el período esté en estado BORRADOR (CA-07).
+        - Obtiene de ms-personal todos los funcionarios activos al menos un día en el mes (CA-02).
+        - Prorratea días trabajados en base 30 comercial (CA-03).
+        - Aplica conceptos automáticos y novedades en orden (CA-04).
+        - Genera detalle línea por línea a 2 decimales (CA-05).
+        - Detecta líquido pagable negativo marcando alerta para bloquear emisión (CA-06).
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Planilla calculada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DetallePlanillaResponse'
+        '404':
+          description: Período no encontrado
+        '409':
+          description: No se puede recalcular un período emitido
+
+components:
+  schemas:
+    AbrirPeriodoInput:
+      type: object
+      required:
+        - anio
+        - mes
+      properties:
+        anio:
+          type: integer
+          minimum: 2000
+          maximum: 2100
+          example: 2026
+        mes:
+          type: integer
+          minimum: 1
+          maximum: 12
+          example: 10
+
+    Periodo:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        anio:
+          type: integer
+          example: 2026
+        mes:
+          type: integer
+          example: 10
+        estado:
+          type: string
+          enum: [BORRADOR, EMITIDO]
+          example: BORRADOR
+        fechaCalculo:
+          type: string
+          format: date-time
+          nullable: true
+        fechaEmision:
+          type: string
+          format: date-time
+          nullable: true
+        emitidoPor:
+          type: string
+          format: uuid
+          nullable: true
+
+    ResumenPeriodo:
+      type: object
+      properties:
+        totalGanado:
+          type: number
+          example: 25000.00
+        totalDescuentos:
+          type: number
+          example: 3177.50
+        totalLiquido:
+          type: number
+          example: 21822.50
+        cantidadBoletas:
+          type: integer
+          example: 3
+        cantidadAlertas:
+          type: integer
+          example: 0
+
+    PeriodoResumen:
+      allOf:
+        - $ref: '#/components/schemas/Periodo'
+        - type: object
+          properties:
+            resumen:
+              $ref: '#/components/schemas/ResumenPeriodo'
+
+    BoletaDetalle:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        conceptoId:
+          type: string
+          format: uuid
+        conceptoCodigo:
+          type: string
+          example: HABER_BASICO
+        conceptoNombre:
+          type: string
+          example: Haber básico
+        tipo:
+          type: string
+          enum: [HABER, DESCUENTO]
+        baseMonto:
+          type: number
+          nullable: true
+        porcentaje:
+          type: number
+          nullable: true
+        monto:
+          type: number
+          example: 8500.00
+        orden:
+          type: integer
+          example: 1
+
+    BoletaPlanilla:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        funcionarioId:
+          type: string
+          format: uuid
+        datosFuncionario:
+          type: object
+          properties:
+            nombres:
+              type: string
+            apellidos:
+              type: string
+            documentoIdentidad:
+              type: string
+            cargo:
+              type: string
+            area:
+              type: string
+            remuneracion:
+              type: number
+        diasTrabajados:
+          type: integer
+          example: 30
+        totalGanado:
+          type: number
+          example: 8500.00
+        totalDescuentos:
+          type: number
+          example: 1080.35
+        liquidoPagable:
+          type: number
+          example: 7419.65
+        tieneAlerta:
+          type: boolean
+          example: false
+        detalles:
+          type: array
+          items:
+            $ref: '#/components/schemas/BoletaDetalle'
+
+    DetallePlanillaResponse:
+      type: object
+      properties:
+        periodo:
+          $ref: '#/components/schemas/Periodo'
+        resumen:
+          $ref: '#/components/schemas/ResumenPeriodo'
+        boletas:
+          type: array
+          items:
+            $ref: '#/components/schemas/BoletaPlanilla'
