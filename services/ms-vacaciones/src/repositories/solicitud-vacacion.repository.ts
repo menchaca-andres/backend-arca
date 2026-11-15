@@ -42,6 +42,19 @@ export class SolicitudVacacionRepository {
       .getOne();
   }
 
+  /** HU-16 CA-04: vacaciones aprobadas que solapan el mes del calendario. */
+  findAprobadasRango(desde: string, hasta: string) {
+    return this.repo
+      .createQueryBuilder('solicitud')
+      .where('solicitud.estado = :estado', { estado: EstadoSolicitud.APROBADA })
+      .andWhere('solicitud.fechaInicio <= :hasta AND solicitud.fechaFin >= :desde', {
+        desde,
+        hasta,
+      })
+      .orderBy('solicitud.fechaInicio', 'ASC')
+      .getMany();
+  }
+
   save(entity: SolicitudVacacion) {
     return this.repo.save(entity);
   }
