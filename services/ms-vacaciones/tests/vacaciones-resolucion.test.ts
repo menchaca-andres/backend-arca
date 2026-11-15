@@ -42,6 +42,7 @@ function crearApp(
         .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime()),
     findByFuncionario: async (id: string) => solicitudes.filter((item) => item.funcionarioId === id),
     findOverlapping: async () => null,
+    findAprobadasRango: async () => [],
     save: async (entity: SolicitudVacacion) => entity,
   };
   const personal = {
