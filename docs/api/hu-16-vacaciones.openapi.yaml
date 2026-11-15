@@ -1,0 +1,214 @@
+openapi: 3.0.3
+info:
+  title: API de Vacaciones - Historial y Calendario (HU-16)
+  version: 1.0.0
+  description: Consulta de historial (kardex) por funcionario y calendario mensual de vacaciones aprobadas de todo el personal (HU-16).
+servers:
+  - url: /api/v1/vacaciones
+security:
+  - bearerAuth: []
+paths:
+  /historial/{idFuncionario}:
+    get:
+      summary: Consulta de historial (kardex) por funcionario (CA-01, CA-02, CA-03)
+      description: |
+        Lista por gestión: días ganados, días usados, días reservados, saldo disponible y solicitudes asociadas con fechas, días, estado y resolución.
+        Un FUNCIONARIO solo puede consultar su propio idFuncionario (CA-03).
+        Permite filtrar por estado y por año (CA-02).
+      parameters:
+        - name: idFuncionario
+          in: path
+          required: true
+          description: Identificador UUID del funcionario
+          schema:
+            type: string
+            format: uuid
+        - name: estado
+          in: query
+          required: false
+          description: Filtrar solicitudes por estado
+          schema:
+            type: string
+            enum: [PENDIENTE, APROBADA, RECHAZADA]
+        - name: anio
+          in: query
+          required: false
+          description: Filtrar solicitudes y gestiones por año
+          schema:
+            type: integer
+            minimum: 1900
+            maximum: 9999
+      responses:
+        '200':
+          description: Kardex de vacaciones por gestión
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KardexVacaciones'
+        '400':
+          description: Parámetros inválidos
+        '401':
+          description: Identidad ausente
+        '403':
+          description: Acceso no autorizado (FUNCIONARIO consultando a otro empleado)
+        '404':
+          description: Funcionario no encontrado
+
+  /calendario:
+    get:
+      summary: Calendario mensual de vacaciones aprobadas de todo el personal (CA-04)
+      description: |
+        Solo RRHH, ADMIN o DIRECCION. Retorna las solicitudes en estado APROBADA que solapan el mes especificado, junto con los feriados nacionales del período.
+      parameters:
+        - name: mes
+          in: query
+          required: false
+          description: Mes a consultar en formato YYYY-MM. Si se omite, toma el mes actual en La Paz.
+          schema:
+            type: string
+            pattern: '^\d{4}-(0[1-9]|1[0-2])$'
+            example: '2026-11'
+      responses:
+        '200':
+          description: Lista de solicitudes aprobadas y feriados para el mes
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CalendarioMensual'
+        '400':
+          description: Formato de mes inválido
+        '401':
+          description: Identidad ausente
+        '403':
+          description: Acceso no permitido (solo RRHH / ADMIN / DIRECCION)
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    SolicitudKardex:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        funcionarioId:
+          type: string
+          format: uuid
+        funcionarioNombre:
+          type: string
+        fechaInicio:
+          type: string
+          format: date
+        fechaFin:
+          type: string
+          format: date
+        diasHabiles:
+          type: integer
+        estado:
+          type: string
+          enum: [PENDIENTE, APROBADA, RECHAZADA]
+        motivoRechazo:
+          type: string
+          nullable: true
+        registradoPor:
+          type: string
+          format: uuid
+        resueltoPor:
+          type: string
+          format: uuid
+          nullable: true
+        fechaResolucion:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+
+    GestionKardex:
+      type: object
+      properties:
+        numero:
+          type: integer
+        periodoInicio:
+          type: string
+          format: date
+        periodoFin:
+          type: string
+          format: date
+        cumplida:
+          type: boolean
+        diasGanados:
+          type: integer
+        diasUsados:
+          type: integer
+        diasReservados:
+          type: integer
+        diasDisponibles:
+          type: integer
+        solicitudes:
+          type: array
+          items:
+            $ref: '#/components/schemas/SolicitudKardex'
+
+    KardexVacaciones:
+      type: object
+      properties:
+        funcionarioId:
+          type: string
+          format: uuid
+        funcionarioNombre:
+          type: string
+        fechaIngreso:
+          type: string
+          format: date
+        gestionesCumplidas:
+          type: integer
+        diasGanadosTotal:
+          type: integer
+        diasUsadosTotal:
+          type: integer
+        diasReservadosTotal:
+          type: integer
+        diasDisponiblesTotal:
+          type: integer
+        gestiones:
+          type: array
+          items:
+            $ref: '#/components/schemas/GestionKardex'
+
+    FeriadoItem:
+      type: object
+      properties:
+        fecha:
+          type: string
+          format: date
+        descripcion:
+          type: string
+
+    CalendarioMensual:
+      type: object
+      properties:
+        mes:
+          type: string
+          example: '2026-11'
+        desde:
+          type: string
+          format: date
+        hasta:
+          type: string
+          format: date
+        totalAprobadas:
+          type: integer
+        solicitudes:
+          type: array
+          items:
+            $ref: '#/components/schemas/SolicitudKardex'
+        feriados:
+          type: array
+          items:
+            $ref: '#/components/schemas/FeriadoItem'
