@@ -10,6 +10,7 @@ import {
 } from '@arca/shared';
 import { createHealthRouter } from './routes/health.routes';
 import { plantillaRouter } from './routes/plantilla.routes';
+import { contratoRouter } from './routes/contrato.routes';
 
 const SERVICE_NAME = 'ms-contratos';
 
@@ -34,6 +35,10 @@ export function createApp(internalRoutes: Router = Router()) {
   app.use(express.json());
   app.use('/health', createHealthRouter(SERVICE_NAME));
   app.use('/plantillas', plantillaRouter);
+  app.use('/api/plantillas', plantillaRouter);
+  app.use('/contratos', contratoRouter);
+  app.use('/api/contratos', contratoRouter);
+  app.use('/api/v1/contratos', contratoRouter);
   app.use('/internal', internalRoutes);
   app.use((_req, _res, next) => {
     next(new AppError('NOT_FOUND', 'Ruta no encontrada'));
