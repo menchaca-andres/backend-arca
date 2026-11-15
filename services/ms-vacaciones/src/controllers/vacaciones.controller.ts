@@ -1,7 +1,12 @@
 import type { NextFunction, Request, Response } from 'express';
 import { AppError, getIdentity } from '@arca/shared';
 import type { ResolutorSolicitud, VacacionesService } from '../services/vacaciones.service';
-import type { RechazarSolicitudInput, SolicitudVacacionInput } from '../schemas/vacaciones.schema';
+import type {
+  FiltroCalendarioInput,
+  FiltroHistorialInput,
+  RechazarSolicitudInput,
+  SolicitudVacacionInput,
+} from '../schemas/vacaciones.schema';
 
 export class VacacionesController {
   constructor(private readonly service: VacacionesService) {}
@@ -88,6 +93,25 @@ export class VacacionesController {
       const { id } = res.locals.params as { id: string };
       const { motivo } = req.body as RechazarSolicitudInput;
       res.json(await this.service.rechazarSolicitud(id, motivo, this.resolutor(req)));
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  obtenerHistorial = async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { idFuncionario } = res.locals.params as { idFuncionario: string };
+      const filtros = (res.locals.query ?? {}) as FiltroHistorialInput;
+      res.json(await this.service.obtenerHistorial(idFuncionario, filtros));
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  obtenerCalendario = async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { mes } = (res.locals.query ?? {}) as FiltroCalendarioInput;
+      res.json(await this.service.obtenerCalendario(mes));
     } catch (error) {
       next(error);
     }
