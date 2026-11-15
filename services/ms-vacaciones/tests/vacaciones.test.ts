@@ -25,6 +25,7 @@ function crearApp(
       solicitudes.filter((solicitud) => solicitud.estado === EstadoSolicitud.PENDIENTE),
     findByFuncionario: async (id: string) => solicitudes.filter((solicitud) => solicitud.funcionarioId === id),
     findOverlapping: async () => opciones.cruce ?? null,
+    findAprobadasRango: async () => [],
     save: async (solicitud: SolicitudVacacion) => {
       const saved = Object.assign(solicitud, {
         id: '11111111-1111-4111-8111-111111111105',
