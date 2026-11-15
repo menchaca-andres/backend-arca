@@ -1,0 +1,179 @@
+openapi: 3.0.3
+info:
+  title: API de Contratos - Consulta y Descarga de Contratos
+  version: 1.0.0
+  description: Consulta, filtrado y descarga de contratos laborales con validación criptográfica de integridad SHA-256 e historial de versiones (HU-19).
+servers:
+  - url: /api/v1/contratos
+security:
+  - bearerAuth: []
+paths:
+  /:
+    get:
+      summary: Listar contratos con filtros (CA-01, CA-02)
+      description: |
+        - **RRHH / ADMIN / DIRECCION:** Listan todos los contratos con filtros opcionales por funcionario, plantilla, estado y rango de fechas (CA-01).
+        - **FUNCIONARIO:** Solo visualiza sus propios contratos vigentes o históricos (CA-02).
+      parameters:
+        - name: funcionarioId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: Filtrar por funcionario
+        - name: plantillaId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: Filtrar por plantilla origen
+        - name: estado
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [VIGENTE, REEMPLAZADO, ANULADO]
+          description: Filtrar por estado operativo
+        - name: desde
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Fecha inicio de emisión (YYYY-MM-DD)
+        - name: hasta
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: Fecha fin de emisión (YYYY-MM-DD)
+      responses:
+        '200':
+          description: Lista de contratos encontrados
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ContratoItem'
+        '401':
+          description: Identidad ausente
+        '403':
+          description: El usuario no tiene un funcionario vinculado o no tiene permisos
+
+  /{id}:
+    get:
+      summary: Consultar ficha de contrato e historial de versiones (CA-02, CA-04)
+      description: |
+        Recupera el contrato por ID, incluyendo metadatos, contenido renderizado, snapshot de variables y su historial completo de versiones (v1, v2...) para el mismo funcionario.
+        Un FUNCIONARIO solo puede consultar sus propios contratos (CA-02).
+      parameters:
+        - $ref: '#/components/parameters/IdContrato'
+      responses:
+        '200':
+          description: Ficha del contrato con historial de versiones
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DetalleContrato'
+        '401':
+          description: Identidad ausente
+        '403':
+          description: Funcionario intentando consultar el contrato de otra persona (CA-02)
+        '404':
+          description: Contrato no encontrado
+
+  /{id}/pdf:
+    get:
+      summary: Descargar PDF almacenado con verificación criptográfica SHA-256 (CA-02, CA-03)
+      description: |
+        Entrega directamente el archivo binario PDF almacenado (sin regenerarlo).
+        Antes de transmitir el archivo, calcula su hash SHA-256 y verifica que coincida exactamente con el hash registrado en la base de datos (CA-03).
+        Un FUNCIONARIO solo puede descargar sus propios contratos (CA-02).
+      parameters:
+        - $ref: '#/components/parameters/IdContrato'
+      responses:
+        '200':
+          description: Archivo binario PDF verificado
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Identidad ausente
+        '403':
+          description: No autorizado para descargar este contrato (CA-02)
+        '404':
+          description: Contrato o PDF no encontrado
+        '500':
+          description: Error de integridad criptográfica (el hash del PDF no coincide con el registro original)
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    IdContrato:
+      name: id
+      in: path
+      required: true
+      description: UUID del contrato
+      schema:
+        type: string
+        format: uuid
+
+  schemas:
+    ContratoItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        numero:
+          type: string
+          example: CT-2026-0001
+        plantillaVersionId:
+          type: string
+          format: uuid
+        funcionarioId:
+          type: string
+          format: uuid
+        version:
+          type: integer
+          example: 1
+        estado:
+          type: string
+          enum: [VIGENTE, REEMPLAZADO, ANULADO]
+        hashSha256:
+          type: string
+          example: 7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069
+        generadoPor:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+
+    DetalleContrato:
+      allOf:
+        - $ref: '#/components/schemas/ContratoItem'
+        - type: object
+          properties:
+            datos:
+              type: object
+              description: Snapshot de datos al momento de emisión
+            contenidoRenderizado:
+              type: string
+              description: Texto final compilado del contrato
+            historialVersiones:
+              type: array
+              description: Historial de versiones del funcionario ordenadas descendentemente (CA-04)
+              items:
+                $ref: '#/components/schemas/ContratoItem'
