@@ -248,6 +248,31 @@ Para la presentación es ideal tener preparadas las credenciales de los diferent
 
 ---
 
+### HU-18: Generar Contrato de un Funcionario
+* **Microservicio:** `ms-contratos`
+* **Ruta Frontend:** `/contratos` -> Botón "Generar Contrato"
+* **Actor:** `rrhh@arca.bo` o `admin@arca.bo`
+
+#### Qué demostrar en la UI y Reglas de Negocio Clave:
+1. **Selección del Funcionario y Plantilla (CA-01):**
+   - RRHH selecciona un funcionario del padrón activo (obtenido directamente de `ms-personal`) y la plantilla activa a utilizar.
+   - **Regla Inquebrantable:** Todos los datos (cargo, área, remuneración, C.I., fecha de ingreso, días de prueba) provienen automáticamente de la asignación laboral activa; el operador **nunca** los digita manualmente.
+2. **Previsualización en Vivo Obligatoria (CA-02):**
+   - Antes de emitir o firmar, el asistente presenta la previsualización en vivo del contrato compilado con los datos reales del funcionario y la fecha de emisión.
+3. **Validación de Estado Operativo (CA-03):**
+   - El sistema rechaza cualquier intento de generación si el funcionario se encuentra en estado `BAJA`.
+4. **Emisión Formal, Snapshot y Criptografía (CA-04, CA-05, CA-07):**
+   - Al confirmar, el sistema genera el correlativo secuencial `CT-AAAA-NNNN` (ej: `CT-2026-0001`).
+   - Gotenberg compila el PDF formal con membrete oficial de ARCA, numeración de página y líneas de firma.
+   - Se calcula y almacena el hash criptográfico **SHA-256 de 64 caracteres** del binario PDF para auditoría forense.
+   - Se persiste el snapshot JSON inmutable de los datos al momento de emisión.
+5. **Versionado Atómico de Contrato (CA-06):**
+   - Si el funcionario ya contaba con un contrato previo (versión `v1`), el nuevo se genera como versión `v2` (`VIGENTE`) y el anterior pasa atómicamente a estado `REEMPLAZADO` en la misma transacción.
+6. **Inmutabilidad (CA-08):**
+   - Un contrato emitido nunca se edita; únicamente se puede consultar o descargar su PDF binario.
+
+---
+
 ### HU-20: Conceptos de Planilla y Novedades del Período
 * **Microservicio:** `ms-boletas`
 * **Ruta Frontend:** `/boletas`
@@ -291,7 +316,8 @@ Para la presentación es ideal tener preparadas las credenciales de los diferent
 | **8** | Vacaciones | **HU-13** | Explicar saldo de 15 días hábiles y exclusión de feriados/findes. |
 | **9** | Vacaciones | **HU-14** | Solicitar vacaciones lun-vie demostrando cálculo exacto de días hábiles. |
 | **10** | Contratos | **HU-17** | Editar plantilla Handlebars, guardar y mostrar salto de versión v1 a v2. |
-| **11** | Boletas | **HU-20** | Crear concepto salarial y registrar novedad de Bs 750 para el período. |
+| **11** | Contratos | **HU-18** | Generar contrato con preview en vivo de datos de ms-personal, correlativo CT-AAAA-NNNN y PDF con Gotenberg. |
+| **12** | Boletas | **HU-20** | Crear concepto salarial y registrar novedad de Bs 750 para el período. |
 
 ---
 
