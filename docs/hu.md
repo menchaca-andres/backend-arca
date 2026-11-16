@@ -397,6 +397,27 @@ Para la presentación es ideal tener preparadas las credenciales de los diferent
 
 ---
 
+### HU-24: Registrar Auditoría de Operaciones
+* **Microservicio:** `gateway` (schema `auditoria.evento`)
+* **Ruta Frontend:** `/auditoria`
+* **Actor:** `admin@arca.bo` (rol `ADMIN`)
+
+#### Qué demostrar en la UI y Reglas de Negocio Clave:
+1. **Captura Asíncrona Automática en el Gateway (CA-01, CA-02):**
+   - El Gateway intercepta toda petición mutable (`POST`, `PUT`, `PATCH`, `DELETE`) y descargas de PDF oficiales (`GET /api/contratos/:id/pdf` y `GET /api/boletas/:id/pdf`).
+   - Cada evento almacena de forma inmutable: fecha/hora, usuario (`usuarioId`), rol, método HTTP, ruta, microservicio destino, recurso (`recursoId`), código HTTP (`statusCode`), IP y `request-id` de trazabilidad distribuida.
+2. **Privacidad y Datos No Sensibles (CA-03):**
+   - Nunca se persisten contraseñas, tokens JWT ni cuerpos completos de peticiones, cumpliendo con estándares de privacidad y seguridad de la información.
+3. **Resiliencia ante Fallos (CA-05):**
+   - El registro se ejecuta de forma asíncrona tras la respuesta HTTP (`setImmediate` en `res.once('finish')`). Si la base de datos de auditoría presenta algún inconveniente, la petición del usuario no se interrumpe ni se degrada; el fallo se registra en logs.
+4. **Permisos de Solo Inserción (CA-04):**
+   - El usuario de base de datos `user_gateway` tiene exclusivamente permisos `SELECT, INSERT` en el schema `auditoria`. La tabla es a prueba de manipulaciones o borrados accidentales.
+5. **Consulta y Filtrado Paginado para Administradores (CA-06):**
+   - En `/auditoria`, el administrador puede filtrar los eventos por microservicio (`auth`, `personal`, `vacaciones`, `contratos`, `boletas`, `gateway`), método HTTP, resultado (`Éxito` o `Error`), usuario específico y rango de fechas.
+   - Al hacer clic en **"Ver"**, se despliega el modal con todos los detalles del evento y facilidades para copiar el `Request-ID` o `Usuario-ID` para correlación de incidentes.
+
+---
+
 ## 3. Resumen Rápido para la Presentación (Cheat Sheet)
 
 | Orden | Módulo | Historia | Acción Clave en Pantalla |
@@ -417,6 +438,7 @@ Para la presentación es ideal tener preparadas las credenciales de los diferent
 | **14** | Boletas | **HU-21** | Abrir período, calcular planilla de ley con base 30 y detectar alertas de líquido negativo. |
 | **15** | Boletas | **HU-22** | Emitir boletas inmutables con correlativo BP-AAAAMM-NNNN y rectificar con trazabilidad v1->v2. |
 | **16** | Boletas | **HU-23** | Consultar boletas por funcionario, auditar versiones rectificadas y descargar PDF verificado con SHA-256. |
+| **17** | Auditoría | **HU-24** | Consultar registro de auditoría en vivo del Gateway, filtrar por servicio/resultado y verificar trazabilidad de request-id. |
 
 ---
 

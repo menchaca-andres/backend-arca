@@ -1,0 +1,192 @@
+openapi: 3.0.3
+info:
+  title: API de Auditoría de Operaciones
+  version: 1.0.0
+  description: Endpoints para registro y consulta de auditoría de operaciones en ARCA (HU-24 / AR3-138).
+servers:
+  - url: /api/v1
+  - url: /api
+security:
+  - bearerAuth: []
+paths:
+  /auditoria:
+    get:
+      summary: Consultar auditoría de operaciones con filtros y paginación (CA-06)
+      description: |
+        - Accesible exclusivamente por usuarios con rol `ADMIN`.
+        - Permite filtrar por usuario (`usuarioId`), servicio (`servicio`), rango de fechas (`desde`, `hasta`), método HTTP (`metodo`) y resultado (`resultado`: EXITO o ERROR).
+        - Devuelve una lista paginada ordenada cronológicamente de forma descendente.
+      parameters:
+        - name: usuarioId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: ID del usuario que ejecutó la operación
+        - name: servicio
+          in: query
+          required: false
+          schema:
+            type: string
+            maxLength: 30
+          description: Nombre del servicio destino (auth, personal, vacaciones, contratos, boletas, gateway)
+        - name: desde
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Fecha/hora de inicio en formato ISO 8601 o YYYY-MM-DD
+        - name: hasta
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Fecha/hora de fin en formato ISO 8601 o YYYY-MM-DD
+        - name: resultado
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [EXITO, ERROR]
+          description: Resultado de la operación (EXITO para HTTP < 400, ERROR para HTTP >= 400)
+        - name: metodo
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [GET, POST, PUT, PATCH, DELETE]
+          description: Método HTTP de la operación
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Número de página
+        - name: pageSize
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          description: Cantidad de elementos por página
+      responses:
+        '200':
+          description: Lista paginada de eventos de auditoría
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedEventos'
+        '400':
+          description: Parámetros de consulta inválidos
+        '401':
+          description: Token no provisto o inválido
+        '403':
+          description: Requiere rol ADMIN
+  /auditoria/{id}:
+    get:
+      summary: Obtener detalle de un evento de auditoría específico
+      description: Consulta los datos individuales de un evento por su ID numérico.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID del evento de auditoría
+      responses:
+        '200':
+          description: Evento de auditoría encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventoAuditoria'
+        '404':
+          description: Evento no encontrado
+        '401':
+          description: Token no provisto o inválido
+        '403':
+          description: Requiere rol ADMIN
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    EventoAuditoria:
+      type: object
+      required:
+        - id
+        - fecha
+        - metodo
+        - ruta
+        - servicio
+        - statusCode
+        - requestId
+      properties:
+        id:
+          type: string
+          example: "142"
+        fecha:
+          type: string
+          format: date-time
+          example: "2026-11-16T13:45:00.000Z"
+        usuarioId:
+          type: string
+          format: uuid
+          nullable: true
+          example: "902d2db7-54b3-469b-90f7-64b58e72ef3e"
+        rol:
+          type: string
+          nullable: true
+          example: "ADMIN"
+        metodo:
+          type: string
+          example: "POST"
+        ruta:
+          type: string
+          example: "/api/usuarios"
+        servicio:
+          type: string
+          example: "auth"
+        recursoId:
+          type: string
+          nullable: true
+          example: "45"
+        statusCode:
+          type: integer
+          example: 201
+        ip:
+          type: string
+          nullable: true
+          example: "192.168.1.100"
+        requestId:
+          type: string
+          format: uuid
+          example: "85fe307b-8395-46eb-8007-88f5a6b0c671"
+    PaginatedEventos:
+      type: object
+      required:
+        - data
+        - page
+        - pageSize
+        - total
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/EventoAuditoria'
+        page:
+          type: integer
+          example: 1
+        pageSize:
+          type: integer
+          example: 20
+        total:
+          type: integer
+          example: 45
