@@ -43,4 +43,15 @@ export class PeriodoController {
       next(error);
     }
   };
+
+  emitir = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const emitidoPor = (req.headers['x-user-id'] as string) ?? '00000000-0000-0000-0000-000000000000';
+      const resultado = await this.service.emitir(id, emitidoPor);
+      res.json(resultado);
+    } catch (error) {
+      next(error);
+    }
+  };
 }

@@ -1,0 +1,172 @@
+openapi: 3.0.3
+info:
+  title: API de Boletas y Planillas - Emisión Inmutable y Rectificación
+  version: 1.0.0
+  description: Emisión atómica e inmutable de boletas de pago con correlativo BP-AAAAMM-NNNN, PDF Gotenberg y hash SHA-256, y rectificación trazable con control de versiones (HU-22).
+servers:
+  - url: /api
+security:
+  - bearerAuth: []
+paths:
+  /periodos/{id}/emision:
+    post:
+      summary: Emitir boletas inmutables del período (CA-01 a CA-03)
+      description: |
+        - Pasa el período a EMITIDO y todas sus boletas a EMITIDA en una sola transacción atómica (CA-01).
+        - Bloquea la emisión si alguna boleta tiene alerta activa o líquido negativo (CA-02).
+        - Asigna número correlativo secuencial BP-AAAAMM-NNNN a cada boleta (CA-03).
+        - Genera y persiste el binario PDF en bytea mediante Gotenberg y computa su hash SHA-256 de 64 caracteres (CA-03).
+        - Activa la inmutabilidad gobernada por trigger en base de datos (CA-04).
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID del período en estado BORRADOR
+      responses:
+        '200':
+          description: Período y boletas emitidos exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmisionResponse'
+        '404':
+          description: Período no encontrado
+        '409':
+          description: Período ya emitido o existencia de alertas de líquido negativo que bloquean la emisión
+
+  /boletas/{id}/rectificacion:
+    post:
+      summary: Rectificar boleta emitida (CA-05, CA-06)
+      description: |
+        - Exige motivo obligatorio de rectificación (CA-05).
+        - Marca la boleta original como RECTIFICADA (CA-05).
+        - Crea una nueva boleta versión N+1 apuntando a la original (CA-05).
+        - Recalcula los montos con los conceptos y novedades corregidas (CA-06).
+        - Genera un nuevo número correlativo, nuevo PDF formal y nuevo hash SHA-256 inmutable (CA-06).
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: ID de la boleta en estado EMITIDA
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RectificarBoletaInput'
+      responses:
+        '201':
+          description: Boleta rectificada creada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Boleta'
+        '400':
+          description: Datos de rectificación inválidos
+        '404':
+          description: Boleta no encontrada
+        '409':
+          description: La boleta no está en estado EMITIDA o la rectificación genera líquido negativo
+
+  /boletas/{id}:
+    get:
+      summary: Obtener detalle de boleta por ID
+      description: Retorna la boleta con su desglose de conceptos, número, estado, hash SHA-256 y trazabilidad de rectificación.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Detalle de la boleta
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Boleta'
+        '404':
+          description: Boleta no encontrada
+
+components:
+  schemas:
+    RectificarBoletaInput:
+      type: object
+      required:
+        - motivo
+      properties:
+        motivo:
+          type: string
+          minLength: 5
+          maxLength: 300
+          example: Corrección de novedad por asignación retroactiva de bono por desempeño
+
+    Boleta:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        periodoId:
+          type: string
+          format: uuid
+        funcionarioId:
+          type: string
+          format: uuid
+        numero:
+          type: string
+          example: BP-202610-0001
+        version:
+          type: integer
+          example: 1
+        estado:
+          type: string
+          enum: [BORRADOR, EMITIDA, RECTIFICADA]
+          example: EMITIDA
+        boletaOriginalId:
+          type: string
+          format: uuid
+          nullable: true
+        motivoRectificacion:
+          type: string
+          nullable: true
+        diasTrabajados:
+          type: integer
+          example: 30
+        totalGanado:
+          type: number
+          example: 8500.00
+        totalDescuentos:
+          type: number
+          example: 1080.35
+        liquidoPagable:
+          type: number
+          example: 7419.65
+        tieneAlerta:
+          type: boolean
+          example: false
+        hashSha256:
+          type: string
+          example: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+        emitidaEn:
+          type: string
+          format: date-time
+
+    EmisionResponse:
+      type: object
+      properties:
+        periodo:
+          type: object
+        resumen:
+          type: object
+        boletas:
+          type: array
+          items:
+            $ref: '#/components/schemas/Boleta'

@@ -1,15 +1,21 @@
+import crypto from 'node:crypto';
 import { AppError, EstadoBoleta, EstadoPeriodo } from '@arca/shared';
 import { AppDataSource } from '../data-source';
 import { Boleta } from '../entities/boleta.entity';
 import { BoletaDetalle } from '../entities/boleta-detalle.entity';
+import { BoletaPdf } from '../entities/boleta-pdf.entity';
 import { Periodo } from '../entities/periodo.entity';
 import { PeriodoRepository } from '../repositories/periodo.repository';
 import { BoletaRepository } from '../repositories/boleta.repository';
 import { BoletaDetalleRepository } from '../repositories/boleta-detalle.repository';
+import { BoletaPdfRepository } from '../repositories/boleta-pdf.repository';
+import { CorrelativoRepository } from '../repositories/correlativo.repository';
 import { ConceptoRepository } from '../repositories/concepto.repository';
 import { NovedadRepository } from '../repositories/novedad.repository';
 import { HttpPersonalClient, type PersonalClient } from '../clients/personal.client';
+import { GotenbergClient, type PdfClient } from '../clients/gotenberg.client';
 import { PlanillaCalculator } from './planilla-calculator';
+import { generarHtmlBoleta } from '../templates/boleta-html.template';
 import type { AbrirPeriodoInput } from '../schemas/periodo.schema';
 
 export interface ResumenPeriodo {
@@ -25,9 +31,12 @@ export class PeriodoService {
     private readonly periodoRepo: PeriodoRepository = new PeriodoRepository(),
     private readonly boletaRepo: BoletaRepository = new BoletaRepository(),
     private readonly boletaDetalleRepo: BoletaDetalleRepository = new BoletaDetalleRepository(),
+    private readonly boletaPdfRepo: BoletaPdfRepository = new BoletaPdfRepository(),
+    private readonly correlativoRepo: CorrelativoRepository = new CorrelativoRepository(),
     private readonly conceptoRepo: ConceptoRepository = new ConceptoRepository(),
     private readonly novedadRepo: NovedadRepository = new NovedadRepository(),
     private readonly personalClient: PersonalClient = new HttpPersonalClient(),
+    private readonly pdfClient: PdfClient = new GotenbergClient(),
   ) {}
 
   /**
@@ -192,6 +201,86 @@ export class PeriodoService {
       periodo,
       resumen,
       boletas: boletasGuardadas,
+    };
+  }
+
+  /**
+   * HU-22 CA-01 a CA-03: Emite las boletas del período haciéndolas inmutables.
+   */
+  async emitir(
+    periodoId: string,
+    emitidoPor: string = '00000000-0000-0000-0000-000000000000',
+  ): Promise<{
+    periodo: Periodo;
+    resumen: ResumenPeriodo;
+    boletas: Boleta[];
+  }> {
+    const periodo = await this.periodoRepo.findById(periodoId);
+    if (!periodo) {
+      throw AppError.notFound('Período no encontrado');
+    }
+
+    if (periodo.estado !== EstadoPeriodo.BORRADOR) {
+      throw AppError.conflict('El período ya fue emitido previamente');
+    }
+
+    const boletas = await this.boletaRepo.findByPeriodoIdWithDetalles(periodoId);
+    if (!boletas || boletas.length === 0) {
+      throw AppError.badRequest('No se pueden emitir boletas sin haber calculado la planilla previamente');
+    }
+
+    // CA-02: No se puede emitir si alguna boleta tiene alerta o líquido negativo
+    const conAlerta = boletas.filter((b) => b.tieneAlerta || Number(b.liquidoPagable) < 0);
+    if (conAlerta.length > 0) {
+      throw AppError.conflict(
+        `No se puede emitir el período: existen ${conAlerta.length} boleta(s) con alertas o líquido pagable negativo (CA-02)`,
+      );
+    }
+
+    const fechaEmision = new Date();
+
+    // Emisión en una sola transacción atómica (CA-01)
+    await AppDataSource.transaction(async (em) => {
+      for (const boleta of boletas) {
+        // Obtener siguiente correlativo atómico BP-AAAAMM-NNNN
+        const seq = await this.correlativoRepo.obtenerSiguiente('BOLETA', periodo.anio, em);
+        const seqStr = String(seq).padStart(4, '0');
+        const mesStr = String(periodo.mes).padStart(2, '0');
+        const numero = `BP-${periodo.anio}${mesStr}-${seqStr}`;
+
+        boleta.numero = numero;
+        boleta.estado = EstadoBoleta.EMITIDA;
+        boleta.emitidaEn = fechaEmision;
+
+        // Generar HTML y PDF (CA-03)
+        const html = generarHtmlBoleta(boleta, periodo, boleta.detalles ?? []);
+        const pdfBuffer = await this.pdfClient.generarPdf(html);
+        const hashSha256 = crypto.createHash('sha256').update(pdfBuffer).digest('hex');
+
+        boleta.hashSha256 = hashSha256;
+        await this.boletaRepo.save(boleta, em);
+
+        // Guardar binario PDF
+        const boletaPdf = new BoletaPdf();
+        boletaPdf.boletaId = boleta.id;
+        boletaPdf.contenido = pdfBuffer;
+        boletaPdf.tamanoBytes = pdfBuffer.length;
+        await this.boletaPdfRepo.save(boletaPdf, em);
+      }
+
+      periodo.estado = EstadoPeriodo.EMITIDO;
+      periodo.fechaEmision = fechaEmision;
+      periodo.emitidoPor = emitidoPor;
+      await this.periodoRepo.save(periodo, em);
+    });
+
+    const boletasEmitidas = await this.boletaRepo.findByPeriodoIdWithDetalles(periodoId);
+    const resumen = this.calcularResumen(boletasEmitidas);
+
+    return {
+      periodo,
+      resumen,
+      boletas: boletasEmitidas,
     };
   }
 

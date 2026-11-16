@@ -109,13 +109,34 @@ describe('PeriodoService & PlanillaCalculator (HU-21: Calcular la planilla del p
       getFuncionariosActivos: jest.fn(),
     };
 
+    const mockBoletaPdfRepo = {
+      findById: jest.fn(),
+      findByIdConContenido: jest.fn(),
+      findAll: jest.fn(),
+      save: jest.fn(),
+    } as any;
+
+    const mockCorrelativoRepo = {
+      findById: jest.fn(),
+      findAll: jest.fn(),
+      save: jest.fn(),
+      obtenerSiguiente: jest.fn().mockResolvedValue(1),
+    } as any;
+
+    const mockPdfClient = {
+      generarPdf: jest.fn().mockResolvedValue(Buffer.from('mock pdf')),
+    };
+
     service = new PeriodoService(
       mockPeriodoRepo,
       mockBoletaRepo,
       mockBoletaDetalleRepo,
+      mockBoletaPdfRepo,
+      mockCorrelativoRepo,
       mockConceptoRepo,
       mockNovedadRepo,
       mockPersonalClient,
+      mockPdfClient,
     );
   });
 

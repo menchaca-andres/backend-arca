@@ -12,6 +12,7 @@ import { createHealthRouter } from './routes/health.routes';
 import { conceptoRouter } from './routes/concepto.routes';
 import { novedadRouter } from './routes/novedad.routes';
 import { periodoRouter } from './routes/periodo.routes';
+import { boletaRouter } from './routes/boleta.routes';
 
 const SERVICE_NAME = 'ms-boletas';
 
@@ -38,6 +39,7 @@ export function createApp(internalRoutes: Router = Router()) {
   app.use('/conceptos', conceptoRouter);
   app.use('/novedades', novedadRouter);
   app.use('/periodos', periodoRouter);
+  app.use('/boletas', boletaRouter);
   app.use('/internal', internalRoutes);
   app.use((_req, _res, next) => {
     next(new AppError('NOT_FOUND', 'Ruta no encontrada'));

@@ -354,6 +354,28 @@ Para la presentación es ideal tener preparadas las credenciales de los diferent
 
 ---
 
+### HU-22: Emitir Boletas Inmutables y Rectificarlas
+* **Microservicio:** `ms-boletas`
+* **Ruta Frontend:** `/boletas` -> Pestaña "Planilla del Período" / "Boletas Emitidas"
+* **Actor:** `rrhh@arca.bo` o `admin@arca.bo`
+
+#### Qué demostrar en la UI y Reglas de Negocio Clave:
+1. **Emisión Atómica del Período (CA-01, CA-03):**
+   - Clic en **"Emitir Boletas del Período"**: el período pasa atómicamente a **`EMITIDO`** y todas sus boletas a **`EMITIDA`** en una sola transacción PostgreSQL.
+   - Cada boleta recibe automáticamente su número correlativo oficial **`BP-AAAAMM-NNNN`** (ej. `BP-202610-0001`), snapshot JSON inmutable del funcionario, PDF formal generado con Gotenberg y su huella criptográfica **SHA-256 de 64 caracteres**.
+2. **Bloqueo Inquebrantable ante Alertas (CA-02):**
+   - Si alguna boleta calculada tiene `tieneAlerta: true` o líquido pagable negativo, el botón de emisión se desactiva y el backend rechaza la operación con `409 Conflict`. No es posible emitir boletas erróneas o deficitarias.
+3. **Inmutabilidad por Trigger en Base de Datos (CA-04):**
+   - Una boleta emitida no se puede modificar ni borrar. Un trigger (`trg_boleta_inmutabilidad`) a nivel de motor PostgreSQL intercepta y rechaza cualquier `UPDATE` o `DELETE` arbitrario, protegiendo la integridad fiscal ante auditorías externas.
+4. **Rectificación Trazable con Control de Versiones (CA-05, CA-06):**
+   - Si RRHH detecta un error o ajuste posterior en una boleta emitida:
+     - Clic en el botón **"Rectificar"**.
+     - Modal de rectificación: exige motivo obligatorio (ej. *"Ajuste salarial retroactivo acordado"*).
+     - La boleta original pasa atómicamente a estado **`RECTIFICADA`** (preservando su número e historial).
+     - Se genera una nueva boleta **Versión 2 (o siguiente)** apuntando a la original (`boletaOriginalId`), con nuevo correlativo, nuevo PDF formal y nuevo hash SHA-256.
+
+---
+
 ## 3. Resumen Rápido para la Presentación (Cheat Sheet)
 
 | Orden | Módulo | Historia | Acción Clave en Pantalla |
@@ -372,6 +394,7 @@ Para la presentación es ideal tener preparadas las credenciales de los diferent
 | **12** | Contratos | **HU-19** | Filtrar contratos, auditar historial de versiones v1/v2 y descargar PDF verificado con SHA-256. |
 | **13** | Boletas | **HU-20** | Crear concepto salarial y registrar novedad de Bs 750 para el período. |
 | **14** | Boletas | **HU-21** | Abrir período, calcular planilla de ley con base 30 y detectar alertas de líquido negativo. |
+| **15** | Boletas | **HU-22** | Emitir boletas inmutables con correlativo BP-AAAAMM-NNNN y rectificar con trazabilidad v1->v2. |
 
 ---
 
