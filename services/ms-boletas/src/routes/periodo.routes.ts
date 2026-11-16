@@ -7,10 +7,10 @@ import { abrirPeriodoSchema } from '../schemas/periodo.schema';
 export const periodoRouter = Router();
 const controller = new PeriodoController();
 
-// Listar períodos (RRHH, ADMIN, DIRECCION)
+// Listar períodos (RRHH, ADMIN, DIRECCION, FUNCIONARIO)
 periodoRouter.get(
   '/',
-  requireRole(RolUsuario.ADMIN, RolUsuario.RRHH, RolUsuario.DIRECCION),
+  requireRole(RolUsuario.ADMIN, RolUsuario.RRHH, RolUsuario.DIRECCION, RolUsuario.FUNCIONARIO),
   controller.listar,
 );
 

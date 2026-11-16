@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { EstadoBoleta } from '@arca/shared';
 
 export const rectificarBoletaSchema = z.object({
   motivo: z
@@ -8,3 +9,11 @@ export const rectificarBoletaSchema = z.object({
 });
 
 export type RectificarBoletaInput = z.infer<typeof rectificarBoletaSchema>;
+
+export const listarBoletasQuerySchema = z.object({
+  periodoId: z.string().min(1).optional(),
+  funcionarioId: z.string().min(1).optional(),
+  estado: z.nativeEnum(EstadoBoleta).optional(),
+});
+
+export type ListarBoletasQuery = z.infer<typeof listarBoletasQuerySchema>;

@@ -1,10 +1,10 @@
 import crypto from 'node:crypto';
-import { AppError, EstadoBoleta, type FuncionarioContrato } from '@arca/shared';
+import { AppError, EstadoBoleta, RolUsuario, type FuncionarioContrato, type Identity } from '@arca/shared';
 import { AppDataSource } from '../data-source';
 import { Boleta } from '../entities/boleta.entity';
 import { BoletaDetalle } from '../entities/boleta-detalle.entity';
 import { BoletaPdf } from '../entities/boleta-pdf.entity';
-import { BoletaRepository } from '../repositories/boleta.repository';
+import { BoletaRepository, type FiltrosBoleta } from '../repositories/boleta.repository';
 import { BoletaDetalleRepository } from '../repositories/boleta-detalle.repository';
 import { BoletaPdfRepository } from '../repositories/boleta-pdf.repository';
 import { PeriodoRepository } from '../repositories/periodo.repository';
@@ -15,6 +15,36 @@ import { GotenbergClient, type PdfClient } from '../clients/gotenberg.client';
 import { PlanillaCalculator } from './planilla-calculator';
 import { generarHtmlBoleta } from '../templates/boleta-html.template';
 import type { RectificarBoletaInput } from '../schemas/boleta.schema';
+
+export interface ResumenListadoBoletas {
+  totalGanado: number;
+  totalDescuentos: number;
+  totalLiquido: number;
+  cantidadBoletas: number;
+}
+
+export interface DetalleBoletaResponse extends Boleta {
+  versionVigente?: {
+    id: string;
+    numero: string | null;
+    version: number;
+    estado: EstadoBoleta;
+    liquidoPagable: number;
+  } | null;
+  historialVersiones?: Array<{
+    id: string;
+    numero: string | null;
+    version: number;
+    estado: EstadoBoleta;
+    motivoRectificacion: string | null;
+    createdAt?: Date;
+  }>;
+}
+
+export interface ListadoBoletasResponse {
+  boletas: Boleta[];
+  resumen: ResumenListadoBoletas;
+}
 
 export class BoletaService {
   constructor(
@@ -29,14 +59,124 @@ export class BoletaService {
   ) {}
 
   /**
-   * Obtener boleta por ID con detalles y período.
+   * HU-23 CA-01 y CA-02:
+   * RRHH lista las boletas por período y por funcionario, con totales del período.
+   * Un FUNCIONARIO ve solo sus boletas emitidas, ordenadas de la más reciente a la más antigua.
+   * CA-05: Las boletas en borrador no son visibles para el FUNCIONARIO.
    */
-  async obtenerPorId(id: string): Promise<Boleta> {
+  async listar(filtros: FiltrosBoleta = {}, identity?: Identity | null): Promise<ListadoBoletasResponse> {
+    const filtrosEfectivos: FiltrosBoleta = { ...filtros };
+
+    // CA-02 y CA-05: Regla de visibilidad para FUNCIONARIO
+    if (identity?.rol === RolUsuario.FUNCIONARIO) {
+      if (!identity.funcionarioId) {
+        throw AppError.forbidden('El usuario no tiene un funcionario asociado');
+      }
+      filtrosEfectivos.funcionarioId = identity.funcionarioId;
+      filtrosEfectivos.estados = [EstadoBoleta.EMITIDA, EstadoBoleta.RECTIFICADA];
+    }
+
+    const boletas = await this.boletaRepo.findConFiltros(filtrosEfectivos);
+
+    // CA-01: Totales consolidados del conjunto de boletas
+    const totalGanado = Number(
+      boletas.reduce((acc, b) => acc + (Number(b.totalGanado) || 0), 0).toFixed(2),
+    );
+    const totalDescuentos = Number(
+      boletas.reduce((acc, b) => acc + (Number(b.totalDescuentos) || 0), 0).toFixed(2),
+    );
+    const totalLiquido = Number(
+      boletas.reduce((acc, b) => acc + (Number(b.liquidoPagable) || 0), 0).toFixed(2),
+    );
+
+    return {
+      boletas,
+      resumen: {
+        totalGanado,
+        totalDescuentos,
+        totalLiquido,
+        cantidadBoletas: boletas.length,
+      },
+    };
+  }
+
+  /**
+   * HU-23 CA-03:
+   * El detalle muestra haberes y descuentos línea por línea y, si fue rectificada, enlaza a su versión vigente.
+   * Aplica reglas de visibilidad CA-02 y CA-05 para FUNCIONARIO.
+   */
+  async obtenerPorId(id: string, identity?: Identity | null): Promise<DetalleBoletaResponse> {
     const boleta = await this.boletaRepo.findById(id);
     if (!boleta) {
       throw AppError.notFound('Boleta no encontrada');
     }
-    return boleta;
+
+    // CA-02 y CA-05: Control de visibilidad
+    if (identity?.rol === RolUsuario.FUNCIONARIO) {
+      if (!identity.funcionarioId || boleta.funcionarioId !== identity.funcionarioId) {
+        throw AppError.forbidden('No tiene permiso para acceder a esta boleta');
+      }
+      if (boleta.estado === EstadoBoleta.BORRADOR) {
+        throw AppError.forbidden('Las boletas en borrador no son visibles para el funcionario');
+      }
+    }
+
+    // CA-03: Enlace a versión vigente si fue rectificada
+    let versionVigente: Boleta | null = null;
+    if (boleta.estado === EstadoBoleta.RECTIFICADA) {
+      versionVigente = await this.boletaRepo.findVersionVigente(boleta.boletaOriginalId ?? boleta.id);
+    }
+
+    // Historial de versiones asociadas
+    const historial = await this.boletaRepo.findHistorialVersiones(boleta);
+
+    return {
+      ...boleta,
+      versionVigente: versionVigente
+        ? {
+            id: versionVigente.id,
+            numero: versionVigente.numero,
+            version: versionVigente.version,
+            estado: versionVigente.estado,
+            liquidoPagable: versionVigente.liquidoPagable,
+          }
+        : null,
+      historialVersiones: historial.map((h) => ({
+        id: h.id,
+        numero: h.numero,
+        version: h.version,
+        estado: h.estado,
+        motivoRectificacion: h.motivoRectificacion,
+        createdAt: h.createdAt,
+      })),
+    };
+  }
+
+  /**
+   * HU-23 CA-04:
+   * La descarga entrega el PDF guardado y verifica su hash SHA-256.
+   */
+  async obtenerPdf(
+    id: string,
+    identity?: Identity | null,
+  ): Promise<{ buffer: Buffer; boleta: Boleta }> {
+    // Valida visibilidad de la boleta según el rol
+    const boleta = await this.obtenerPorId(id, identity);
+
+    const pdf = await this.boletaPdfRepo.findByIdConContenido(id);
+    if (!pdf || !pdf.contenido) {
+      throw AppError.notFound('El archivo PDF de la boleta no está disponible');
+    }
+
+    // CA-04: Verificación criptográfica de integridad SHA-256
+    const hashCalculado = crypto.createHash('sha256').update(pdf.contenido).digest('hex');
+    if (hashCalculado !== boleta.hashSha256) {
+      throw AppError.internal(
+        'Error de integridad: el hash SHA-256 del PDF no coincide con el registro original',
+      );
+    }
+
+    return { buffer: pdf.contenido, boleta };
   }
 
   /**

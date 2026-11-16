@@ -376,6 +376,27 @@ Para la presentación es ideal tener preparadas las credenciales de los diferent
 
 ---
 
+### HU-23: Consultar y Descargar Boletas en PDF
+* **Microservicio:** `ms-boletas`
+* **Ruta Frontend:** `/boletas` -> Pestaña "Boletas Emitidas" / Vista "Mis Boletas de Pago"
+* **Actor:** `rrhh@arca.bo` / `admin@arca.bo` (gestión) o funcionario autenticado (portal personal)
+
+#### Qué demostrar en la UI y Reglas de Negocio Clave:
+1. **Listado por Período y Funcionario con Totales (CA-01):**
+   - RRHH puede seleccionar el período y opcionalmente filtrar por un funcionario específico.
+   - Las tarjetas de resumen computan en vivo los totales del subconjunto consultado: **Total Ganado**, **Retenciones de Ley**, **Líquido Consolidado** y cantidad de boletas.
+2. **Visibilidad Estricta para Funcionarios (CA-02, CA-05):**
+   - Al ingresar con rol `FUNCIONARIO`, el usuario ve únicamente sus propias boletas emitidas, ordenadas cronológicamente de la más reciente a la más antigua.
+   - Las boletas en borrador (`BORRADOR`) permanecen estrictamente invisibles para el funcionario hasta que RRHH complete la emisión formal.
+3. **Detalle Desglosado y Enlace a Versión Vigente (CA-03):**
+   - Al pulsar **"Detalle"**, se abre el modal con desglose línea por línea de haberes y descuentos, base imponible y porcentajes aplicados.
+   - Si la boleta consultada fue rectificada (`RECTIFICADA`), se despliega un aviso destacado en azul con enlace directo a su versión vigente (`versionVigente`) y la tabla completa de auditoría con su historial de versiones.
+4. **Descarga de PDF con Verificación de Integridad SHA-256 (CA-04):**
+   - Al pulsar **"PDF"**, el microservicio recupera el binario PDF guardado en PostgreSQL, computa su hash SHA-256 en memoria y verifica que coincida de forma idéntica con el registrado originalmente en la boleta.
+   - Se descarga el archivo oficial `Boleta-BP-AAAAMM-NNNN.pdf` garantizando que el documento no fue alterado.
+
+---
+
 ## 3. Resumen Rápido para la Presentación (Cheat Sheet)
 
 | Orden | Módulo | Historia | Acción Clave en Pantalla |
@@ -395,6 +416,7 @@ Para la presentación es ideal tener preparadas las credenciales de los diferent
 | **13** | Boletas | **HU-20** | Crear concepto salarial y registrar novedad de Bs 750 para el período. |
 | **14** | Boletas | **HU-21** | Abrir período, calcular planilla de ley con base 30 y detectar alertas de líquido negativo. |
 | **15** | Boletas | **HU-22** | Emitir boletas inmutables con correlativo BP-AAAAMM-NNNN y rectificar con trazabilidad v1->v2. |
+| **16** | Boletas | **HU-23** | Consultar boletas por funcionario, auditar versiones rectificadas y descargar PDF verificado con SHA-256. |
 
 ---
 

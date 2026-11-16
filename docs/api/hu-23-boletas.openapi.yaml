@@ -1,0 +1,221 @@
+openapi: 3.0.3
+info:
+  title: API de Boletas - Consulta y Descarga en PDF
+  version: 1.0.0
+  description: Endpoints para consulta, detalle y descarga de boletas oficiales en PDF con verificación de hash SHA-256 (HU-23 / AR3-133).
+servers:
+  - url: /api
+security:
+  - bearerAuth: []
+paths:
+  /boletas:
+    get:
+      summary: Consultar listado de boletas con filtros y totales (CA-01, CA-02, CA-05)
+      description: |
+        - RRHH/ADMIN lista boletas por período y por funcionario, con cálculo de totales del conjunto consultado (CA-01).
+        - Un FUNCIONARIO ve únicamente sus boletas emitidas/rectificadas, ordenadas de la más reciente a la más antigua (CA-02).
+        - Las boletas en estado BORRADOR están ocultas para el rol FUNCIONARIO (CA-05).
+      parameters:
+        - name: periodoId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filtrar por ID de período de liquidación
+        - name: funcionarioId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filtrar por funcionario (forzado automáticamente al propio para rol FUNCIONARIO)
+        - name: estado
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [BORRADOR, EMITIDA, RECTIFICADA]
+          description: Filtrar por estado de boleta
+      responses:
+        '200':
+          description: Listado de boletas y resumen consolidado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListadoBoletasResponse'
+        '403':
+          description: Acceso denegado o funcionario no vinculado
+  /boletas/{id}:
+    get:
+      summary: Obtener detalle de boleta con haberes/descuentos y versión vigente (CA-03, CA-05)
+      description: |
+        - Retorna el detalle completo de la boleta línea por línea (CA-03).
+        - Si la boleta fue rectificada, enlaza a su versión vigente y provee el historial de versiones (CA-03).
+        - El FUNCIONARIO solo puede consultar sus propias boletas emitidas (CA-02, CA-05).
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID de la boleta
+      responses:
+        '200':
+          description: Detalle de la boleta
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DetalleBoletaResponse'
+        '403':
+          description: Intento de acceso a boleta ajena o en borrador por un funcionario
+        '404':
+          description: Boleta no encontrada
+  /boletas/{id}/pdf:
+    get:
+      summary: Descargar PDF de boleta con verificación de integridad SHA-256 (CA-04)
+      description: |
+        - Recupera el archivo binario almacenado en boleta_pdf (CA-04).
+        - Calcula el hash SHA-256 del binario y valida que coincida exactamente con boleta.hash_sha256 (CA-04).
+        - Devuelve el stream PDF con cabeceras Content-Type, Content-Disposition y X-Boleta-SHA256 (CA-04).
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID de la boleta emitida
+      responses:
+        '200':
+          description: Archivo PDF oficial de la boleta de pago
+          headers:
+            Content-Type:
+              schema:
+                type: string
+                example: application/pdf
+            Content-Disposition:
+              schema:
+                type: string
+                example: attachment; filename="Boleta-BP-202610-0001.pdf"
+            X-Boleta-SHA256:
+              schema:
+                type: string
+                example: 9f83acde92348571029384756102938475610293847561029384756102938475
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '403':
+          description: No autorizado para descargar esta boleta
+        '404':
+          description: Archivo PDF no disponible
+        '500':
+          description: Error de integridad criptográfica (hash no coincide)
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    ResumenBoletas:
+      type: object
+      properties:
+        totalGanado:
+          type: number
+        totalDescuentos:
+          type: number
+        totalLiquido:
+          type: number
+        cantidadBoletas:
+          type: integer
+    BoletaItem:
+      type: object
+      properties:
+        id:
+          type: string
+        periodoId:
+          type: string
+        funcionarioId:
+          type: string
+        numero:
+          type: string
+          nullable: true
+        version:
+          type: integer
+        estado:
+          type: string
+          enum: [BORRADOR, EMITIDA, RECTIFICADA]
+        totalGanado:
+          type: number
+        totalDescuentos:
+          type: number
+        liquidoPagable:
+          type: number
+        hashSha256:
+          type: string
+          nullable: true
+        emitidaEn:
+          type: string
+          format: date-time
+          nullable: true
+    ListadoBoletasResponse:
+      type: object
+      properties:
+        boletas:
+          type: array
+          items:
+            $ref: '#/components/schemas/BoletaItem'
+        resumen:
+          $ref: '#/components/schemas/ResumenBoletas'
+    DetalleBoletaResponse:
+      allOf:
+        - $ref: '#/components/schemas/BoletaItem'
+        - type: object
+          properties:
+            datosFuncionario:
+              type: object
+            detalles:
+              type: array
+              items:
+                type: object
+                properties:
+                  conceptoCodigo:
+                    type: string
+                  conceptoNombre:
+                    type: string
+                  tipo:
+                    type: string
+                    enum: [HABER, DESCUENTO]
+                  monto:
+                    type: number
+            versionVigente:
+              type: object
+              nullable: true
+              properties:
+                id:
+                  type: string
+                numero:
+                  type: string
+                version:
+                  type: integer
+                estado:
+                  type: string
+                liquidoPagable:
+                  type: number
+            historialVersiones:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  numero:
+                    type: string
+                  version:
+                    type: integer
+                  estado:
+                    type: string
+                  motivoRectificacion:
+                    type: string
+                    nullable: true
