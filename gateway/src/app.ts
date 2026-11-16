@@ -46,10 +46,7 @@ const blockInternalAccess: RequestHandler = (req, _res, next) => {
   next(new AppError('VALIDATION_ERROR', 'La ruta contiene demasiados niveles de codificacion'));
 };
 
-export function createApp(options?: {
-  auditoriaService?: AuditoriaService;
-  dashboardService?: DashboardService;
-}) {
+export function createApp(options?: { auditoriaService?: AuditoriaService; dashboardService?: DashboardService }) {
   const app = express();
   const logger = createLogger('gateway');
   const auditoriaService = options?.auditoriaService ?? new AuditoriaService();

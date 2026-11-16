@@ -98,10 +98,7 @@ export class BoletaRepository {
   async findHistorialVersiones(boleta: Boleta, em?: EntityManager): Promise<Boleta[]> {
     const rootId = boleta.boletaOriginalId ?? boleta.id;
     return this.getRepo(em).find({
-      where: [
-        { id: rootId },
-        { boletaOriginalId: rootId },
-      ],
+      where: [{ id: rootId }, { boletaOriginalId: rootId }],
       relations: { detalles: { concepto: true } },
       order: { version: 'ASC' },
     });

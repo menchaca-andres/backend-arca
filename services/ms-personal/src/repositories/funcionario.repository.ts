@@ -135,11 +135,7 @@ export class FuncionarioRepository {
     }
     const all = await this.findAll();
     return all.filter(
-      (f) =>
-        f.estado === EstadoFuncionario.BAJA &&
-        f.fechaBaja &&
-        f.fechaBaja >= desde &&
-        f.fechaBaja <= hasta,
+      (f) => f.estado === EstadoFuncionario.BAJA && f.fechaBaja && f.fechaBaja >= desde && f.fechaBaja <= hasta,
     ).length;
   }
 

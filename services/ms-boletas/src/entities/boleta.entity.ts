@@ -1,4 +1,14 @@
-import { Check, Column, CreateDateColumn, Entity, Index, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Check,
+  Column,
+  CreateDateColumn,
+  Entity,
+  Index,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { EstadoBoleta, numericTransformer } from '@arca/shared';
 import { Periodo } from './periodo.entity';
 import { BoletaDetalle } from './boleta-detalle.entity';

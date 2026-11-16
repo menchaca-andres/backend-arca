@@ -1,4 +1,11 @@
-import { BaseCalculo, EstadoBoleta, EstadoPeriodo, FormaCalculo, TipoConcepto, type FuncionarioContrato } from '@arca/shared';
+import {
+  BaseCalculo,
+  EstadoBoleta,
+  EstadoPeriodo,
+  FormaCalculo,
+  TipoConcepto,
+  type FuncionarioContrato,
+} from '@arca/shared';
 import { PeriodoService } from '../../src/services/periodo.service';
 import { PeriodoRepository } from '../../src/repositories/periodo.repository';
 import { BoletaRepository } from '../../src/repositories/boleta.repository';

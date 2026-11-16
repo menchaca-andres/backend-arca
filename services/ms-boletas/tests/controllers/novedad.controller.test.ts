@@ -67,4 +67,3 @@ describe('NovedadController (HU-20)', () => {
     expect(mockRes.send).toHaveBeenCalled();
   });
 });
-

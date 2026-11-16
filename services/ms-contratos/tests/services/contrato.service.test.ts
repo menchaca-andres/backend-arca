@@ -298,11 +298,7 @@ describe('HU-18 Generar contrato de un funcionario', () => {
     const { app, service } = setupTestEnvironment();
     await service.generar(ID_FUNCIONARIO, ID_PLANTILLA, ID_RRHH);
 
-    const res = await request(app)
-      .get('/')
-      .set('x-user-rol', 'RRHH')
-      .set('x-user-id', ID_RRHH)
-      .expect(200);
+    const res = await request(app).get('/').set('x-user-rol', 'RRHH').set('x-user-id', ID_RRHH).expect(200);
 
     expect(Array.isArray(res.body)).toBe(true);
     expect(res.body.length).toBe(1);
@@ -372,11 +368,7 @@ describe('HU-18 Generar contrato de un funcionario', () => {
 
       // Si el hash fue alterado o corrompido en el registro -> 500 Error de integridad
       contrato.hashSha256 = '0000000000000000000000000000000000000000000000000000000000000000';
-      await request(app)
-        .get(`/${contrato.id}/pdf`)
-        .set('x-user-rol', 'RRHH')
-        .set('x-user-id', ID_RRHH)
-        .expect(500);
+      await request(app).get(`/${contrato.id}/pdf`).set('x-user-rol', 'RRHH').set('x-user-id', ID_RRHH).expect(500);
     });
 
     it('CA-04: La ficha del contrato muestra su historial de versiones', async () => {
@@ -386,11 +378,7 @@ describe('HU-18 Generar contrato de un funcionario', () => {
       // Generar v2 (reemplaza v1)
       const v2 = await service.generar(ID_FUNCIONARIO, ID_PLANTILLA, ID_RRHH);
 
-      const res = await request(app)
-        .get(`/${v2.id}`)
-        .set('x-user-rol', 'RRHH')
-        .set('x-user-id', ID_RRHH)
-        .expect(200);
+      const res = await request(app).get(`/${v2.id}`).set('x-user-rol', 'RRHH').set('x-user-id', ID_RRHH).expect(200);
 
       expect(res.body.id).toBe(v2.id);
       expect(res.body.version).toBe(2);

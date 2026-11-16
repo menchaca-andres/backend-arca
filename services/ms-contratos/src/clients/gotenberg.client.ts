@@ -47,7 +47,9 @@ export class GotenbergClient implements PdfClient {
       if (process.env.NODE_ENV === 'test' || !process.env.GOTENBERG_URL) {
         return this.generarPdfFallback(html);
       }
-      throw AppError.internal(`No se pudo conectar con el servicio Gotenberg: ${error instanceof Error ? error.message : String(error)}`);
+      throw AppError.internal(
+        `No se pudo conectar con el servicio Gotenberg: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 

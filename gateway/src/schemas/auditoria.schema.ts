@@ -3,8 +3,16 @@ import { z } from 'zod';
 export const filtrosAuditoriaSchema = z.object({
   usuarioId: z.string().uuid('ID de usuario inválido').optional(),
   servicio: z.string().min(1).max(30).optional(),
-  desde: z.string().datetime({ offset: true }).or(z.string().regex(/^\d{4}-\d{2}-\d{2}$/)).optional(),
-  hasta: z.string().datetime({ offset: true }).or(z.string().regex(/^\d{4}-\d{2}-\d{2}$/)).optional(),
+  desde: z
+    .string()
+    .datetime({ offset: true })
+    .or(z.string().regex(/^\d{4}-\d{2}-\d{2}$/))
+    .optional(),
+  hasta: z
+    .string()
+    .datetime({ offset: true })
+    .or(z.string().regex(/^\d{4}-\d{2}-\d{2}$/))
+    .optional(),
   resultado: z.enum(['EXITO', 'ERROR']).optional(),
   metodo: z.enum(['GET', 'POST', 'PUT', 'PATCH', 'DELETE']).optional(),
   page: z.coerce.number().int().min(1).default(1),

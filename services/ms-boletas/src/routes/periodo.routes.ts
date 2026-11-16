@@ -30,15 +30,7 @@ periodoRouter.post(
 );
 
 // Calcular o recalcular planilla del período (RRHH, ADMIN)
-periodoRouter.post(
-  '/:id/calculo',
-  requireRole(RolUsuario.ADMIN, RolUsuario.RRHH),
-  controller.calcular,
-);
+periodoRouter.post('/:id/calculo', requireRole(RolUsuario.ADMIN, RolUsuario.RRHH), controller.calcular);
 
 // Emitir boletas inmutables del período (HU-22 CA-01 a CA-03) (RRHH, ADMIN)
-periodoRouter.post(
-  '/:id/emision',
-  requireRole(RolUsuario.ADMIN, RolUsuario.RRHH),
-  controller.emitir,
-);
+periodoRouter.post('/:id/emision', requireRole(RolUsuario.ADMIN, RolUsuario.RRHH), controller.emitir);

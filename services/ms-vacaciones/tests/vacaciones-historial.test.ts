@@ -272,10 +272,7 @@ describe('HU-16 Calendario mensual de vacaciones', () => {
 
     expect(response.body.mes).toBe('2026-11');
     expect(response.body.totalAprobadas).toBe(2);
-    expect(response.body.solicitudes.map((s: { id: string }) => s.id)).toEqual([
-      solDani.id,
-      solCarlos.id,
-    ]);
+    expect(response.body.solicitudes.map((s: { id: string }) => s.id)).toEqual([solDani.id, solCarlos.id]);
     expect(Array.isArray(response.body.feriados)).toBe(true);
   });
 
@@ -293,16 +290,8 @@ describe('HU-16 Calendario mensual de vacaciones', () => {
   it('rechaza formatos de mes inválidos con 400', async () => {
     const { app } = crearApp();
 
-    await request(app)
-      .get('/calendario?mes=2026-13')
-      .set('x-user-rol', 'RRHH')
-      .set('x-user-id', ID_RRHH)
-      .expect(400);
+    await request(app).get('/calendario?mes=2026-13').set('x-user-rol', 'RRHH').set('x-user-id', ID_RRHH).expect(400);
 
-    await request(app)
-      .get('/calendario?mes=noviembre')
-      .set('x-user-rol', 'RRHH')
-      .set('x-user-id', ID_RRHH)
-      .expect(400);
+    await request(app).get('/calendario?mes=noviembre').set('x-user-rol', 'RRHH').set('x-user-id', ID_RRHH).expect(400);
   });
 });

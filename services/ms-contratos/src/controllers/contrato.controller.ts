@@ -1,11 +1,7 @@
 import type { NextFunction, Request, Response } from 'express';
 import { AppError, getIdentity } from '@arca/shared';
 import { ContratoService } from '../services/contrato.service';
-import type {
-  FiltrosContratoInput,
-  GenerarContratoInput,
-  PreviewContratoInput,
-} from '../schemas/contrato.schema';
+import type { FiltrosContratoInput, GenerarContratoInput, PreviewContratoInput } from '../schemas/contrato.schema';
 
 export class ContratoController {
   constructor(private readonly service = new ContratoService()) {}
@@ -62,10 +58,7 @@ export class ContratoController {
       const { buffer, contrato } = await this.service.obtenerPdf(id, identity);
 
       res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader(
-        'Content-Disposition',
-        `attachment; filename="Contrato-${contrato.numero}.pdf"`,
-      );
+      res.setHeader('Content-Disposition', `attachment; filename="Contrato-${contrato.numero}.pdf"`);
       res.setHeader('Content-Length', buffer.length);
       res.send(buffer);
     } catch (error) {

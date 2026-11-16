@@ -79,15 +79,9 @@ export class BoletaService {
     const boletas = await this.boletaRepo.findConFiltros(filtrosEfectivos);
 
     // CA-01: Totales consolidados del conjunto de boletas
-    const totalGanado = Number(
-      boletas.reduce((acc, b) => acc + (Number(b.totalGanado) || 0), 0).toFixed(2),
-    );
-    const totalDescuentos = Number(
-      boletas.reduce((acc, b) => acc + (Number(b.totalDescuentos) || 0), 0).toFixed(2),
-    );
-    const totalLiquido = Number(
-      boletas.reduce((acc, b) => acc + (Number(b.liquidoPagable) || 0), 0).toFixed(2),
-    );
+    const totalGanado = Number(boletas.reduce((acc, b) => acc + (Number(b.totalGanado) || 0), 0).toFixed(2));
+    const totalDescuentos = Number(boletas.reduce((acc, b) => acc + (Number(b.totalDescuentos) || 0), 0).toFixed(2));
+    const totalLiquido = Number(boletas.reduce((acc, b) => acc + (Number(b.liquidoPagable) || 0), 0).toFixed(2));
 
     return {
       boletas,
@@ -156,10 +150,7 @@ export class BoletaService {
    * HU-23 CA-04:
    * La descarga entrega el PDF guardado y verifica su hash SHA-256.
    */
-  async obtenerPdf(
-    id: string,
-    identity?: Identity | null,
-  ): Promise<{ buffer: Buffer; boleta: Boleta }> {
+  async obtenerPdf(id: string, identity?: Identity | null): Promise<{ buffer: Buffer; boleta: Boleta }> {
     // Valida visibilidad de la boleta según el rol
     const boleta = await this.obtenerPorId(id, identity);
 
@@ -171,9 +162,7 @@ export class BoletaService {
     // CA-04: Verificación criptográfica de integridad SHA-256
     const hashCalculado = crypto.createHash('sha256').update(pdf.contenido).digest('hex');
     if (hashCalculado !== boleta.hashSha256) {
-      throw AppError.internal(
-        'Error de integridad: el hash SHA-256 del PDF no coincide con el registro original',
-      );
+      throw AppError.internal('Error de integridad: el hash SHA-256 del PDF no coincide con el registro original');
     }
 
     return { buffer: pdf.contenido, boleta };
@@ -182,10 +171,7 @@ export class BoletaService {
   /**
    * HU-22 CA-05 y CA-06: Rectifica una boleta emitida con recálculo, nueva versión y nuevo PDF inmutable.
    */
-  async rectificar(
-    boletaId: string,
-    input: RectificarBoletaInput,
-  ): Promise<Boleta> {
+  async rectificar(boletaId: string, input: RectificarBoletaInput): Promise<Boleta> {
     const boletaOriginal = await this.boletaRepo.findById(boletaId);
     if (!boletaOriginal) {
       throw AppError.notFound('Boleta original no encontrada');
@@ -222,11 +208,7 @@ export class BoletaService {
 
     // Conceptos activos y novedades corregidas para este funcionario en este período
     const conceptosActivos = await this.conceptoRepo.findAll({ activo: true });
-    const novedades = await this.novedadRepo.findByPeriodo(
-      periodo.anio,
-      periodo.mes,
-      boletaOriginal.funcionarioId,
-    );
+    const novedades = await this.novedadRepo.findByPeriodo(periodo.anio, periodo.mes, boletaOriginal.funcionarioId);
 
     // CA-06: Recalcula con conceptos y novedades actualizadas
     const calculo = PlanillaCalculator.calcularBoletaFuncionario(
@@ -238,9 +220,7 @@ export class BoletaService {
     );
 
     if (calculo.tieneAlerta || calculo.liquidoPagable < 0) {
-      throw AppError.conflict(
-        'La rectificación genera líquido pagable negativo y no puede ser emitida (CA-06)',
-      );
+      throw AppError.conflict('La rectificación genera líquido pagable negativo y no puede ser emitida (CA-06)');
     }
 
     const fechaEmision = new Date();

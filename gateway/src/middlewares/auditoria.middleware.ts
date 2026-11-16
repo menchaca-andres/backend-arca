@@ -6,7 +6,6 @@ import { AuditoriaService } from '../services/auditoria.service';
 const logger = createLogger('auditoria');
 
 const METODOS_MUTACION = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
-const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
  * CA-01: Determina si una petición debe auditarse:
@@ -36,10 +35,22 @@ export function esOperacionAuditable(metodo: string, ruta: string): boolean {
 export function inferirServicio(ruta: string): string {
   const clean = ruta.toLowerCase();
   if (clean.includes('/auth') || clean.includes('/usuarios')) return 'auth';
-  if (clean.includes('/personal') || clean.includes('/funcionarios') || clean.includes('/areas') || clean.includes('/cargos')) return 'personal';
+  if (
+    clean.includes('/personal') ||
+    clean.includes('/funcionarios') ||
+    clean.includes('/areas') ||
+    clean.includes('/cargos')
+  )
+    return 'personal';
   if (clean.includes('/vacaciones')) return 'vacaciones';
   if (clean.includes('/contratos') || clean.includes('/plantillas')) return 'contratos';
-  if (clean.includes('/boletas') || clean.includes('/periodos') || clean.includes('/conceptos') || clean.includes('/novedades')) return 'boletas';
+  if (
+    clean.includes('/boletas') ||
+    clean.includes('/periodos') ||
+    clean.includes('/conceptos') ||
+    clean.includes('/novedades')
+  )
+    return 'boletas';
   if (clean.includes('/auditoria')) return 'gateway';
   return 'gateway';
 }
@@ -111,9 +122,7 @@ export function extraerRecursoId(ruta: string): string | null {
  * CA-01, CA-02, CA-03, CA-05:
  * Middleware asíncrono para registro de eventos de auditoría tras la respuesta.
  */
-export function auditoriaMiddleware(
-  service: AuditoriaService = new AuditoriaService(),
-): RequestHandler {
+export function auditoriaMiddleware(service: AuditoriaService = new AuditoriaService()): RequestHandler {
   return (req: Request, res: Response, next) => {
     res.once('finish', () => {
       const metodo = req.method;
@@ -140,10 +149,7 @@ export function auditoriaMiddleware(
             req.ip ||
             req.socket.remoteAddress ||
             null;
-          const requestId =
-            (res.locals.requestId as string) ||
-            (req.headers['x-request-id'] as string) ||
-            randomUUID();
+          const requestId = (res.locals.requestId as string) || (req.headers['x-request-id'] as string) || randomUUID();
 
           // CA-02: Registro completo sin datos sensibles
           await service.registrar({

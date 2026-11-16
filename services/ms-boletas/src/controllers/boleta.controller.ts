@@ -42,10 +42,7 @@ export class BoletaController {
       const { buffer, boleta } = await this.service.obtenerPdf(id, identity);
 
       res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader(
-        'Content-Disposition',
-        `attachment; filename="Boleta-${boleta.numero || boleta.id}.pdf"`,
-      );
+      res.setHeader('Content-Disposition', `attachment; filename="Boleta-${boleta.numero || boleta.id}.pdf"`);
       res.setHeader('Content-Length', buffer.length);
       if (boleta.hashSha256) {
         res.setHeader('X-Boleta-SHA256', boleta.hashSha256);

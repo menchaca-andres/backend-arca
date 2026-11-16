@@ -43,4 +43,3 @@ export function validateParams<T>(schema: ZodType<T>): RequestHandler {
     next();
   };
 }
-

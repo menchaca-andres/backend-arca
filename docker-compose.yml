@@ -190,7 +190,7 @@ services:
       DATABASE_URL: "postgres://user_gateway:arca_local_gateway_2026@db:5432/arca"
       DB_SCHEMA: auditoria
       JWT_SECRET: ${JWT_SECRET:?Configura JWT_SECRET en el .env de la raiz}
-      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5174,http://127.0.0.1:5174,http://localhost:3000,http://127.0.0.1:3000}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174,http://localhost:3000,http://127.0.0.1:3000}
       AUTH_SERVICE_URL: http://ms-auth:3001
       PERSONAL_SERVICE_URL: http://ms-personal:3002
       VACACIONES_SERVICE_URL: http://ms-vacaciones:3003

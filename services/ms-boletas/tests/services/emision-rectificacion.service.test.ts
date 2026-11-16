@@ -1,4 +1,4 @@
-import { BaseCalculo, EstadoBoleta, EstadoPeriodo, FormaCalculo, TipoConcepto, type FuncionarioContrato } from '@arca/shared';
+import { BaseCalculo, EstadoBoleta, EstadoPeriodo, FormaCalculo, TipoConcepto } from '@arca/shared';
 import { PeriodoService } from '../../src/services/periodo.service';
 import { BoletaService } from '../../src/services/boleta.service';
 import { PeriodoRepository } from '../../src/repositories/periodo.repository';
@@ -14,7 +14,6 @@ import { Periodo } from '../../src/entities/periodo.entity';
 import { Boleta } from '../../src/entities/boleta.entity';
 import { BoletaDetalle } from '../../src/entities/boleta-detalle.entity';
 import { Concepto } from '../../src/entities/concepto.entity';
-import { Novedad } from '../../src/entities/novedad.entity';
 
 // Mock de AppDataSource.transaction para ejecutar el callback atómicamente
 jest.mock('../../src/data-source', () => ({
@@ -370,9 +369,9 @@ describe('HU-22: Emitir boletas inmutables y rectificarlas', () => {
 
       mockBoletaRepo.findById.mockResolvedValue(boletaBorrador);
 
-      await expect(
-        boletaService.rectificar('boleta-draft', { motivo: 'Corrección temprana' }),
-      ).rejects.toThrow(/Solo se puede rectificar una boleta en estado EMITIDA/);
+      await expect(boletaService.rectificar('boleta-draft', { motivo: 'Corrección temprana' })).rejects.toThrow(
+        /Solo se puede rectificar una boleta en estado EMITIDA/,
+      );
     });
   });
 });

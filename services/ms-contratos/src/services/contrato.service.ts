@@ -12,11 +12,7 @@ import {
 import { AppDataSource } from '../data-source';
 import { GotenbergClient, type PdfClient } from '../clients/gotenberg.client';
 import { HttpPersonalClient, type PersonalClient } from '../clients/personal.client';
-import {
-  construirContextoContrato,
-  prepararHtmlImpresion,
-  type ContratoContexto,
-} from '../domain/contrato-contexto';
+import { construirContextoContrato, prepararHtmlImpresion, type ContratoContexto } from '../domain/contrato-contexto';
 import { renderTemplate } from '../domain/template-renderer';
 import { ContratoPdf } from '../entities/contrato-pdf.entity';
 import { Contrato } from '../entities/contrato.entity';
@@ -86,10 +82,7 @@ export class ContratoService {
 
     const hoy = this.clock();
     const datos = construirContextoContrato(funcionario, hoy);
-    const contenidoRenderizado = renderTemplate(
-      versionActiva.contenido,
-      datos as unknown as Record<string, unknown>,
-    );
+    const contenidoRenderizado = renderTemplate(versionActiva.contenido, datos as unknown as Record<string, unknown>);
 
     return {
       funcionario: {
@@ -120,21 +113,14 @@ export class ContratoService {
    * HU-18: Generar formalmente el contrato con transacción atómica, correlativo CT-AAAA-NNNN,
    * reemplazo del contrato previo si existía, compilación PDF con Gotenberg y hash SHA-256.
    */
-  async generar(
-    funcionarioId: string,
-    plantillaId: string | undefined,
-    generadoPor: string,
-  ): Promise<Contrato> {
+  async generar(funcionarioId: string, plantillaId: string | undefined, generadoPor: string): Promise<Contrato> {
     const funcionario = await this.obtenerFuncionarioValidado(funcionarioId);
     const { versionActiva } = await this.obtenerPlantillaActiva(plantillaId);
 
     const hoy = this.clock();
     const anio = hoy.getFullYear();
     const datos = construirContextoContrato(funcionario, hoy);
-    const contenidoRenderizado = renderTemplate(
-      versionActiva.contenido,
-      datos as unknown as Record<string, unknown>,
-    );
+    const contenidoRenderizado = renderTemplate(versionActiva.contenido, datos as unknown as Record<string, unknown>);
 
     return this.runTransaction(async (em) => {
       // CA-07: correlativo atómico por año CT-AAAA-NNNN
@@ -163,8 +149,7 @@ export class ContratoService {
         await this.contratoRepo.save(contratoVigente, em);
       }
 
-      const maxVersion =
-        contratosPrevios.length > 0 ? Math.max(...contratosPrevios.map((c) => c.version)) : 0;
+      const maxVersion = contratosPrevios.length > 0 ? Math.max(...contratosPrevios.map((c) => c.version)) : 0;
       const nuevaVersion = maxVersion + 1;
 
       // CA-04: Guardar contrato inmutable
@@ -295,7 +280,7 @@ export class ContratoService {
   private async obtenerPlantillaActiva(
     plantillaId?: string,
   ): Promise<{ plantilla: Plantilla; versionActiva: PlantillaVersion }> {
-    let plantilla: Plantilla | null = null;
+    let plantilla: Plantilla | null;
 
     if (plantillaId) {
       plantilla = await this.plantillaRepo.findById(plantillaId);

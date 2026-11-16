@@ -63,4 +63,3 @@ describe('ConceptoController (HU-20)', () => {
     expect(mockRes.json).toHaveBeenCalledWith(resultado);
   });
 });
-

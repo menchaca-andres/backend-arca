@@ -1,10 +1,5 @@
 import { createLogger, InternalClient } from '@arca/shared';
-import type {
-  BoletasStats,
-  DashboardResponse,
-  PersonalStats,
-  VacacionesStats,
-} from '../schemas/dashboard.schema';
+import type { BoletasStats, DashboardResponse, PersonalStats, VacacionesStats } from '../schemas/dashboard.schema';
 
 const logger = createLogger('gateway:dashboard');
 
@@ -78,7 +73,8 @@ export class DashboardService {
     } else {
       logger.warn('dashboard.servicio_fallido', {
         servicio: 'ms-vacaciones',
-        error: vacacionesResult.reason instanceof Error ? vacacionesResult.reason.message : String(vacacionesResult.reason),
+        error:
+          vacacionesResult.reason instanceof Error ? vacacionesResult.reason.message : String(vacacionesResult.reason),
       });
     }
 

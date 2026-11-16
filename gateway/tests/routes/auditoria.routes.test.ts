@@ -55,9 +55,7 @@ describe('Auditoria Routes (HU-24 CA-06)', () => {
   });
 
   it('rechaza si el usuario no tiene rol ADMIN (403)', async () => {
-    const res = await request(app)
-      .get('/api/v1/auditoria')
-      .set('test-role', RolUsuario.RRHH);
+    const res = await request(app).get('/api/v1/auditoria').set('test-role', RolUsuario.RRHH);
 
     expect(res.status).toBe(403);
     expect(res.body.code).toBe('FORBIDDEN');
@@ -81,9 +79,7 @@ describe('Auditoria Routes (HU-24 CA-06)', () => {
   });
 
   it('permite filtrar por resultado EXITO o ERROR', async () => {
-    const res = await request(app)
-      .get('/api/v1/auditoria?resultado=EXITO')
-      .set('test-role', RolUsuario.ADMIN);
+    const res = await request(app).get('/api/v1/auditoria?resultado=EXITO').set('test-role', RolUsuario.ADMIN);
 
     expect(res.status).toBe(200);
     expect(mockService.consultar).toHaveBeenCalledWith(
@@ -103,9 +99,7 @@ describe('Auditoria Routes (HU-24 CA-06)', () => {
   });
 
   it('obtiene el detalle de un evento por ID', async () => {
-    const res = await request(app)
-      .get('/api/v1/auditoria/1')
-      .set('test-role', RolUsuario.ADMIN);
+    const res = await request(app).get('/api/v1/auditoria/1').set('test-role', RolUsuario.ADMIN);
 
     expect(res.status).toBe(200);
     expect(res.body.id).toBe('1');

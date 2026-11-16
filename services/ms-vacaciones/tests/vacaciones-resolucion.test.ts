@@ -113,10 +113,7 @@ describe('HU-15 aprobar solicitud', () => {
     expect(response.body.fechaResolucion).toEqual(expect.any(String));
     expect(solicitudes[0].estado).toBe(EstadoSolicitud.APROBADA);
 
-    const saldo = await request(app)
-      .get(`/saldo/${ID_FUNCIONARIO}`)
-      .set('x-user-rol', 'RRHH')
-      .expect(200);
+    const saldo = await request(app).get(`/saldo/${ID_FUNCIONARIO}`).set('x-user-rol', 'RRHH').expect(200);
     expect(saldo.body).toMatchObject({ diasUsados: 3, diasReservados: 0, diasDisponibles: 87 });
   });
 
@@ -174,7 +171,9 @@ describe('HU-15 rechazar solicitud', () => {
   it('CA-03 y CA-07 exige motivo, rechaza y libera los días reservados', async () => {
     const { app, solicitudes } = crearApp();
 
-    await comoRRHH(request(app).post(`/solicitudes/${ID_SOLICITUD}/rechazar`)).send({}).expect(400);
+    await comoRRHH(request(app).post(`/solicitudes/${ID_SOLICITUD}/rechazar`))
+      .send({})
+      .expect(400);
     await comoRRHH(request(app).post(`/solicitudes/${ID_SOLICITUD}/rechazar`))
       .send({ motivo: 'no' })
       .expect(400);
@@ -190,10 +189,7 @@ describe('HU-15 rechazar solicitud', () => {
     });
     expect(solicitudes[0].fechaResolucion).toBeInstanceOf(Date);
 
-    const saldo = await request(app)
-      .get(`/saldo/${ID_FUNCIONARIO}`)
-      .set('x-user-rol', 'RRHH')
-      .expect(200);
+    const saldo = await request(app).get(`/saldo/${ID_FUNCIONARIO}`).set('x-user-rol', 'RRHH').expect(200);
     expect(saldo.body).toMatchObject({ diasUsados: 0, diasReservados: 0, diasDisponibles: 90 });
   });
 

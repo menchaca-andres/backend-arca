@@ -64,18 +64,14 @@ describe('Dashboard Routes (HU-25 CA-04, CA-06)', () => {
   });
 
   it('CA-06: rechaza a FUNCIONARIO con 403 Forbidden', async () => {
-    const res = await request(app)
-      .get('/api/v1/dashboard')
-      .set('test-role', RolUsuario.FUNCIONARIO);
+    const res = await request(app).get('/api/v1/dashboard').set('test-role', RolUsuario.FUNCIONARIO);
 
     expect(res.status).toBe(403);
     expect(res.body.code).toBe('FORBIDDEN');
   });
 
   it('CA-06: permite acceso a DIRECCION y responde 200', async () => {
-    const res = await request(app)
-      .get('/api/v1/dashboard')
-      .set('test-role', RolUsuario.DIRECCION);
+    const res = await request(app).get('/api/v1/dashboard').set('test-role', RolUsuario.DIRECCION);
 
     expect(res.status).toBe(200);
     expect(res.body.personal.activos).toBe(20);
@@ -84,17 +80,13 @@ describe('Dashboard Routes (HU-25 CA-04, CA-06)', () => {
   });
 
   it('CA-06: permite acceso a RRHH y responde 200', async () => {
-    const res = await request(app)
-      .get('/api/v1/dashboard')
-      .set('test-role', RolUsuario.RRHH);
+    const res = await request(app).get('/api/v1/dashboard').set('test-role', RolUsuario.RRHH);
 
     expect(res.status).toBe(200);
   });
 
   it('CA-06: permite acceso a ADMIN y responde 200', async () => {
-    const res = await request(app)
-      .get('/api/v1/dashboard')
-      .set('test-role', RolUsuario.ADMIN);
+    const res = await request(app).get('/api/v1/dashboard').set('test-role', RolUsuario.ADMIN);
 
     expect(res.status).toBe(200);
   });
