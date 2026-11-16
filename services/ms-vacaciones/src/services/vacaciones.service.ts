@@ -261,4 +261,34 @@ export class VacacionesService {
     if (!funcionario) throw AppError.notFound('Funcionario no encontrado');
     return funcionario;
   }
+
+  // HU-25 CA-03, CA-05: Estadísticas internas para el Dashboard
+  async obtenerEstadisticas(): Promise<StatsVacacionesDto> {
+    const pendientes = await this.solicitudRepo.findPendientes();
+    return {
+      solicitudesPendientes: pendientes.length,
+      alertas: pendientes.map((s) => ({
+        id: s.id,
+        funcionarioId: s.funcionarioId,
+        funcionarioNombre: s.funcionarioNombre,
+        diasHabiles: s.diasHabiles,
+        fechaInicio: s.fechaInicio,
+        fechaFin: s.fechaFin,
+        createdAt: s.createdAt,
+      })),
+    };
+  }
+}
+
+export interface StatsVacacionesDto {
+  solicitudesPendientes: number;
+  alertas: Array<{
+    id: string;
+    funcionarioId: string;
+    funcionarioNombre: string;
+    diasHabiles: number;
+    fechaInicio: string;
+    fechaFin: string;
+    createdAt: Date;
+  }>;
 }

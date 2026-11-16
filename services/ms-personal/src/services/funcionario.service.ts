@@ -445,6 +445,74 @@ export class FuncionarioService {
       total,
     };
   }
+
+  // HU-25 CA-01, CA-02, CA-03, CA-05: Estadísticas internas para el Dashboard
+  async obtenerEstadisticas(fechaRef: Date = new Date()): Promise<StatsPersonalDto> {
+    const anio = fechaRef.getFullYear();
+    const mes = fechaRef.getMonth() + 1;
+    const startOfMonth = `${anio}-${String(mes).padStart(2, '0')}-01`;
+    const lastDay = new Date(anio, mes, 0).getDate();
+    const endOfMonth = `${anio}-${String(mes).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+    const fechaRefIso = `${anio}-${String(mes).padStart(2, '0')}-${String(fechaRef.getDate()).padStart(2, '0')}`;
+
+    const [activos, enPrueba, bajasMes, funcionariosPorArea, porVencer, cumplen] = await Promise.all([
+      this.funcionarioRepo.contarPorEstado(EstadoFuncionario.RATIFICADO),
+      this.funcionarioRepo.contarPorEstado(EstadoFuncionario.EN_PRUEBA),
+      this.funcionarioRepo.contarBajasRango(startOfMonth, endOfMonth),
+      this.funcionarioRepo.contarPorArea(),
+      this.obtenerPruebaPorVencer(7, fechaRefIso),
+      this.funcionarioRepo.findCumplenGestion(mes, anio),
+    ]);
+
+    const cumplenGestionMes = cumplen.map((f) => {
+      const anioIngreso = parseInt(f.fechaIngreso.split('-')[0], 10);
+      return {
+        id: f.id,
+        nombres: f.nombres,
+        apellidos: f.apellidos,
+        ci: f.ci,
+        aniosCumplidos: anio - anioIngreso,
+        fechaIngreso: f.fechaIngreso,
+      };
+    });
+
+    return {
+      activos,
+      enPrueba,
+      bajasMes,
+      funcionariosPorArea,
+      periodosPruebaPorVencer: porVencer.map((p) => ({
+        id: p.id,
+        nombreCompleto: p.nombreCompleto,
+        ci: p.ci,
+        diasRestantes: p.diasRestantes,
+        fechaVencimiento: p.fechaFinPrueba,
+      })),
+      cumplenGestionMes,
+    };
+  }
+}
+
+export interface StatsPersonalDto {
+  activos: number;
+  enPrueba: number;
+  bajasMes: number;
+  funcionariosPorArea: Array<{ area: string; cantidad: number }>;
+  periodosPruebaPorVencer: Array<{
+    id: string;
+    nombreCompleto: string;
+    ci: string;
+    diasRestantes: number;
+    fechaVencimiento: string;
+  }>;
+  cumplenGestionMes: Array<{
+    id: string;
+    nombres: string;
+    apellidos: string;
+    ci: string;
+    aniosCumplidos: number;
+    fechaIngreso: string;
+  }>;
 }
 
 function mapContrato(funcionario: Funcionario, asignacionVigente: AsignacionLaboral | null): FuncionarioContrato {

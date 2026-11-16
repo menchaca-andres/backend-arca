@@ -307,4 +307,84 @@ export class PeriodoService {
       cantidadAlertas,
     };
   }
+
+  // HU-25 CA-01, CA-02, CA-05: Estadísticas de masa salarial para el Dashboard
+  async obtenerEstadisticas(): Promise<StatsBoletasDto> {
+    const periodos = await this.periodoRepo.findAll();
+    const boletas = await this.boletaRepo.findConFiltros({
+      estados: [EstadoBoleta.EMITIDA, EstadoBoleta.RECTIFICADA],
+    });
+
+    const mapaPeriodos = new Map<string, { masaSalarial: number; liquidoTotal: number; count: number }>();
+    for (const b of boletas) {
+      if (b.estado === EstadoBoleta.EMITIDA) {
+        const curr = mapaPeriodos.get(b.periodoId) || { masaSalarial: 0, liquidoTotal: 0, count: 0 };
+        curr.masaSalarial += Number(b.totalGanado) || 0;
+        curr.liquidoTotal += Number(b.liquidoPagable) || 0;
+        curr.count += 1;
+        mapaPeriodos.set(b.periodoId, curr);
+      }
+    }
+
+    const periodosConEmision = periodos.filter((p) => (mapaPeriodos.get(p.id)?.count || 0) > 0);
+
+    let masaSalarialUltimoPeriodo: StatsBoletasDto['masaSalarialUltimoPeriodo'] = null;
+    if (periodosConEmision.length > 0) {
+      const ultimo = periodosConEmision[0];
+      const stats = mapaPeriodos.get(ultimo.id)!;
+      masaSalarialUltimoPeriodo = {
+        periodoId: ultimo.id,
+        anio: ultimo.anio,
+        mes: ultimo.mes,
+        periodoNombre: `${String(ultimo.mes).padStart(2, '0')}/${ultimo.anio}`,
+        monto: Number(stats.masaSalarial.toFixed(2)),
+        moneda: 'BOB',
+        totalBoletas: stats.count,
+      };
+    }
+
+    const historialMasaSalarial: PeriodoMasaSalarial[] = periodosConEmision
+      .slice(0, 6)
+      .map((p) => {
+        const s = mapaPeriodos.get(p.id)!;
+        return {
+          periodoId: p.id,
+          anio: p.anio,
+          mes: p.mes,
+          periodoNombre: `${String(p.mes).padStart(2, '0')}/${p.anio}`,
+          masaSalarial: Number(s.masaSalarial.toFixed(2)),
+          liquidoTotal: Number(s.liquidoTotal.toFixed(2)),
+          totalBoletas: s.count,
+        };
+      })
+      .reverse();
+
+    return {
+      masaSalarialUltimoPeriodo,
+      historialMasaSalarial,
+    };
+  }
+}
+
+export interface PeriodoMasaSalarial {
+  periodoId: string;
+  anio: number;
+  mes: number;
+  periodoNombre: string;
+  masaSalarial: number;
+  liquidoTotal: number;
+  totalBoletas: number;
+}
+
+export interface StatsBoletasDto {
+  masaSalarialUltimoPeriodo: {
+    periodoId: string;
+    anio: number;
+    mes: number;
+    periodoNombre: string;
+    monto: number;
+    moneda: string;
+    totalBoletas: number;
+  } | null;
+  historialMasaSalarial: PeriodoMasaSalarial[];
 }

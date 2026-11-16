@@ -10,6 +10,7 @@ import {
 } from '@arca/shared';
 import { createHealthRouter } from './routes/health.routes';
 import { vacacionesRouter } from './routes/vacaciones.routes';
+import { statsInternalRouter } from './routes/stats.internal.routes';
 
 const SERVICE_NAME = 'ms-vacaciones';
 
@@ -36,6 +37,7 @@ export function createApp(internalRoutes: Router = Router()) {
   // La ruta raíz sirve a /api/v1/vacaciones; el prefijo mantiene compatibilidad con /api/vacaciones.
   app.use('/', vacacionesRouter);
   app.use('/vacaciones', vacacionesRouter);
+  app.use('/internal', statsInternalRouter);
   app.use('/internal', internalRoutes);
   app.use((_req, _res, next) => {
     next(new AppError('NOT_FOUND', 'Ruta no encontrada'));

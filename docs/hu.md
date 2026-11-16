@@ -418,6 +418,32 @@ Para la presentación es ideal tener preparadas las credenciales de los diferent
 
 ---
 
+### HU-25: Dashboard Ejecutivo para el Directorio
+* **Microservicio:** `gateway` (agregador paralelo) + `ms-personal`, `ms-vacaciones`, `ms-boletas` (endpoints `/internal/stats`)
+* **Ruta Frontend:** `/` (Dashboard de inicio para `DIRECCION`, `RRHH` y `ADMIN`)
+* **Actor:** `direccion@arca.bo`, `rrhh@arca.bo`, `admin@arca.bo`
+
+#### Qué demostrar en la UI y Reglas de Negocio Clave:
+1. **Indicadores Clave en Vivo (CA-01):**
+   - **Funcionarios activos:** Total de funcionarios ratificados vigentes.
+   - **En prueba:** Cantidad de colaboradores en evaluación laboral.
+   - **Bajas del mes:** Desvinculaciones procesadas en el mes en curso.
+   - **Masa salarial del último período emitido:** Monto consolidado en Bs del último período formalmente cerrado y emitido.
+2. **Gráficos de Gestión (CA-02):**
+   - **Distribución de Funcionarios por Área:** Gráfico de barras horizontales con el conteo de personal activo por cada área funcional.
+   - **Evolución de Masa Salarial:** Gráfico de columnas con la masa salarial bruta emitida en los últimos 6 períodos de liquidación.
+3. **Sección de Alertas Operativas (CA-03):**
+   - **Vacaciones pendientes:** Solicitudes de vacación en espera de resolución por RRHH con acceso directo a la bandeja.
+   - **Períodos de prueba por vencer:** Funcionarios cuyo período de prueba expira en los próximos 7 días para agilizar su ratificación.
+   - **Cumplen gestión este mes:** Conteo y detalle de funcionarios que cumplen aniversario laboral en el mes actual.
+4. **Agregador Paralelo y Tolerancia a Fallas (CA-04, CA-05):**
+   - El endpoint `GET /api/dashboard` consulta en paralelo los servicios mediante sus endpoints protegidos `/internal/stats`.
+   - Si uno de los microservicios se encuentra caído o inaccesible, esa tarjeta específica muestra *"Sin datos"* y los demás servicios cargan normalmente sin interrumpir la experiencia de usuario.
+5. **Permisos y Rendimiento (CA-06):**
+   - Acceso exclusivo para roles ejecutivos (`DIRECCION`, `RRHH`, `ADMIN`), respondiendo de forma ultra rápida en menos de 3 segundos.
+
+---
+
 ## 3. Resumen Rápido para la Presentación (Cheat Sheet)
 
 | Orden | Módulo | Historia | Acción Clave en Pantalla |
@@ -439,6 +465,7 @@ Para la presentación es ideal tener preparadas las credenciales de los diferent
 | **15** | Boletas | **HU-22** | Emitir boletas inmutables con correlativo BP-AAAAMM-NNNN y rectificar con trazabilidad v1->v2. |
 | **16** | Boletas | **HU-23** | Consultar boletas por funcionario, auditar versiones rectificadas y descargar PDF verificado con SHA-256. |
 | **17** | Auditoría | **HU-24** | Consultar registro de auditoría en vivo del Gateway, filtrar por servicio/resultado y verificar trazabilidad de request-id. |
+| **18** | Dashboard | **HU-25** | Visualizar KPI en vivo (activos, en prueba, bajas, masa salarial), gráficos de áreas y períodos, y alertas con tolerancia a fallas. |
 
 ---
 

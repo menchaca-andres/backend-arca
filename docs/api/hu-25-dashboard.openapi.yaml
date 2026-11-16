@@ -1,0 +1,222 @@
+openapi: 3.0.3
+info:
+  title: API de Dashboard Ejecutivo para el Directorio
+  version: 1.0.0
+  description: Endpoint agregador del API Gateway para indicadores clave de gestión humana con tolerancia a fallas (HU-25 / AR3-144).
+servers:
+  - url: /api/v1
+  - url: /api
+security:
+  - bearerAuth: []
+paths:
+  /dashboard:
+    get:
+      summary: Consultar indicadores consolidados del Dashboard Ejecutivo (CA-01, CA-02, CA-03, CA-04, CA-06)
+      description: |
+        - Accesible para roles `ADMIN`, `RRHH` y `DIRECCION` (CA-06).
+        - Consulta en paralelo los servicios `ms-personal`, `ms-vacaciones` y `ms-boletas` mediante sus endpoints internos `/internal/stats`.
+        - **Tolerancia a fallas (CA-04):** Si algún servicio no responde, esa sección devuelve `null` con estado `ERROR` en `servicios`, permitiendo que el resto del dashboard cargue normalmente sin degradar la respuesta completa.
+      responses:
+        '200':
+          description: Datos consolidados del dashboard ejecutivo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardResponse'
+        '401':
+          description: Token no provisto o inválido
+        '403':
+          description: Acceso denegado (no permitido para rol FUNCIONARIO)
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    PersonalStats:
+      type: object
+      properties:
+        activos:
+          type: integer
+          example: 42
+        enPrueba:
+          type: integer
+          example: 5
+        bajasMes:
+          type: integer
+          example: 1
+        funcionariosPorArea:
+          type: array
+          items:
+            type: object
+            properties:
+              area:
+                type: string
+                example: "Tecnología"
+              cantidad:
+                type: integer
+                example: 12
+        periodosPruebaPorVencer:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+              nombreCompleto:
+                type: string
+                example: "Mariana Ríos"
+              ci:
+                type: string
+                example: "9000003"
+              diasRestantes:
+                type: integer
+                example: 4
+              fechaVencimiento:
+                type: string
+                format: date
+                example: "2026-11-20"
+        cumplenGestionMes:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+              nombres:
+                type: string
+                example: "Carlos"
+              apellidos:
+                type: string
+                example: "Mamani"
+              ci:
+                type: string
+                example: "4839201"
+              aniosCumplidos:
+                type: integer
+                example: 2
+              fechaIngreso:
+                type: string
+                format: date
+                example: "2024-11-15"
+    VacacionesStats:
+      type: object
+      properties:
+        solicitudesPendientes:
+          type: integer
+          example: 3
+        alertas:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                format: uuid
+              funcionarioId:
+                type: string
+                format: uuid
+              funcionarioNombre:
+                type: string
+                example: "Daniela Mendoza"
+              diasHabiles:
+                type: integer
+                example: 5
+              fechaInicio:
+                type: string
+                format: date
+                example: "2026-12-01"
+              fechaFin:
+                type: string
+                format: date
+                example: "2026-12-07"
+              createdAt:
+                type: string
+                format: date-time
+    BoletasStats:
+      type: object
+      properties:
+        masaSalarialUltimoPeriodo:
+          type: object
+          nullable: true
+          properties:
+            periodoId:
+              type: string
+              format: uuid
+            anio:
+              type: integer
+              example: 2026
+            mes:
+              type: integer
+              example: 11
+            periodoNombre:
+              type: string
+              example: "11/2026"
+            monto:
+              type: number
+              example: 148500.5
+            moneda:
+              type: string
+              example: "BOB"
+            totalBoletas:
+              type: integer
+              example: 45
+        historialMasaSalarial:
+          type: array
+          items:
+            type: object
+            properties:
+              periodoId:
+                type: string
+                format: uuid
+              anio:
+                type: integer
+                example: 2026
+              mes:
+                type: integer
+                example: 11
+              periodoNombre:
+                type: string
+                example: "11/2026"
+              masaSalarial:
+                type: number
+                example: 148500.5
+              liquidoTotal:
+                type: number
+                example: 129000.0
+              totalBoletas:
+                type: integer
+                example: 45
+    DashboardResponse:
+      type: object
+      required:
+        - servicios
+        - timestamp
+      properties:
+        personal:
+          $ref: '#/components/schemas/PersonalStats'
+          nullable: true
+        vacaciones:
+          $ref: '#/components/schemas/VacacionesStats'
+          nullable: true
+        boletas:
+          $ref: '#/components/schemas/BoletasStats'
+          nullable: true
+        servicios:
+          type: object
+          properties:
+            personal:
+              type: string
+              enum: [OK, ERROR]
+            vacaciones:
+              type: string
+              enum: [OK, ERROR]
+            boletas:
+              type: string
+              enum: [OK, ERROR]
+        timestamp:
+          type: string
+          format: date-time
