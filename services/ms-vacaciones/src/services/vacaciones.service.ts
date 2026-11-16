@@ -146,13 +146,8 @@ export class VacacionesService {
     const pendientes = await this.solicitudRepo.findPendientes();
     return Promise.all(
       pendientes.map(async (solicitud) => {
-        let saldo: Awaited<ReturnType<VacacionesService['obtenerSaldo']>> | null = null;
-        try {
-          saldo = await this.obtenerSaldo(solicitud.funcionarioId);
-        } catch {
-          // Si ms-personal no responde o el funcionario ya no existe, la bandeja sigue funcionando.
-          saldo = null;
-        }
+        // Si ms-personal no responde o el funcionario ya no existe, la bandeja sigue funcionando.
+        const saldo = await this.obtenerSaldo(solicitud.funcionarioId).catch(() => null);
         return { ...solicitud, saldo };
       }),
     );
@@ -187,11 +182,7 @@ export class VacacionesService {
     return this.solicitudRepo.save(solicitud);
   }
 
-  async rechazarSolicitud(
-    id: string,
-    motivo: string,
-    resolutor: ResolutorSolicitud,
-  ): Promise<SolicitudVacacion> {
+  async rechazarSolicitud(id: string, motivo: string, resolutor: ResolutorSolicitud): Promise<SolicitudVacacion> {
     const solicitud = await this.obtenerResoluble(id, resolutor);
 
     solicitud.estado = EstadoSolicitud.RECHAZADA;

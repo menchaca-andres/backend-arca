@@ -43,3 +43,14 @@ export async function sembrarPlantillaIndefinida(): Promise<Plantilla> {
 
   return plantilla;
 }
+
+if (require.main === module) {
+  AppDataSource.initialize()
+    .then(sembrarPlantillaIndefinida)
+    .then(() => AppDataSource.destroy())
+    .then(() => console.log('[ms-contratos] Semilla de plantilla aplicada'))
+    .catch((err) => {
+      console.error('[ms-contratos] La semilla de plantilla falló:', err);
+      process.exit(1);
+    });
+}

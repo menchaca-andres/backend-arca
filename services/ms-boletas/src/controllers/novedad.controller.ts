@@ -28,4 +28,3 @@ export class NovedadController {
     res.status(204).send();
   };
 }
-

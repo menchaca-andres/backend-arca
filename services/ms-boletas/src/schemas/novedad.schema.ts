@@ -17,4 +17,3 @@ export const listarNovedadesQuerySchema = z.object({
 
 export type RegistrarNovedadInput = z.infer<typeof registrarNovedadSchema>;
 export type ListarNovedadesQuery = z.infer<typeof listarNovedadesQuerySchema>;
-

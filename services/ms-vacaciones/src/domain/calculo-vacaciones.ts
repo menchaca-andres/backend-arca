@@ -163,10 +163,7 @@ export function construirKardex(
   if (filtros?.anio) {
     const anioStr = String(filtros.anio);
     gestionesFinales = gestionesBrutas.filter(
-      (g) =>
-        g.periodoInicio.startsWith(anioStr) ||
-        g.periodoFin.startsWith(anioStr) ||
-        g.solicitudes.length > 0,
+      (g) => g.periodoInicio.startsWith(anioStr) || g.periodoFin.startsWith(anioStr) || g.solicitudes.length > 0,
     );
   }
 

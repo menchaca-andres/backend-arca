@@ -77,4 +77,3 @@ export class NovedadService {
     await this.novedadRepo.delete(novedad.id);
   }
 }
-

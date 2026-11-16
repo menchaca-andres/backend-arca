@@ -173,9 +173,7 @@ describe('HU-23: Consultar y descargar boletas en PDF', () => {
 
       const resultado = await service.listar({ periodoId: 'p-1' }, rrhhIdentity);
 
-      expect(mockBoletaRepo.findConFiltros).toHaveBeenCalledWith(
-        expect.objectContaining({ periodoId: 'p-1' }),
-      );
+      expect(mockBoletaRepo.findConFiltros).toHaveBeenCalledWith(expect.objectContaining({ periodoId: 'p-1' }));
       expect(resultado.boletas).toHaveLength(2);
       expect(resultado.resumen).toEqual({
         totalGanado: 14000,
@@ -214,9 +212,7 @@ describe('HU-23: Consultar y descargar boletas en PDF', () => {
         funcionarioId: null,
       };
 
-      await expect(service.listar({}, invalidIdentity)).rejects.toThrow(
-        'El usuario no tiene un funcionario asociado',
-      );
+      await expect(service.listar({}, invalidIdentity)).rejects.toThrow('El usuario no tiene un funcionario asociado');
     });
 
     it('un FUNCIONARIO no puede acceder al detalle de una boleta ajena (403 Forbidden)', async () => {
@@ -306,9 +302,7 @@ describe('HU-23: Consultar y descargar boletas en PDF', () => {
       mockBoletaRepo.findHistorialVersiones.mockResolvedValue([boletaEmitida1]);
       mockBoletaPdfRepo.findByIdConContenido.mockResolvedValue(null);
 
-      await expect(service.obtenerPdf('b-1', null)).rejects.toThrow(
-        'El archivo PDF de la boleta no está disponible',
-      );
+      await expect(service.obtenerPdf('b-1', null)).rejects.toThrow('El archivo PDF de la boleta no está disponible');
     });
   });
 });

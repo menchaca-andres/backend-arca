@@ -34,4 +34,3 @@ export class ConceptoController {
     res.json(resultado);
   };
 }
-

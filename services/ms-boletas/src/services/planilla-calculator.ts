@@ -83,12 +83,7 @@ export class PlanillaCalculator {
     anio: number,
     mes: number,
   ): BoletaCalculada {
-    const diasTrabajados = this.calcularDiasTrabajados(
-      funcionario.fechaIngreso,
-      funcionario.fechaBaja,
-      anio,
-      mes,
-    );
+    const diasTrabajados = this.calcularDiasTrabajados(funcionario.fechaIngreso, funcionario.fechaBaja, anio, mes);
 
     const remuneracion = funcionario.remuneracion?.monto ?? 0;
     const detalles: DetalleCalculado[] = [];
