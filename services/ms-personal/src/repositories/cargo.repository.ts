@@ -7,7 +7,9 @@ export interface CargoListOptions {
 }
 
 export class CargoRepository {
-  private repo = AppDataSource.getRepository(Cargo);
+  private get repo() {
+    return AppDataSource.getRepository(Cargo);
+  }
 
   findById(id: string) {
     return this.repo.findOne({ where: { id }, relations: { area: true } });

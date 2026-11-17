@@ -6,7 +6,14 @@ import { ServerResponse } from 'node:http';
 import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
 import { AppError, createLogger, errorHandler } from '@arca/shared';
 import { jwtAuth } from './middlewares/auth.middleware';
+import { auditoriaMiddleware } from './middlewares/auditoria.middleware';
 import { createHealthRouter } from './routes/health.routes';
+import { createAuditoriaRouter } from './routes/auditoria.routes';
+import { AuditoriaService } from './services/auditoria.service';
+import { AuditoriaController } from './controllers/auditoria.controller';
+import { createDashboardRouter } from './routes/dashboard.routes';
+import { DashboardService } from './services/dashboard.service';
+import { DashboardController } from './controllers/dashboard.controller';
 
 const IDENTITY_HEADERS = ['x-user-id', 'x-user-rol', 'x-user-role', 'x-funcionario-id'];
 
@@ -39,9 +46,13 @@ const blockInternalAccess: RequestHandler = (req, _res, next) => {
   next(new AppError('VALIDATION_ERROR', 'La ruta contiene demasiados niveles de codificacion'));
 };
 
-export function createApp() {
+export function createApp(options?: { auditoriaService?: AuditoriaService; dashboardService?: DashboardService }) {
   const app = express();
   const logger = createLogger('gateway');
+  const auditoriaService = options?.auditoriaService ?? new AuditoriaService();
+  const auditoriaController = new AuditoriaController(auditoriaService);
+  const dashboardService = options?.dashboardService ?? new DashboardService();
+  const dashboardController = new DashboardController(dashboardService);
   app.disable('x-powered-by');
   const configuredOrigins = process.env.CORS_ORIGIN?.trim();
   app.use(
@@ -76,8 +87,13 @@ export function createApp() {
     next();
   });
   app.use(jwtAuth());
+  app.use(auditoriaMiddleware(auditoriaService));
   app.use(express.json());
   app.use('/health', createHealthRouter('gateway'));
+  app.use('/api/v1/auditoria', createAuditoriaRouter(auditoriaController));
+  app.use('/api/auditoria', createAuditoriaRouter(auditoriaController));
+  app.use('/api/v1/dashboard', createDashboardRouter(dashboardController));
+  app.use('/api/dashboard', createDashboardRouter(dashboardController));
 
   const routes: Array<{ prefix: string; target: string; forwardedPrefix?: string }> = [
     {
@@ -139,6 +155,11 @@ export function createApp() {
       prefix: '/api/conceptos',
       target: process.env.BOLETAS_SERVICE_URL ?? 'http://ms-boletas:3005',
       forwardedPrefix: '/conceptos',
+    },
+    {
+      prefix: '/api/novedades',
+      target: process.env.BOLETAS_SERVICE_URL ?? 'http://ms-boletas:3005',
+      forwardedPrefix: '/novedades',
     },
   ];
   for (const { prefix, target, forwardedPrefix } of routes) {

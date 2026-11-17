@@ -15,5 +15,7 @@ DB_SCHEMA=auditoria npm run migration:run --workspace=gateway
 echo "[init] Cargando semilla de desarrollo"
 DB_SCHEMA=personal npm run seed:dev --workspace=ms-personal
 DB_SCHEMA=autenticacion npm run seed:dev --workspace=ms-auth
+DB_SCHEMA=boletas npm run seed:dev --workspace=ms-boletas
+DB_SCHEMA=contratos npm run seed:dev --workspace=ms-contratos
 
 echo "[init] Listo"

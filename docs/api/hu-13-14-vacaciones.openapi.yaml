@@ -1,0 +1,162 @@
+openapi: 3.0.3
+info:
+  title: API de Vacaciones
+  version: 1.0.0
+  description: Consulta de elegibilidad/saldo y registro de solicitudes de vacaciones (HU-13 y HU-14).
+servers:
+  - url: /api/v1/vacaciones
+security:
+  - bearerAuth: []
+paths:
+  /saldo/{idFuncionario}:
+    get:
+      summary: Consultar elegibilidad y saldo de vacaciones
+      parameters:
+        - in: path
+          name: idFuncionario
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Elegibilidad, gestiones y saldo desglosado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SaldoVacaciones'
+        '403':
+          description: El usuario no puede consultar a este funcionario
+        '404':
+          description: Funcionario inexistente
+  /dias-habiles:
+    get:
+      summary: Contar días hábiles inclusivos excluyendo feriados
+      parameters:
+        - in: query
+          name: desde
+          required: true
+          schema:
+            type: string
+            format: date
+        - in: query
+          name: hasta
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Cantidad de días hábiles para el rango
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [desde, hasta, diasHabiles]
+                properties:
+                  desde: { type: string, format: date }
+                  hasta: { type: string, format: date }
+                  diasHabiles: { type: integer, minimum: 0 }
+        '400':
+          description: Rango de fechas inválido
+  /feriados/{anio}:
+    get:
+      summary: Listar feriados nacionales de un año
+      parameters:
+        - in: path
+          name: anio
+          required: true
+          schema:
+            type: integer
+            enum: [2026, 2027]
+      responses:
+        '200':
+          description: Feriados del año
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required: [fecha, descripcion]
+                  properties:
+                    fecha: { type: string, format: date }
+                    descripcion: { type: string }
+  /solicitudes:
+    get:
+      summary: Listar solicitudes propias o visibles para RRHH
+      responses:
+        '200':
+          description: Solicitudes ordenadas por fecha de registro
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SolicitudVacacion'
+        '401':
+          description: Identidad ausente
+    post:
+      summary: Registrar una solicitud de vacaciones
+      description: FUNCIONARIO solicita para sí mismo; RRHH puede indicar funcionarioId para registrar por otra persona.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [fechaInicio, fechaFin]
+              properties:
+                funcionarioId:
+                  type: string
+                  format: uuid
+                  description: Obligatorio para RRHH; omitido por un funcionario.
+                fechaInicio: { type: string, format: date }
+                fechaFin: { type: string, format: date }
+      responses:
+        '201':
+          description: Solicitud creada en estado PENDIENTE, reservando los días
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SolicitudVacacion'
+        '400':
+          description: Rango futuro, elegibilidad o saldo no válido
+        '403':
+          description: Funcionario no autorizado a solicitar por otra persona
+        '409':
+          description: Cruce con otra solicitud pendiente o aprobada
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    SaldoVacaciones:
+      type: object
+      required:
+        [funcionarioId, funcionario, elegible, motivo, gestiones, diasGanados, diasUsados, diasReservados, diasDisponibles, fechaProximaGestion]
+      properties:
+        funcionarioId: { type: string, format: uuid }
+        funcionario: { type: string }
+        elegible: { type: boolean }
+        motivo: { type: string, nullable: true }
+        gestiones: { type: integer, minimum: 0 }
+        diasGanados: { type: integer }
+        diasUsados: { type: integer }
+        diasReservados: { type: integer }
+        diasDisponibles: { type: integer }
+        fechaProximaGestion: { type: string, format: date }
+    SolicitudVacacion:
+      type: object
+      required: [id, funcionarioId, funcionarioNombre, fechaInicio, fechaFin, diasHabiles, estado, registradoPor]
+      properties:
+        id: { type: string, format: uuid }
+        funcionarioId: { type: string, format: uuid }
+        funcionarioNombre: { type: string }
+        fechaInicio: { type: string, format: date }
+        fechaFin: { type: string, format: date }
+        diasHabiles: { type: integer, minimum: 1 }
+        estado: { type: string, enum: [PENDIENTE, APROBADA, RECHAZADA] }
+        registradoPor: { type: string, format: uuid }

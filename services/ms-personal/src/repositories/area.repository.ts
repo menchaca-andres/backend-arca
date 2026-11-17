@@ -2,7 +2,9 @@ import { AppDataSource } from '../data-source';
 import { Area } from '../entities/area.entity';
 
 export class AreaRepository {
-  private repo = AppDataSource.getRepository(Area);
+  private get repo() {
+    return AppDataSource.getRepository(Area);
+  }
 
   findById(id: string) {
     return this.repo.findOneBy({ id });

@@ -11,11 +11,13 @@ import {
 import { createHealthRouter } from './routes/health.routes';
 import { areaRouter } from './routes/area.routes';
 import { cargoRouter } from './routes/cargo.routes';
-import { funcionarioRouter, internalFuncionarioRouter } from './routes/funcionario.routes';
+import { funcionarioRouter } from './routes/funcionario.routes';
+import { funcionarioInternalRouter } from './routes/funcionario.internal.routes';
+import { statsInternalRouter } from './routes/stats.internal.routes';
 
 const SERVICE_NAME = 'ms-personal';
 
-export function createApp(customInternalRoutes?: Router) {
+export function createApp(internalRoutes: Router = Router()) {
   const app = express();
   const logger = createLogger(SERVICE_NAME);
   const protectInternal = internalKeyMiddleware(process.env.INTERNAL_API_KEY ?? '');
@@ -31,24 +33,16 @@ export function createApp(customInternalRoutes?: Router) {
     });
     next();
   });
-
   // La clave se valida antes de interpretar el body o resolver la ruta.
   app.use('/internal', protectInternal);
   app.use(express.json());
   app.use('/health', createHealthRouter(SERVICE_NAME));
-
-  // Rutas internas protegidas con clave
-  const internalRouter = Router();
-  internalRouter.use(internalFuncionarioRouter);
-  if (customInternalRoutes) {
-    internalRouter.use(customInternalRoutes);
-  }
-  app.use('/internal', internalRouter);
-
   app.use('/areas', areaRouter);
   app.use('/cargos', cargoRouter);
   app.use('/funcionarios', funcionarioRouter);
-
+  app.use('/internal', funcionarioInternalRouter);
+  app.use('/internal', statsInternalRouter);
+  app.use('/internal', internalRoutes);
   app.use((_req, _res, next) => {
     next(new AppError('NOT_FOUND', 'Ruta no encontrada'));
   });
