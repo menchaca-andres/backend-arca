@@ -84,7 +84,7 @@ export const listarContratosQuerySchema = z
     activosDesde: fecha('activosDesde').optional(),
     activosHasta: fecha('activosHasta').optional(),
     page: z.coerce.number().int().min(1).default(1),
-    pageSize: z.coerce.number().int().min(1).max(200).default(100),
+    pageSize: z.coerce.number().int().min(1).max(1000).default(100),
   })
   .strict()
   .refine((data) => !data.activosDesde || !data.activosHasta || data.activosDesde <= data.activosHasta, {
